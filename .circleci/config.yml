@@ -1,0 +1,28 @@
+version: 2
+
+jobs:
+  deploy:
+    docker:
+      - image: circleci/clojure:lein-2.9.0
+    steps:
+      - checkout
+      - restore_cache:
+          keys:
+            - site-{{ checksum "project.clj"}}
+      - run:
+          name: build site
+          command: lein run
+      - save_cache:
+          paths:
+            - ~/.m2
+          key: site-{{ checksum "project.clj"}}
+      - store_artifacts:
+          path: static
+          destination: docs
+
+workflows:
+  version: 2
+  deploy_site:
+    jobs:
+      - deploy
+
