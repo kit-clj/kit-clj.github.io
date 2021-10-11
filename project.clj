@@ -1,4 +1,4 @@
-(defproject wake-docs "0.1"
+(defproject kit-docs "0.1"
   :description "Documentation site for the Luminus framework"
   :url "http://www.luminusweb.net/"
   :license {:name "MIT License"

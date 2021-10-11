@@ -1,237 +1,195 @@
 ## Guestbook Application
 
-This tutorial will guide you through building a simple guestbook application using Luminus.
+This tutorial will guide you through building a simple guestbook application using Kit.
 The guestbook allows users to leave a message and to view a list of messages left by others.
 The application will demonstrate the basics of HTML templating, database access, and
 project architecture.
 
-If you don't have a preferred Clojure editor already, then it's recommended that you use [Light Table](http://www.lighttable.com/) to follow along with this tutorial.
-
-### Using the Docker Image
-
-If you're using Docker, then you can follow these steps to get up and running:
-
-1. `docker pull danboykis/luminus-guestbook`
-2. `docker run -p 3000:3000 -p 7000:7000 -it danboykis/luminus-guestbook`
-
-If you prefer to build your own docker image follow the directions [here](https://github.com/luminus-framework/luminus-docker)
+If you don't have a preferred Clojure editor already, then it's recommended that you use [Calva](https://calva.io/getting-started/) to follow along with this tutorial.
 
 ### Installing JDK
 
 Clojure runs on the JVM and requires a copy of JDK to be installed. IF you don't
 have JDK already on your system then OpenJDK is recommended and can be downloaded
-[here](http://www.azul.com/downloads/zulu/). Note that Luminus requires JDK 8 to
+[here](http://www.azul.com/downloads/zulu/). Note that Kit requires JDK 11 or greater to
 work with the default settings.
+
+TODO: Maybe instead of direct download, package manager for macos/linux. idk windows
 
 ### Installing a Build Tool
 
-Luminus supports the two major build tools, [Leiningen](http://leiningen.org/)
-or [Boot](http://boot-clj.com/). Either may be installed and this documentation
-supports both. You can choose which version of the documentation to use by
-selecting the dropdown [here](#build-tool-div).
+For building and running a project, Kit supports [Clojure Deps and CLI](https://clojure.org/guides/deps_and_cli).
 
-In general Leiningen does more for you and therefore is easier to use but more
-rigid. Boot allows more customization and is more flexible but isn't quite as
-slick.
+TODO: Future add Leiningen
 
-If you are unsure which to choose, stick with Leiningen as it is the most
-popular, and continue reading.
+<div class="deps">
+Installing Clojure CLI is accomplished by followings the step below, based on your operating system
 
-<b>Note:</b> Most of the documentation is equally accurate for Boot, but as
-of now some pages are not updated to have the boot commands instead of lein ones.
-
-<div class="lein">
-Installing Leiningen is accomplished by followings the step below.
-
-1. Download the script.
-3. Set it to be executable. (eg: chmod +x lein)
-2. Place it on your $PATH. (eg: ~/bin)
-4. Run `lein` and wait for the self-installation to complete.
+MacOS
 
 ```
-wget https://raw.github.com/technomancy/leiningen/stable/bin/lein
-chmod +x lein
-mv lein ~/bin
-lein
+brew install clojure/tools/clojure
 ```
-</div>
-<div class="boot">
-Installing Boot is accomplished by following the steps below.
 
-1. Download the script.
-2. Set it to be executable. (eg: chmod +x boot)
-3. Place it on your $PATH. (eg: ~/bin)
-4. Run `boot` and wait for the self-installation to complete.
+Linux
+```
+curl -O https://download.clojure.org/install/linux-install-1.10.3.986.sh
+chmod +x linux-install-1.10.3.986.sh
+sudo ./linux-install-1.10.3.986.sh
+```
+
+For both macOS and Linux, you will need [`clj-new`]() configured in your `~/.clojure/deps.edn` file (or `~/.config/clojure/deps.edn` file) like this:
 
 ```
-wget https://github.com/boot-clj/boot-bin/releases/download/latest/boot.sh
-chmod +x boot
-mv boot ~/bin
-boot
+{:aliases
+ {:new {:extra-deps {com.github.seancorfield/clj-new {:mvn/version "1.2.362"}}
+        :exec-fn clj-new/create
+        :exec-args {:template "app"}}}}
 ```
+
+Note: If you already have configuration in your `deps.edn` file, add the new key under aliases. Make sure the line with `{:aliases` is uncommented, i.e. without `;;`.
+
+For more customization, such as your install location, see [the official docs here](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools)
 </div>
 
 ### Creating a new application
 
-Once you have <span class="lein">Leiningen</span><span class="boot">Boot</span> installed you can run the following commands in your terminal to
+Once you have <span class="deps">the Clojure CLI</span> installed you can run the following commands in your terminal to
 initialize your application:
 
-<div class="lein">
+<div class="deps">
 ```
-lein new luminus guestbook +h2 +immutant
-cd guestbook
-```
-</div>
-<div class="boot">
-```
-boot -d boot/new new -t luminus -n guestbook -a +boot -a +h2
+clojure -X:new :template kit-clj :name yourname/guestbook
 cd guestbook
 ```
 </div>
 
-The above will create a new template project with the support for [H2 embedded database](http://www.h2database.com/html/main.html) engine.
+The above will create a new template project.
 
-### Anatomy of a Luminus application
+### Anatomy of a Kit application
 
 The newly created application has the following structure:
 
 ```
-guestbook<boot-div>
-├── build.boot</boot-div>
-├── Capstanfile
 ├── Dockerfile
-├── Procfile
 ├── README.md
+├── build.clj
+├── deps.edn
 ├── env
 │   ├── dev
 │   │   ├── clj
-│   │   │   ├── guestbook
-│   │   │   │   ├── dev_middleware.clj
-│   │   │   │   └── env.clj
-│   │   │   └── user.clj
+│   │   │   ├── user.clj
+│   │   │   └── yourname
+│   │   │       └── guestbook
+│   │   │           ├── dev_middleware.clj
+│   │   │           └── env.clj
 │   │   └── resources
-│   │       ├── config.edn
 │   │       └── logback.xml
-│   ├── prod
-│   │   ├── clj
-│   │   │   └── guestbook
-│   │   │       └── env.clj
-│   │   └── resources
-│   │       ├── config.edn
-│   │       └── logback.xml
-│   └── test
+│   └── prod
+│       ├── clj
+│       │   └── yourname
+│       │       └── guestbook
+│       │           └── env.clj
 │       └── resources
-│           └── config.edn
-│           └── logback.xml
-├── dev-config.edn
-├── test-config.edn<lein-div>
-├── project.clj</lein-div>
+│           └── logback.xml
+├── kit.edn
+├── kit.git-config.edn
+├── project.clj
 ├── resources
-│   ├── docs
-│   │   └── docs.md
-│   ├── migrations
-│   │   ├── 20160811175305-add-users-table.down.sql
-│   │   └── 20160811175305-add-users-table.up.sql
-│   ├── public
-│   │   ├── css
-│   │   │   └── screen.css
-│   │   ├── favicon.ico
-│   │   ├── img
-│   │   └── js
-│   ├── sql
-│   │   └── queries.sql
-│   └── html
-│       ├── about.html
-│       ├── base.html
-│       ├── error.html
-│       └── home.html
+│   └── system.edn
 ├── src
 │   └── clj
-│       └── guestbook
-│           ├── config.clj
-│           ├── core.clj
-│           ├── db
-│           │   └── core.clj
-│           ├── handler.clj
-│           ├── layout.clj
-│           ├── middleware
-│           │   └── formats.clj
-│           ├── middleware.clj
-│           ├── nrepl.clj
-│           └── routes
-│               └── home.clj
+│       └── yourname
+│           └── guestbook
+│               ├── config.clj
+│               ├── core.clj
+│               └── web
+│                   ├── controllers
+│                   │   └── health.clj
+│                   ├── handler.clj
+│                   ├── middleware
+│                   │   ├── core.clj
+│                   │   ├── exception.clj
+│                   │   └── formats.clj
+│                   └── routes
+│                       ├── api.clj
+│                       └── utils.clj
 └── test
     └── clj
-        └── guestbook
-            └── test
-                ├── db
-                │   └── core.clj
-                └── handler.clj
+        └── yourname
+            └── guestbook
+                └── test_utils.clj
 ```
 
 Let's take a look at what the files in the root folder of the application do:
 
-<div class="boot">
-* `build.boot` - used to define the tasks and dependencies used by Boot.
-</div>
-<div class="lein">
-* `project.clj` - used to manage the project configuration and dependencies by
-  Leiningen
+<div class="deps">
+* `deps.edn` - used to manage the project configuration and dependencies by
+  deps
+* `build.clj` - used to manage the build process by Clojure CLI tools
 </div>
 
-* `Capstanfile` - used to facilitate OSv deployments
 * `Dockerfile` - used to facilitate Docker container deployments
-* `Procfile` - used to facilitate Heroku deployments
 * `README.md` - where documentation for the application is conventionally put
-* `dev-config.edn` - used for local development configuration that should not be checked into the code repository
-* `test-config.edn` - used for test development configuration that should not be checked into the code repository
+* `resources/system.edn` - used for system configuration
 * `.gitignore` - a list of assets, such as build generated files, to exclude from Git
 
 ### The Source Directory
 
-All our code lives under the `src/clj` folder. Since our application is called guestbook, this
+All our code lives under the `src/clj` folder. Since our application is called yourname/guestbook, this
 is the root namespace for the project. Let's take a look at all the namespaces that have been created for us.
 
 #### guestbook
 
+* `config.clj` - this is the place where your `system.edn` is read in to create an immutant configuration map
 * `core.clj` - this is the entry point for the application that contains the logic for starting and stopping the server
-* `handler.clj` - defines the base routes for the application, this is the entry point into the application
-* `layout.clj` - a namespace for the layout helpers used to render the content for our pages
-* `middleware.clj` - a namespace that contains custom middleware for the application
 
-#### guestbook.db
+#### guestbook.web
 
-The `db` namespace is used to define the model for the application and handle the persistence layer.
+The `web` namespace is used to define the edges of your application that deal with server communication, such as receiving HTTP requests and returning responses.
 
-* `core.clj` - used to house the functions for interacting with the database
+* `handler.clj` - defines the entry points for routing and request handling.
 
-#### guestbook.routes
+#### guestbook.web.controllers
 
-The `routes` namespace is where the routes and controllers for our home and about pages are located. When you add more routes,
-such as authentication, or specific workflows you should create namespaces for them here.
+The `controllers` namespace is where the controllers are located. By default, a healthcheck controller is created for you. When you add more controllers you should create namespaces for them here.
 
-* `home.clj` - a namespace that defines the home and about pages of the application
+* `healthcheck.clj` - default controller that returns basic statistics about your server
+
+#### guestbook.web.middleware
+
+The `middleware` namespace consists of functions that implement cross-cutting functionality such as session management, coercion, etc. These functions can be wrapped around groups of routes to provide common functionality.
+
+* `core.clj` - an aggregate of default middlewares and environment specific middleware
+* `exception.clj` - logic for classifying exceptions within controllers and returning appropriate HTTP responses
+* `formats.clj` - handles coercion of requests data to Clojure data structures, and response data back to strings
+
+#### guestbook.web.routes
+
+The `routes` namespace is where the HTTP routes are defined. By default `/api` routes are created for you. When you add more routes you should create namespaces for them here.
+
+* `api.clj` - a namespace that routes (default = `/api`) with Swagger UI
+* `utils.clj` - general purpose helper functions for getting data from requests
 
 ### The Env Directory
 
 Environment specific code and resources are located under the `env/dev`, `env/test`, and the `env/prod` paths.
-The `dev` configuration will be used during development, `test` during testing,
+The `dev` configuration will be used during development and test, `test` during testing,
 while the `prod` configuration will be used when the application is packaged for production.
 
 #### `dev/clj`
 
-* `user.clj` - a utility namespace for any code you wish to run during REPL development
+* `user.clj` - a utility namespace for any code you wish to run during REPL development. You start and stop your server from here during development.
 * `guestbook/env.clj` - contains the development configuration defaults
 * `guestbook/dev_middleware.clj` - contains middleware used for development that should not be compiled in production
 
 #### `dev/resources`
 
-* `config.edn` - default environment variables for the development
 * `logback.xml` file used to configure the development logging profile
 
 #### `test/resources`
 
-* `config.edn` - default environment variables for testing
+* `logback.xml` file used to configure the test logging profile
 
 #### `prod/clj`
 
@@ -239,16 +197,80 @@ while the `prod` configuration will be used when the application is packaged for
 
 #### `prod/resources`
 
-* `config.edn` - default environment variables that will be packaged with the application
 * `logback.xml` - default production logging configuration
 
 ### The Test Directory
 
-Here is where we put tests for our application, a couple of sample tests have already been defined for us.
+Here is where we put tests for our application. Some test utilities have been provided.
 
 ### The Resources Directory
 
-This is where we put all the static resources for our application. Content in the `public` directory under `resources` will be served to the clients by the server. We can see that some CSS resources have already been created for us.
+This is where we put all the resources that will be packaged with our application. Anything in the `public` directory under `resources` will be served to the clients by the server.
+
+### Starting Our Server
+
+Your REPL is your best friend in Clojure. Let's start our local development REPL by running
+
+```
+clj -M:dev
+```
+
+Once we're in to our REPL, we can start our system up by running a command provided in our `env/dev/user.clj`
+
+```clojure
+(go) ;; To start the system
+
+(halt) ;; To stop the system
+
+(reload) ;; To refresh the system after making code changes
+```
+
+To confirm your server is running, visit [http://localhost:3000/api/health](http://localhost:3000/api/health).
+
+### Kit Modules
+
+Since our application needs to serve some HTML content, let's add the official HTML module. In your REPL, you can execute the following 
+
+```clojure
+;; This will download the official Kit modules from git
+(kit/sync-modules)
+
+;; Let's list out our available modules
+(kit/list-modules)
+;; =>
+;; :html - adds support for HTML templating using Selmer
+;; :sqlite - adds support for SQLite embedded database
+;; :cljs - adds support for cljs using shadow-cljs
+;; nil
+
+;; We'll want to install the :html module to serve some HTML pages
+(kit/install-module :html)
+;; =>
+;; updating file: resources/system.edn
+;; injecting
+;; path: [:reitit.routes/pages]
+;; value: {:base-path "", :env #ig/ref :system/env}
+;; updating file: deps.edn
+;; injecting
+;; path: [:deps selmer/selmer]
+;; value: #:mvn{:version "1.12.44"}
+;; injecting
+;; path: [:deps ring/ring-defaults]
+;; value: #:mvn{:version "0.3.3"}
+;; injecting
+;; path: [:deps luminus/ring-ttl-session]
+;; value: #:mvn{:version "0.3.3"}
+;; updating file: src/clj/yourname/guestbook/core.clj
+;; applying
+;; action: :append-requires
+;; value: [[yourname.guestbook.web.routes.pages]]
+;; html installed successfully!
+;; restart required!
+;; nil
+```
+
+If you have issues with syncing your modules, refer to [TODO DOCS HERE]()
+
 
 #### HTML templates
 
