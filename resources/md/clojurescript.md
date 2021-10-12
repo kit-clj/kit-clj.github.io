@@ -9,102 +9,7 @@ ClojureScript is an excellent alternative to JavaScript for client side applicat
 
 ### Adding ClojureScript Support
 
-The easiest way to add ClojureScript support is by using the one of the ClojureScript [profile flags](/docs/profiles.html) when creating a new project.
-
-However, it's quite easy to add it to an existing project as well. <div class="lein">First, add the [lein-cljsbuild](https://github.com/emezeske/lein-cljsbuild) plugin and `:cljsbuild` key to the project as seen below:
-
-```clojure
-:plugins [... [lein-cljsbuild "1.1.3"]]
-
-:resource-paths ["resources" "target/cljsbuild"]
-:cljsbuild
-{:builds
-   {:app
-    {:source-paths ["src/cljs"]
-     :compiler
-                   {:main          (str project-ns ".app")
-                    :asset-path    "/js/out"
-                    :output-to     "target/cljsbuild/public/js/app.js"
-                    :output-dir    "target/cljsbuild/public/js/out"
-                    :optimizations :none
-                    :source-map    true
-                    :pretty-print  true}}
-    :min
-    {:source-paths ["src/cljs"]
-     :compiler
-                   {:output-to     "target/cljsbuild/public/js/app.js"
-                    :output-dir    "target/uberjar"
-                    :externs       ["react/externs/react.js"]
-                    :optimizations :advanced
-                    :pretty-print  false}}}}
-```
-</div>
-<div class="boot">
-First add the `boot-cljs` library to your dependencies and something along the
-lines of the following tasks:
-```clojure
-(set-env! :dependencies '[... [adzerk/boot-cljs "2.1.0-SNAPSHOT" :scope "test"]
-                         [crisptrutski/boot-cljs-test "0.3.2-SNAPSHOT" :scope "test"]
-                         [adzerk/boot-cljs-repl "0.3.3" :scope "test"]
-                         [powerlaces/boot-figreload "0.1.1-SNAPSHOT" :scope "test"]
-                         [org.clojure/clojurescript cljs-version :scope "test]]
-          :source-paths #{... "src/cljs"})
-
-(deftask figwheel
-  "Runs figwheel and enables reloading."
-  []
-  (dev)
-  (require '[powerlaces.boot-figreload :refer [reload]])
-  (let [reload (resolve 'powerlaces.boot-figreload/reload)]
-    (comp
-     (start-server)
-     (watch)
-     (reload :client-opts {:debug true})
-     (cljs-repl)
-     (cljs))))
-
-(deftask uberjar
-  "Builds an uberjar of this project that can be run with java -jar"
-  []
-  (comp
-   (prod)
-   (aot :namespace #{'<<project-ns>>.core})
-   (cljs :optimizations :advanced) ;; Add this line to the uberjar task
-   (uber)
-   (jar :file "<<name>>.jar" :main '<<project-ns>>.core)
-   (sift :include #{#"<<name>>.jar"})
-   (target)))
-```
-
-Then create an app.cljs.edn file in the `src/cljs` directory:
-```
-
-{:require [<<name>>.core]
- :compiler-options {:main          (str project-ns ".app")
-                    :asset-path    "/js/out"
-                    :output-to     "public/js/app.js"
-                    :output-dir    "public/js/out"
-                    :source-map    true
-                    :optimizations :none
-                    :pretty-print  true}}
-```
-</div>
-The ClojureScript sources are expected to be found under the `src/cljs` source path in the above configuration.
-Note that ClojureScript files **must** end with the `.cljs` extension. If the file ends with `.clj` it will still compile, but it will not have access to the `js` namespace.
-
-The compiled JavaScript file will be available in the `/js/app.js` resource path and can be referenced on the page as follows:
-
-```javascript
-{% script "/js/app.js" %}
-```
-
-Next, update the `:uberjar` profile with the following options:
-
-```clojure
-:prep-tasks ["compile" ["cljsbuild" "once" "min"]]
-```
-
-The above will add the `lein-cljsbuild` hook to the `:uberjar` profile so that ClojureScript is compiled when `lein uberjar` is run.
+ClojureScript support can be added via the official `:cljs` module. Simply run `(kit/install-module :cljs)` in oder to add the assets.
 
 ### Using Libraries
 
@@ -112,33 +17,19 @@ One advantage of using ClojureScript is that it allows managing your client-side
 
 ### Running the Compiler
 
-<div class="lein">
-The easiest way to develop ClojureScript applications is to run the compiler in `auto` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. To start the compiler in this mode simply run:
+The easiest way to develop ClojureScript applications is to run the compiler in `watch` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. To start the compiler in this mode simply run:
 
 ```
-lein cljsbuild auto
+npx shadow-cljs watch app
 ```
 
-Make sure to run the `clean` option before packaging the application for production using `lein uberjar`. This will ensure that any existing artifacts are removed before the production JavaScript is compiled:
+This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
+
+ClojureScript will be compiled with production settings when the uberjar task is run:
 
 ```
-lein cljsbuild once
+TODO
 ```
-</div>
-<div class="boot">
-The easiest way to develop ClojureScript applications is to use the `figwheel`
-task, simply run:
-```
-boot figwheel
-```
-And connect to the application in your browser. Any code changed will be
-automatically reloaded as described in the next section.
-
-To build the code without running the server run:
-```
-boot cljs
-```
-</div>
 
 ### Live Code Reloading
 
@@ -177,66 +68,12 @@ will evaluate in the browser.
 This will start Figwheel and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
 
 ### ClojureScript with nREPL
-<div class="lein">
-To connect the IDE to a ClojureScript REPL make sure that you have the `:nrepl-port` key in your `:figwheel` config in `project.clj`. This key defaults to port `7002`. When Figwheel starts, it will open nREPL on the specified port.
 
-Luminus also sets up the scaffolding for running the Figwheel compiler from the REPL. When you generate a project using one of the ClojureScript flags, then a `env/dev/clj/<app>/figwheel.clj` namespace will be generated. This namespace provides functions to manage the Figwheel
-compiler and run the ClojureScript REPL. This allows you to connect any REPL aware editor to the ClojureScript REPL.
+To connect the IDE to a ClojureScript REPL make sure that you have the `:nrepl` key in `shadow-cljs.edn`. This key defaults to port `7002`. When  starts, it will open nREPL on the specified port.
 
-Once you run `lein figwheel`, then you'll be able to connect to its nREPL at `localhost:7002`. Once connected, you simply have to run `(cljs)` and the ClojureScript nREPL will become available. You can test that everything is working correctly by running `(js/alert "Hi")` in the REPl. This should pop up an alert in the browser.
+Once you run `npx shadow watch app`, then you'll be able to connect to its nREPL at `localhost:7002`. Once connected, you simply have to run `(shadow.cljs.devtools.api/repl :app)` and the ClojureScript nREPL will become available. You can test that everything is working correctly by running `(js/alert "Hi")` in the REPL. This should pop up an alert in the browser.
 
-Alternatively, the compiler can be started from a regular REPL using the `start-fw` function and stopped using the `stop-fw` function. The ClojureScript REPL is started by running the `cljs` function after `start-fw` has run successfully. These functions will be available in the `user` namespace. The REPL will default to it when it starts:
-
-```clojure
-user=> (start-fw)
-Figwheel: Starting server at http://localhost:3449
-Figwheel: Watching build - app
-Compiling "target/cljsbuild/public/js/app.js" from ("src/cljc" "src/cljs" "env/dev/cljs")...
-Successfully compiled "target/cljsbuild/public/js/app.js" in 7.583 seconds.
-Figwheel: Starting CSS Watcher for paths  ["resources/public/css"]
-Figwheel: Starting nREPL server on port: 7002
-nil
-user=> (cljs)
-Launching ClojureScript REPL for build: app
-Figwheel Controls:
-          (stop-autobuild)                ;; stops Figwheel autobuilder
-          (start-autobuild [id ...])      ;; starts autobuilder focused on optional ids
-          (switch-to-build id ...)        ;; switches autobuilder to different build
-          (reset-autobuild)               ;; stops, cleans, and starts autobuilder
-          (reload-config)                 ;; reloads build config and resets autobuild
-          (build-once [id ...])           ;; builds source one time
-          (clean-builds [id ..])          ;; deletes compiled cljs target files
-          (print-config [id ...])         ;; prints out build configurations
-          (fig-status)                    ;; displays current state of system
-  Switch REPL build focus:
-          :cljs/quit                      ;; allows you to switch REPL to another build
-    Docs: (doc function-name-here)
-    Exit: Control+C or :cljs/quit
- Results: Stored in vars *1, *2, *3, *e holds last exception object
-Prompt will show when Figwheel connects to your application
-```
-</div>
-<div class="boot">
-To connect an IDE to the ClojureScript connect to the nREPL server produced by
-`boot fighweel`. It defaults to port 7002.
-
-Once connected simply run `(adzerk.boot-cljs-repl/start-repl)` and reload the
-page in the browser as normal.
-</div>
-
-### Developing with shadow-cljs
-
-Since shadow-cljs comes with live code reloading out of the box, the easiest way to develop with it is to have the live code reloader running in the background. You simply run:
-
-```
-lein shadow watch app
-```
-
-If you wish to just compile your ClojureScript once, you can also run
-
-```
-lein shadow compile app
-```
+To exit the ClojureScript nREPL you have to run `:cljs/quit` in the nREPL.
 
 #### shadow-cljs with nREPL
 
