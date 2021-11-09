@@ -227,6 +227,14 @@ Once we're in to our REPL, we can start our system up by running a command provi
 
 To confirm your server is running, visit [http://localhost:3000/api/health](http://localhost:3000/api/health).
 
+### System
+
+TODO: explain system.edn/integrant a bit
+
+### Project Configuration
+
+
+
 ### Kit Modules
 
 Since our application needs to serve some HTML content, let's add the official HTML module. In your REPL, you can execute the following 
@@ -271,243 +279,75 @@ Since our application needs to serve some HTML content, let's add the official H
 
 If you have issues with syncing your modules, refer to [TODO DOCS HERE]()
 
+We can see from the output of the `kit/install-module` that we need to restart our REPL. Let's do that. Once we are up again, we can test if our module is installed correctly by starting up the server with `(go)` and navigating to [localhost:3000](http://localhost:3000).
 
 #### HTML templates
 
-The `resources/html` directory is reserved for the [Selmer](https://github.com/yogthos/Selmer) templates
-that represent the application pages.
+The module generated the following files under the `resources/html` directory:
 
-* `about.html` - about page
-* `base.html` - base layout for the site
 * `home.html` - home page
 * `error.html` - error page template
 
-#### SQL Queries
+This directory is reserved for HTML templates that represent the application pages.
 
-The SQL queries are found in the `resources/sql` folder.
+The module also generated the namespace `yourname.guestbook.web.pages.layout` which helps you render HTML pages using [Selmer templating engine](https://github.com/yogthos/Selmer)
 
-* `queries.sql` - defines the SQL queries and their associated function names
+#### Routing
 
-#### The Migrations Directory
+The module also helped generate some routes for us under `yourname.guestbook.web.routes.pages`. 
 
-Luminus uses [Migratus](https://github.com/yogthos/migratus) for migrations. Migrations are managed using up and down SQL files.
-The files are conventionally versioned using the date and will be applied in order of their creation.
+TODO: add a bit in general about routing with kit
 
-* `20150718103127-add-users-table.up.sql` - migrations file to create the tables
-* `20150718103127-add-users-table.down.sql` - migrations file to drop the tables
+#### Adding a database
 
-
-### The Project File
-<div class="lein">
-As was noted above, all the dependencies are managed via updating the `project.clj` file.
-The project file of the application we've created is found in its root folder and should look as follows:
+Similarly to the way we installed the HTML module, we can add a SQLite module called `:sqlite`.
 
 ```clojure
-(defproject guestbook "0.1.0-SNAPSHOT"
-
-  :description "FIXME: write description"
-  :url "http://example.com/FIXME"
-
-  :dependencies [[cheshire "5.8.1"]
-                 [clojure.java-time "0.3.2"]
-                 [com.h2database/h2 "1.4.197"]
-                 [conman "0.8.3"]
-                 [cprop "0.1.13"]
-                 [funcool/struct "1.3.0"]
-                 [luminus-immutant "0.2.5"]
-                 [luminus-migrations "0.6.4"]
-                 [luminus-transit "0.1.1"]
-                 [luminus/ring-ttl-session "0.3.2"]
-                 [markdown-clj "1.0.7"]
-                 [metosin/muuntaja "0.6.3"]
-                 [metosin/reitit "0.2.13"]
-                 [metosin/ring-http-response "0.9.1"]
-                 [mount "0.1.16"]
-                 [nrepl "0.6.0"]
-                 [org.clojure/clojure "1.10.0"]
-                 [org.clojure/tools.cli "0.4.1"]
-                 [org.clojure/tools.logging "0.4.1"]
-                 [org.webjars.npm/bulma "0.7.4"]
-                 [org.webjars.npm/material-icons "0.3.0"]
-                 [org.webjars/webjars-locator "0.36"]
-                 [ring-webjars "0.2.0"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-defaults "0.3.2"]
-                 [selmer "1.12.6"]]
-
-  :min-lein-version "2.0.0"
-
-  :source-paths ["src/clj"]
-  :test-paths ["test/clj"]
-  :resource-paths ["resources"]
-  :target-path "target/%s/"
-  :main ^:skip-aot guestbook.core
-
-  :plugins [[lein-immutant "2.1.0"]]
-
-  :profiles
-  {:uberjar {:omit-source true
-             :aot :all
-             :uberjar-name "guestbook.jar"
-             :source-paths ["env/prod/clj"]
-             :resource-paths ["env/prod/resources"]}
-
-   :dev           [:project/dev :profiles/dev]
-   :test          [:project/dev :project/test :profiles/test]
-
-   :project/dev  {:jvm-opts ["-Dconf=dev-config.edn"]
-                  :dependencies [[expound "0.7.2"]
-                                 [pjstadig/humane-test-output "0.9.0"]
-                                 [prone "1.6.1"]
-                                 [ring/ring-devel "1.7.1"]
-                                 [ring/ring-mock "0.3.2"]]
-                  :plugins      [[com.jakemccrary/lein-test-refresh "0.23.0"]]
-
-                  :source-paths ["env/dev/clj"]
-                  :resource-paths ["env/dev/resources"]
-                  :repl-options {:init-ns user}
-                  :injections [(require 'pjstadig.humane-test-output)
-                               (pjstadig.humane-test-output/activate!)]}
-   :project/test {:jvm-opts ["-Dconf=test-config.edn"]
-                  :resource-paths ["env/test/resources"]}
-   :profiles/dev {}
-   :profiles/test {}})
+(kit/install-module :sqlite)
+;; updating file: resources/system.edn
+;; injecting
+;;  path: [:db.sql/connection] 
+;;  value: #profile {:dev {:jdbc-url "jdbc:sqlite:_dev.db"}, :test {:jdbc-url "jdbc:sqlite:_test.db"}, :prod {:jdbc-url #env JDBC_URL}}
+;; injecting
+;;  path: [:db.sql/query-fn] 
+;;  value: {:conn #ig/ref :db.sql/connection, :options {}, :filename "sql/queries.sql"}
+;; injecting
+;;  path: [:db.sql/migrations] 
+;;  value: {:store :database, :db {:datasource #ig/ref :db.sql/connection}, :migrate-on-init? true}
+;; updating file: deps.edn
+;; injecting
+;;  path: [:deps kit-clj/kit-sql] 
+;;  value: #:mvn{:version "0.1.0"}
+;; injecting
+;;  path: [:deps org.xerial/sqlite-jdbc] 
+;;  value: #:mvn{:version "3.34.0"}
+;; updating file: src/clj/yourname/guestbook/core.clj
+;; applying
+;;  action: :append-requires 
+;;  value: [[kit.edge.db.sql]]
+;; sqlite installed successfully!
+;; restart required!
 ```
 
-As you can see the `project.clj` file is simply a Clojure list containing key/value pairs describing different aspects of the application.
+Let's restart again and create our first database migration.
 
-The most common task is adding new libraries to the project. These libraries are specified using the `:dependencies` vector.
-In order to use a new library in our project we simply have to add its dependency here.
-
-The items in the `:plugins` vector can be used to provide additional functionality.
-
-The `:profiles` contain a map of different project configurations that are used to initialize it for either development or production builds.
-
-Note that the project sets up composite profiles for `:dev` and `:test`. These profiles contain the variables from `:project/dev` and `:project/test` profiles,
-as well as from `:profiles/dev` and `:profiles/test` found in the `profiles.clj`. The latter can be used for additional local configuration that is not meant to be checked into the shared code repository.
-
-Please refer to the [official Leiningen documentation](http://leiningen.org/#docs) for further details on structuring the `project.clj` build file.
-</div>
-<div class="boot">
-```
-(set-env!
-  :dependencies [[cheshire "5.8.1"]
-                 [clojure.java-time "0.3.2"]
-                 [com.h2database/h2 "1.4.197"]
-                 [conman "0.8.3"]
-                 [cprop "0.1.13"]
-                 [funcool/struct "1.3.0"]
-                 [luminus-immutant "0.2.5"]
-                 [luminus-migrations "0.6.4"]
-                 [luminus-transit "0.1.1"]
-                 [luminus/ring-ttl-session "0.3.2"]
-                 [markdown-clj "1.0.7"]
-                 [metosin/muuntaja "0.6.3"]
-                 [metosin/reitit "0.2.13"]
-                 [metosin/ring-http-response "0.9.1"]
-                 [mount "0.1.16"]
-                 [nrepl "0.6.0"]
-                 [org.clojure/clojure "1.10.0"]
-                 [org.clojure/tools.cli "0.4.1"]
-                 [org.clojure/tools.logging "0.4.1"]
-                 [org.webjars.npm/bulma "0.7.4"]
-                 [org.webjars.npm/material-icons "0.3.0"]
-                 [org.webjars/webjars-locator "0.36"]
-                 [ring-webjars "0.2.0"]
-                 [ring/ring-core "1.7.1"]
-                 [ring/ring-defaults "0.3.2"]
-                 [selmer "1.12.6"]]
- :source-paths #{"src/clj"}
- :resource-paths #{"resources"})
-
-(deftask dev
-  "Enables configuration for a development setup."
-  []
-  (set-env!
-   :source-paths #(conj % "env/dev/clj")
-   :resource-paths #(conj % "env/dev/resources")
-   :dependencies #(concat % '[[prone "1.1.4"]
-                              [ring/ring-mock "0.3.0"]
-                              [ring/ring-devel "1.6.1"]
-                              [pjstadig/humane-test-output "0.8.2"]]))
-  (task-options! repl {:init-ns 'user})
-  (require 'pjstadig.humane-test-output)
-  (let [pja (resolve 'pjstadig.humane-test-output/activate!)]
-    (pja))
-  identity)
-
-(deftask testing
-  "Enables configuration for testing."
-  []
-  (dev)
-  (set-env! :resource-paths #(conj % "env/test/resources"))
-  identity)
-
-(deftask prod
-  "Enables configuration for production building."
-  []
-  (merge-env! :source-paths #{"env/prod/clj"}
-              :resource-paths #{"env/prod/resources"})
-  identity)
-
-(deftask start-server
-  "Runs the project without building class files.
-
-  This does not pause execution. Combine with a wait task or use the \"run\"
-  task."
-  []
-  (require 'guestbook.core)
-  (let [m (resolve 'guestbook.core/-main)]
-    (with-pass-thru _
-      (m))))
-
-(deftask run
-  "Starts the server and causes it to wait."
-  []
-  (comp
-   (start-server)
-   (wait)))
-
-(deftask uberjar
-  "Builds an uberjar of this project that can be run with java -jar"
-  []
-  (comp
-   (prod)
-   (aot :namespace #{'guestbook.core})
-   (uber)
-   (jar :file "guestbook.jar" :main 'guestbook.core)
-   (sift :include #{#"guestbook.jar"})
-   (target)))
+```clojure
+(migratus.core/create 
+  (:db.sql/migrations state/system)
+  "add-messages-table")
 ```
 
-As you can see the build.boot file is simple a clojure file which defines a
-series of tasks and other environment settings needed to set up a project.
+This will generate two files under your `resources/migrations` directory. They will look something like this, but with a different prefix:
 
-The most common change is adding new dependencies to the dependency list in the
-`set-env!` call.
-
-Each task defined can be called using `boot task-name` on the command line or
-`(boot (task-name))` on a REPL (which can be started with `boot repl` on the commandline).
-</div>
-
-### Creating the Database
-
-First, we will create a model for our application, to do that we'll open up the `<date>-add-users-table.up.sql`
-file located under the `migrations` folder. The file has the following contents:
-
-```sql
-CREATE TABLE users
-(id VARCHAR(20) PRIMARY KEY,
- first_name VARCHAR(30),
- last_name VARCHAR(30),
- email VARCHAR(30),
- admin BOOLEAN,
- last_login TIME,
- is_active BOOLEAN,
- pass VARCHAR(300));
+```
+20211109173842-add-guestbook-table.up.sql
+20211109173842-add-guestbook-table.down.sql
 ```
 
-We'll replace the `users` table with one that's more appropriate for our application:
+Kit uses [Migratus](https://github.com/yogthos/migratus) for migrations. Migrations are managed using up and down SQL files.
+The files are conventionally versioned using the date and will be applied in order of their creation.
+
+Let's add some content to create our messages table under the `<date>-add-guestbook-table.up.sql` file
 
 ```sql
 CREATE TABLE guestbook
@@ -519,26 +359,56 @@ CREATE TABLE guestbook
 
 The guestbook table will store all the fields describing the message, such as the name of the
 commenter, the content of the message and a timestamp.
-Next, let's replace the contents of the `<date>-add-users-table.down.sql` file accordingly:
+Next, let's replace the contents of the `<date>-add-guestbook-table.down.sql` file accordingly:
 
 ```sql
 DROP TABLE guestbook;
 ```
 
-We can now run the migrations using the following command from the root of our project:
+TODO: mention this is ran automatically, configured in system.edn
 
-<div class="lein">
-```
-lein run migrate
-```
-</div>
-<div class="boot">
-```
-boot dev [ run migrate ]
-```
-</div>
+#### SQL Queries
 
-If everything went well we should now have our database initialized.
+The SQL queries are found in the `resources/sql` folder.
+
+* `queries.sql` - defines the SQL queries and their associated function names
+
+The file initially contains some placeholder queries to help remind you of basic SQL syntax.
+As we can see each function is defined using the comment that starts with `-- :name` followed by the name of the function.
+The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the [HugSQL documentation](https://www.hugsql.org/). The parameters are
+denoted using `:` notation. Let's replace the existing queries with some of our own:
+
+
+```sql
+-- :name save-message! :! :n
+-- :doc creates a new message
+INSERT INTO guestbook
+(name, message, timestamp)
+VALUES (:name, :message, :timestamp)
+
+-- :name get-messages :? :*
+-- :doc selects all available messages
+SELECT * FROM guestbook
+```
+
+Now that our model is all setup, let's start up the application.
+
+```clojure
+
+(def query-fn (:db.sql/query-fn state/system))
+
+(query-fn :save-message! {:name      "m1"
+                          :message   "hello world"
+                          :timestamp (java.util.Date.)})
+;; => 1
+
+(query-fn :get-messages {})
+;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
+```
+
+---
+
+
 
 ### Accessing The Database
 
