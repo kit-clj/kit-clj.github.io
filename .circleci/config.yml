@@ -5,20 +5,26 @@ jobs:
     docker:
       - image: circleci/clojure:lein-2.9.0
     steps:
-      - checkout
-      - restore_cache:
-          keys:
-            - site-{{ checksum "project.clj"}}
       - run:
-          name: build site
-          command: lein run
-      - save_cache:
-          paths:
-            - ~/.m2
-          key: site-{{ checksum "project.clj"}}
-      - store_artifacts:
-          path: static
-          destination: docs
+          name: Clone docs          
+          command: |
+            git clone https://${GH_TOKEN}@github.com/kit-clj/kit-clj.github.io.git
+            cd kit-clj.github.io
+      - run:
+          name: build site          
+          command: |
+            cd kit-clj.github.io
+            lein run
+      - run:
+          name: push to GH pages          
+          command: |
+            cd kit-clj.github.io
+            rm -rf docs
+            mv static docs
+            git config user.email "dmitri.sotnikov@gmail.com"
+            git config user.name "Dmitri Sotnikov"
+            git add --all
+            if [ -n "$(git status --porcelain)" ]; then git commit -a -m "Circle #$CIRCLE_BUILD_NUM" && git push --force origin master; fi  
 
 workflows:
   version: 2

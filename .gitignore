@@ -3,5 +3,4 @@
 .nrepl-port
 *.iml
 */.DS_Store
-static/
 target/

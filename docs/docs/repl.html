@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/logo.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>REPL Driven Development</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#with_leiningen">With Leiningen</a></li><li><a href="#starting_the_application_from_the_repl">Starting the Application from the REPL</a></li><li><a href="#connecting_to_the_nrepl">Connecting to the nREPL</a></li><li><a href="#with_boot">With Boot</a></li><li><a href="#starting_the_application_from_the_repl">Starting the Application from the REPL</a></li></ol>
+      
+      <div id="content">
+        <p>A typical workflow for developing Clojure applications is to connect the editor to a REPL running an instance of the application. Luminus provides two ways to connect to the REPL.</p><h1 id="with&#95;leiningen">With Leiningen</h1><h2 id="starting&#95;the&#95;application&#95;from&#95;the&#95;repl">Starting the Application from the REPL</h2><p>When you run the REPL in the project directory it will start in the <code>user</code> namespace located in the <code>env/dev/clj/user.clj</code> file. This namespace provides helper functions <code>start</code>, <code>stop</code>, and <code>restart</code> that are used to manage the state of the application components.</p><p>To start the HTTP server and any other components such as databases, run the <code>start</code> function:</p><pre><code class="clojure">&#40;start&#41;
+</code></pre><p>Run the following command to start the HTTP server:</p><pre><code class="clojure">&#40;mount/start #'&lt;app&gt;.core/http-server&#41;
+</code></pre><h2 id="connecting&#95;to&#95;the&#95;nrepl">Connecting to the nREPL</h2><p>Luminus also provides an embedded <a href='https://github.com/clojure/tools.nrepl'>nREPL</a> that can be used to connect the editor to a running instance of the server. A default nREPL port is set the <code>env/dev/resources/config.edn</code> configuration file:</p><pre><code class="clojure">{:dev true
+ :port 3000
+ ;; when :nrepl-port is set the application starts the nREPL server on load
+ :nrepl-port 7000}
+</code></pre><p>When you run your application using <code>lein run</code> it will create a network REPL on the port <code>7000</code> and you will be able to connect your editor to it on <code>localhost:7000</code>. Note that when the <code>NREPL&#95;PORT</code> environment variable is set then nREPL will also be available in production and can be used to inspect the application the same way you would in development.</p><p>Please see the <a href='/docs/deployment.html#enabling_nrepl'>deployment section</a> for the instructions on enabling the nREPL for production.</p><h1 id="with&#95;boot">With Boot</h1><h2 id="starting&#95;the&#95;application&#95;from&#95;the&#95;repl">Starting the Application from the REPL</h2><p>With Boot, running the HTTP server in the REPL requires a few extra steps. In the command line, run <code>boot dev repl</code> to start the REPL in the "dev" configuration. Then, in the REPL, run <code>&#40;in-ns 'user&#41;</code> followed by <code>&#40;load &quot;user&quot;&#41;</code> to load the helper functions found in <code>env/dev/clj/user.clj</code>. Since you are already in the <code>user</code> namespace, you have immediate access to these functions. Now you can run <code>&#40;start&#41;</code> to run your application in the REPL.</p>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper">
+      <div id="build-tool-div">
+        <p>Build Tool:
+          <select name="build-tool" id="build-tool" >
+<!--            <option value="lein">lein</option>-->
+            <option value="deps" >deps</option>
+          </select>
+        </p>
+      </div>
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/security.html">
+            Security
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/migrations.html">
+            Database Migrations
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/logo.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Routing</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#routes">Routes</a></li><li><a href="#return_values">Return values</a></li><li><a href="#static_resources">Static Resources</a></li><li><a href="#handling_file_uploads">Handling file uploads</a></li><li><a href="#organizing_application_routes">Organizing application routes</a></li><li><a href="#restricting_access">Restricting access</a></li><li><a href="#restricting_access_based_on_route_groups">Restricting access based on route groups</a></li><li><a href="#restricting_access_based_on_uri">Restricting access based on URI</a></li><li><a href="#specifying_access_rules">Specifying Access Rules</a></li></ol>
+      
+      <div id="content">
+        <p>Luminus uses <a href='https://metosin.github.io/reitit/'>Reitit</a> to define application routes. The routes are the entry points to your application and are used to establish a communication protocol between the server and the client.</p><h3 id="routes">Routes</h3><p>Reitit route handlers are just functions that <a href='https://github.com/mmcgrana/ring/blob/master/SPEC'>accept request maps and return response maps</a>. Routes are defined as vectors of String path and optional (non-sequential) route argument child routes. A route is a mapping from a URL pattern to a map containing the handlers keyed on the request method:</p><pre><code class="clojure">&#91;&quot;/&quot; {:get &#40;fn &#91;request&#93; {:status 200 :body &quot;GET request&quot;}&#41;
+      :post &#40;fn &#91;request&#93; {:status 200 :body &quot;POST request&quot;}&#41;}&#93;
+</code></pre><p>The body may be a function, that must accept the request as a parameter:</p><pre><code class="clojure">&#40;fn &#91;request&#93; {:status 200 :body &#40;keys request&#41;}&#41;
+</code></pre><p>The above route reads out all the keys from the request map and displays them. The output will look like the following:</p><pre><code class="clojure">&#91;&quot;reitit.core/match&quot;,&quot;reitit.core/router&quot;,&quot;ssl-client-cert&quot;,&quot;cookies&quot;,&quot;remote-addr&quot;,&quot;params&quot;,&quot;flash&quot;,&quot;handler-type&quot;,&quot;headers&quot;,&quot;server-port&quot;,&quot;muuntaja/request&quot;,&quot;content-length&quot;,&quot;form-params&quot;,&quot;server-exchange&quot;,&quot;query-params&quot;,&quot;content-type&quot;,&quot;path-info&quot;,&quot;character-encoding&quot;,&quot;context&quot;,&quot;uri&quot;,&quot;server-name&quot;,&quot;anti-forgery-token&quot;,&quot;query-string&quot;,&quot;path-params&quot;,&quot;muuntaja/response&quot;,&quot;body&quot;,&quot;multipart-params&quot;,&quot;scheme&quot;,&quot;request-method&quot;,&quot;session&quot;&#93;
+</code></pre><p>Reitit supports three kinds of parameters. These can be route, query, and body parameters. For example, if we create the following route:</p><pre><code class="clojure">&#91;&quot;/foo/:bar&quot; {:post &#40;fn &#91;{:keys &#91;path-params query-params body-params&#93;}&#93;
+                        {:status 200
+                         :body   &#40;str &quot;path params: &quot; path-params
+                                      &quot;\nquery params: &quot; query-params
+                                      &quot;\nbody params: &quot; body-params&#41;}&#41;}&#93;
+</code></pre><p>Then we could query it via cURL:</p><pre><code>curl --header &quot;Content-Type: application/json&quot; \
+--request POST \
+--data '{&quot;username&quot;:&quot;xyz&quot;,&quot;password&quot;:&quot;xyz&quot;}' \
+'localhost:3000/foo/bar?foo=bar'
+</code></pre><p>and the params will be parsed out as follows:</p><pre><code class="clojure">path params: {:bar &quot;bar&quot;}
+query params: {&quot;foo&quot; &quot;bar&quot;}
+body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
+</code></pre><p>In the guestbook application example we saw the following route defined:</p><pre><code class="clojure">&#91;&quot;/&quot; {:get home-page
+      :post save-message!}&#93;
+</code></pre><p>This route serves the home page when it receives a <code>GET</code> request and extracts the name and the message form parameters when it receives a <code>POST</code> request. Note that <code>POST</code> requests must contain a CSRF token by default. This is handled by the <code>middleware/wrap-csrf</code> declaration below:</p><pre><code class="clojure">&#40;defn home-routes &#91;&#93;
+  &#91;&quot;&quot;
+   {:middleware &#91;middleware/wrap-csrf
+                 middleware/wrap-formats&#93;}
+   &#91;&quot;/&quot; {:get home-page
+         :post save-message!}&#93;
+   &#91;&quot;/about&quot; {:get about-page}&#93;&#93;&#41;
+</code></pre><p>Please refer <a href='/docs/security.html#cross_site_request_forgery_protection'>here</a> for more details on managing CSRF middleware.</p><h3 id="return&#95;values">Return values</h3><p>The return value of a route block determines at least the response body passed on to the HTTP client, or at least the next middleware in the ring stack. Most commonly, this is a string, as in the above examples. But, we may also return a <a href='https://github.com/mmcgrana/ring/blob/master/SPEC'>response map</a>:</p><pre><code class="clojure">&#40;GET &quot;/&quot; &#91;&#93;
+    {:status 200 :body &quot;Hello World&quot;}&#41;
+
+&#40;GET &quot;/is-403&quot; &#91;&#93;
+    {:status 403 :body &quot;&quot;}&#41;
+
+&#40;GET &quot;/is-json&quot; &#91;&#93;
+    {:status 200 :headers {&quot;Content-Type&quot; &quot;application/json&quot;} :body &quot;{}&quot;}&#41;
+</code></pre><h2 id="static&#95;resources">Static Resources</h2><p>By default, any resources located under the <code>resources/public</code> directory will be available to the clients. This is handled by the <code>reitit.ring/resource-handler</code> handler found in the <code>&lt;app&gt;.handler</code> namespace:</p><pre><code class="clojure">&#40;ring/create-resource-handler {:path &quot;/&quot;}&#41;
+</code></pre><p>Any resources found on the classpath of the application can be accessed using <code>clojure.java.io/resource</code> function:</p><pre><code class="clojure">&#40;slurp &#40;clojure.java.io/resource &quot;myfile.md&quot;&#41;&#41;
+</code></pre><p>Conventionally, non-source resources should be placed in the <code>resources</code> directory of the project.</p><h3 id="handling&#95;file&#95;uploads">Handling file uploads</h3><p>Given a page called <code>upload.html</code> with the following form:</p><pre><code class="xml">&lt;h2&gt;Upload a file&lt;/h2&gt;
+&lt;form action=&quot;/upload&quot; enctype=&quot;multipart/form-data&quot; method=&quot;POST&quot;&gt;
+    {% csrf-field %}
+    &lt;input id=&quot;file&quot; name=&quot;file&quot; type=&quot;file&quot; /&gt;
+    &lt;input type=&quot;submit&quot; value=&quot;upload&quot; /&gt;
+&lt;/form&gt;
+</code></pre><p>we could then render the page and handle the file upload as follows:</p><pre><code class="clojure">&#40;ns myapp.upload
+  &#40;:require &#91;myapp.layout :as layout&#93;
+            &#91;ring.util.response :refer &#91;redirect file-response&#93;&#93;&#41;
+  &#40;:import &#91;java.io File FileInputStream FileOutputStream&#93;&#41;&#41;
+
+&#40;def resource-path &quot;/tmp/&quot;&#41;
+
+&#40;defn file-path &#91;path &amp; &#91;filename&#93;&#93;
+  &#40;java.net.URLDecoder/decode
+    &#40;str path File/separator filename&#41;
+    &quot;utf-8&quot;&#41;&#41;
+
+&#40;defn upload-file
+  &quot;uploads a file to the target folder
+   when :create-path? flag is set to true then the target path will be created&quot;
+  &#91;path {:keys &#91;tempfile size filename&#93;}&#93;
+  &#40;try
+    &#40;with-open &#91;in &#40;new FileInputStream tempfile&#41;
+                out &#40;new FileOutputStream &#40;file-path path filename&#41;&#41;&#93;
+      &#40;let &#91;source &#40;.getChannel in&#41;
+            dest   &#40;.getChannel out&#41;&#93;
+        &#40;.transferFrom dest source 0 &#40;.size source&#41;&#41;
+        &#40;.flush out&#41;&#41;&#41;&#41;&#41;
+
+&#40;def home-routes
+  &#91;&quot;&quot;
+   {:middleware &#91;middleware/wrap-csrf
+                 middleware/wrap-formats&#93;}
+
+  &#91;&quot;/upload&quot; {:get &#40;fn &#91;req&#93;
+                     &#40;layout/render request &quot;upload.html&quot;&#41;&#41;
+
+              :post &#40;fn &#91;{{{:keys &#91;file&#93;} :multipart} :parameters}&#93;
+                      &#40;upload-file resource-path file&#41;
+                      &#40;redirect &#40;str &quot;/files/&quot; &#40;:filename file&#41;&#41;&#41;&#41;}&#93;
+
+  &#91;&quot;/files/:filename&quot; {:get &#40;fn &#91;{{:keys &#91;filename&#93;} :path-params}&#93;
+
+                              &#40;file-response &#40;str resource-path filename&#41;&#41;&#41;}&#93;&#93;&#41;
+</code></pre><p>Th <code>:file</code> request form parameter points to a map containing the description of the file that will be uploaded. Our <code>upload-file</code> function above uses <code>:tempfile</code>, <code>:size</code> and <code>:filename</code> keys from this map to save the file on disk.</p><p>A file upload progress listener can be added in the <code>&lt;app&gt;.middleware/wrap-base</code> function by updating <code>wrap-defaults</code> as follows:</p><pre><code class="clojure">&#40;wrap-defaults
+  &#40;-&gt; site-defaults
+      &#40;assoc-in &#91;:security :anti-forgery&#93; false&#41;
+      &#40;dissoc :session&#41;
+      &#40;assoc-in &#91;:params :multipart&#93;
+                {:progress-fn
+                 &#40;fn &#91;request bytes-read content-length item-count&#93;
+                   &#40;log/info &quot;bytes read:&quot; bytes-read
+                             &quot;\ncontent length:&quot; content-length
+                             &quot;\nitem count:&quot; item-count&#41;&#41;}&#41;&#41;&#41;
+</code></pre><p>Alternatively, if you're fronting with Nginx then you can use its <a href='http://wiki.nginx.org/HttpUploadProgressModule'>Upload Progress Module</a>.</p><h2 id="organizing&#95;application&#95;routes">Organizing application routes</h2><p>It's a good practice to organize your application routes together by functionality. Your application will typically have two types of routes. The first type is used to serve HTML pages that are rendered by the browser. The second type are routes used to expose your service API. These are accessed by the client to retrieve data from the server via AJAX.</p><p>Once all your application routes are defined you can add them to the main handler of your application. You'll notice that the template already defined the <code>app</code> route group in the <code>handler</code> namespace of your application. All you have to do is add your new routes there.</p><pre><code class="clojure">&#40;mount/defstate app
+  :start
+  &#40;middleware/wrap-base
+    &#40;ring/ring-handler
+      &#40;ring/router
+        &#91;&#40;home-routes&#41;&#93;&#41;
+      &#40;ring/routes
+        &#40;ring/create-resource-handler
+          {:path &quot;/&quot;}&#41;
+        &#40;wrap-content-type
+          &#40;wrap-webjars &#40;constantly nil&#41;&#41;&#41;
+        &#40;ring/create-default-handler
+          {:not-found
+           &#40;constantly &#40;error-page {:status 404, :title &quot;404 - Page not found&quot;}&#41;&#41;
+           :method-not-allowed
+           &#40;constantly &#40;error-page {:status 405, :title &quot;405 - Not allowed&quot;}&#41;&#41;
+           :not-acceptable
+           &#40;constantly &#40;error-page {:status 406, :title &quot;406 - Not acceptable&quot;}&#41;&#41;}&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>Further documentation is available on the <a href='https://metosin.github.io/reitit/'>official Reitit documentation</a></p><h2 id="restricting&#95;access">Restricting access</h2><p>Some pages should only be accessible if specific conditions are met. For example, you may wish to define admin pages only visible to the administrator, or a user profile page which is only visible if there is a user in the session.</p><h3 id="restricting&#95;access&#95;based&#95;on&#95;route&#95;groups">Restricting access based on route groups</h3><p>The simplest way to restrict access is by applying the <code>restrict</code> middleware to groups of routes that should not be publicly accessible. First, we'll add the following code in the <code>&lt;app&gt;.middleware</code> namespace:</p><pre><code class="clojure">&#40;ns &lt;app&gt;.middleware
+  &#40;:require
+    ...
+    &#91;buddy.auth.middleware :refer &#91;wrap-authentication&#93;&#93;
+    &#91;buddy.auth.backends.session :refer &#91;session-backend&#93;&#93;
+    &#91;buddy.auth.accessrules :refer &#91;restrict&#93;&#93;
+    &#91;buddy.auth :refer &#91;authenticated?&#93;&#93;&#41;&#41;
+
+&#40;defn on-error &#91;request response&#93;
+  {:status  403
+   :headers {&quot;Content-Type&quot; &quot;text/plain&quot;}
+   :body    &#40;str &quot;Access to &quot; &#40;:uri request&#41; &quot; is not authorized&quot;&#41;}&#41;
+
+
+&#40;defn wrap-restricted &#91;handler&#93;
+  &#40;restrict handler {:handler authenticated?
+                     :on-error on-error}&#41;&#41;
+
+&#40;defn wrap-base &#91;handler&#93;
+  &#40;-&gt; handler
+      wrap-dev
+      &#40;wrap-authentication &#40;session-backend&#41;&#41;
+      ...&#41;&#41;
+</code></pre><p>We'll wrap the authentication middleware that will set the <code>:identity</code> key in the request if it's present in the session. The session backend is the simplest one available, however Buddy provides a number of different authentications backends as described <a href='https://funcool.github.io/buddy-auth/latest/#_authentication'>here</a>.</p><p>The <code>authenticated?</code> helper is used to check the <code>:identity</code> key in the request and pass it to the handler when it's present. Otherwise, the <code>on-error</code> function will be called.</p><p>This is the default authentication setup that will be produced using the <code>+auth</code> profile when creating a new project.</p><p>We can now wrap the route groups we wish to be private using the <code>wrap-restricted</code> middleware in the <code>&lt;app&gt;.handler/app</code> function:</p><pre><code class="clojure">&#40;def app
+  &#40;-&gt; &#40;routes
+        &#40;-&gt; home-routes
+            &#40;wrap-routes middleware/wrap-csrf&#41;
+            &#40;wrap-routes middleware/wrap-restricted&#41;&#41;
+        base-routes&#41;
+      middleware/wrap-base&#41;&#41;
+</code></pre><h3 id="restricting&#95;access&#95;based&#95;on&#95;uri">Restricting access based on URI</h3><p>Using the <code>buddy.auth.accessrules</code> namespace from <a href='https://funcool.github.io/buddy-auth/latest/'>Buddy</a>, we can define rules for restricting access to specific pages based on its URI pattern.</p><h3 id="specifying&#95;access&#95;rules">Specifying Access Rules</h3><p>Let's take a look at how to create a rule to specify that restricted routes should only be accessible if the <code>:identity</code> key is present in the session.</p><p>First, we'll reference several Buddy namespaces in the <code>&lt;app&gt;.middleware</code> namespace.</p><pre><code class="clojure">&#40;ns myapp.middleware
+  &#40;:require ...
+            &#91;buddy.auth.middleware :refer &#91;wrap-authentication&#93;&#93;
+            &#91;buddy.auth.accessrules :refer &#91;wrap-access-rules&#93;&#93;
+            &#91;buddy.auth.backends.session :refer &#91;session-backend&#93;&#93;
+            &#91;buddy.auth :refer &#91;authenticated?&#93;&#93;&#41;&#41;
+</code></pre><p>Next, we'll create the access rules for our routes. The rules are defined using a vector where each rule is represented using a map. A simple rule that checks whether the user has been authenticated can be seen below.</p><pre><code class="clojure">&#40;def rules
+  &#91;{:uri &quot;/restricted&quot;
+    :handler authenticated?}&#93;&#41;
+</code></pre><p>We'll also define an error handler function that will be used when access to a particular route is denied:</p><pre><code class="clojure">&#40;defn on-error
+  &#91;request value&#93;
+  {:status 403
+   :headers {}
+   :body &quot;Not authorized&quot;}&#41;
+</code></pre><p>Finally, we have to add the necessary middleware to enable the access rules and authentication using a session backend.</p><pre><code class="clojure">&#40;defn wrap-base &#91;handler&#93;
+  &#40;-&gt; handler
+      &#40;wrap-access-rules {:rules rules :on-error on-error}&#41;
+      &#40;wrap-authentication &#40;session-backend&#41;&#41;
+      ...&#41;&#41;
+</code></pre><p>Note that the order of the middleware matters and <code>wrap-access-rules</code> must precede <code>wrap-authentication</code>.</p><p>Buddy session based authentication is triggered by setting the <code>:identity</code> key in the session when the user is successfully authenticated.</p><pre><code class="clojure">&#40;def user {:id &quot;bob&quot; :pass &quot;secret&quot;}&#41;
+
+&#40;defn login! &#91;{:keys &#91;params session&#93;}&#93;
+  &#40;when &#40;= user params&#41;
+    &#40;-&gt; &quot;ok&quot;
+        response
+        &#40;content-type &quot;text/html&quot;&#41;
+        &#40;assoc :session &#40;assoc session :identity &quot;foo&quot;&#41;&#41;&#41;&#41;&#41;
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper">
+      <div id="build-tool-div">
+        <p>Build Tool:
+          <select name="build-tool" id="build-tool" >
+<!--            <option value="lein">lein</option>-->
+            <option value="deps" >deps</option>
+          </select>
+        </p>
+      </div>
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/security.html">
+            Security
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/migrations.html">
+            Database Migrations
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

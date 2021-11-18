@@ -1,0 +1,268 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/logo.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Middleware</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#adding_custom_middleware">Adding custom middleware</a></li><li><a href="#useful_ring_middleware">Useful ring middleware</a></li></ol>
+      
+      <div id="content">
+        <h2 id="adding&#95;custom&#95;middleware">Adding custom middleware</h2><p>Since Luminus uses Ring for routing the application handler is a standard Ring handler and can be wrapped in middleware just like you would in any other Ring based application.</p><p>The middleware allows wrapping the handlers in functions which can modify the way the request is processed.  Middleware functions are often used to extend the base functionality of Ring handlers to match the needs of  the particular application.</p><p>A middleware is simply a function which accepts an existing handler with some optional parameters and returns a new handler with some added behaviour. An example of a middleware function would be:</p><pre><code class="clojure">&#40;defn wrap-nocache &#91;handler&#93;
+  &#40;fn &#91;request&#93;
+     &#40;let &#91;response &#40;handler request&#41;&#93;
+        &#40;assoc-in response &#91;:headers  &quot;Pragma&quot;&#93; &quot;no-cache&quot;&#41;&#41;&#41;&#41;
+</code></pre><p>As you can see the wrapper accepts the handler and returns a function which in turn accepts the request. Since the returned function was defined in the scope where the handler exists, it can use it internally. When called, it will call the handler with the request and add Pragma: no-cache to the response map. For detailed information please refer to the official <a href='https://github.com/ring-clojure/ring/wiki'>Ring documentation</a>.</p><p>The middleware is added in the <code>middleware</code> namespace of your project. The <code>wrap-base</code> function aggregates all the common middleware for the application. Only add middleware that you also wish to use in production in the <code>wrap-base</code> function.</p><pre><code class="clojure">&#40;defn wrap-base &#91;handler&#93;
+  &#40;-&gt; &#40;&#40;:middleware defaults&#41; handler&#41;
+      wrap-formats
+      wrap-webjars
+      wrap-flash
+      &#40;wrap-session {:cookie-attrs {:http-only true}}&#41;
+      &#40;wrap-defaults
+        &#40;-&gt; site-defaults
+            &#40;assoc-in &#91;:security :anti-forgery&#93; false&#41;
+            &#40;dissoc :session&#41;&#41;&#41;
+      wrap-context
+      wrap-internal-error&#41;&#41;
+</code></pre><p>Any development middleware, such as middleware for showing stacktraces, should be added in the <code>wrap-dev</code> function found in the <code>&lt;app&gt;.dev-middleware</code> namespace. This namespace resides in the <code>env/dev/clj</code> source path and will only be included during development mode.  </p><pre><code class="clojure">&#40;defn wrap-dev &#91;handler&#93;
+  &#40;-&gt; handler
+      wrap-reload
+      wrap-error-page
+      wrap-exceptions&#41;&#41;  
+</code></pre><p>Note that the order of the middleware matters as the request is modified by each middleware function. For example, any middleware functions that rely on the session must be placed before the <code>wrap-defaults</code> middleware that creates the session. The reason being that the request will pass through the outer middleware functions before reaching the inner ones.</p><p>For example, when we have the handler wrapped using <code>wrap-formats</code> and <code>wrap-defaults</code> as seen below:</p><pre><code>&#40;-&gt; handler wrap-formats wrap-defaults&#41;
+</code></pre><p>The request is passed through these functions in the following order:</p><pre><code>handler &lt;- wrap-formats &lt;- wrap-defaults &lt;- request
+</code></pre><h2 id="useful&#95;ring&#95;middleware">Useful ring middleware</h2><ul><li><a href='https://github.com/myfreeweb/ring-ratelimit'>ring-ratelimit</a> - Rate limiting middleware</li><li><a href='https://github.com/mikejs/ring-etag-middleware'>ring-etag-middleware</a> - Calculates etags for ring responses and returns 304 responses when appropriate</li><li><a href='https://github.com/amalloy/ring-gzip-middleware'>ring-gzip-middleware</a> - Gzips ring responses for user agents which can handle it</li><li><a href='https://github.com/joodie/ring-upload-progress'>ring-upload-progress</a> - Provide upload progress data in ring session</li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper">
+      <div id="build-tool-div">
+        <p>Build Tool:
+          <select name="build-tool" id="build-tool" >
+<!--            <option value="lein">lein</option>-->
+            <option value="deps" >deps</option>
+          </select>
+        </p>
+      </div>
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/security.html">
+            Security
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/migrations.html">
+            Database Migrations
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

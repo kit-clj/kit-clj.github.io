@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/logo.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Logging</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#logging">Logging</a></li><li><a href="#logging_configuration">Logging Configuration</a></li></ol>
+      
+      <div id="content">
+        <h2 id="logging">Logging</h2><p>By default, logging functionality is provided by the <a href='https://github.com/clojure/tools.logging'>clojure.tools.logging</a> library. The library provides macros that delegate to a specific logging implementation. The default implementation used in kit is the <a href='http://logback.qos.ch/'>logback</a> library.</p><p>There are six log levels in <code>clojure.tools.logging</code>, and any Clojure data structures can be logged directly. The log levels are <code>trace</code>, <code>debug</code>, <code>info</code>, <code>warn</code>, <code>error</code>, and <code>fatal</code>.</p><pre><code class="clojure">&#40;ns example
+ &#40;:require &#91;clojure.tools.logging :as log&#93;&#41;&#41;
+
+&#40;log/info &quot;Hello&quot;&#41;
+=&gt;&#91;2015-12-24 09:04:25,711&#93;&#91;INFO&#93;&#91;myapp.handler&#93; Hello
+
+&#40;log/debug {:user {:id &quot;Anonymous&quot;}}&#41;
+=&gt;&#91;2015-12-24 09:04:25,711&#93;&#91;DEBUG&#93;&#91;myapp.handler&#93; {:user {:id &quot;Anonymous&quot;}}
+
+&#40;log/error &#40;Exception. &quot;I'm an error&quot;&#41; &quot;something bad happened&quot;&#41;
+=&gt;&#91;2015-12-24 09:43:47,193&#93;&#91;ERROR&#93;&#91;myapp.handler&#93; something bad happened
+  java.lang.Exception: I'm an error
+    	at myapp.handler$init.invoke&#40;handler.clj:21&#41;
+    	at myapp.core$start&#95;http&#95;server.invoke&#40;core.clj:44&#41;
+    	at myapp.core$start&#95;app.invoke&#40;core.clj:61&#41;
+    	...
+</code></pre><h3 id="logging&#95;configuration">Logging Configuration</h3><p>The default logger configuration is found in the <code>resources/logback.xml</code> file and looks as follows:</p><pre><code class="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;configuration scan=&quot;true&quot; scanPeriod=&quot;10 seconds&quot;&gt;
+    &lt;statusListener class=&quot;ch.qos.logback.core.status.NopStatusListener&quot; /&gt;
+    &lt;appender name=&quot;STDOUT&quot; class=&quot;ch.qos.logback.core.ConsoleAppender&quot;&gt;
+        &lt;!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default --&gt;
+        &lt;encoder&gt;
+            &lt;charset&gt;UTF-8&lt;/charset&gt;
+            &lt;pattern&gt;%date{ISO8601} &#91;%thread&#93; %-5level %logger{36} - %msg %n&lt;/pattern&gt;
+        &lt;/encoder&gt;
+    &lt;/appender&gt;
+    &lt;appender name=&quot;FILE&quot; class=&quot;ch.qos.logback.core.rolling.RollingFileAppender&quot;&gt;
+        &lt;file&gt;log/yourname.guestbook2.log&lt;/file&gt;
+        &lt;rollingPolicy class=&quot;ch.qos.logback.core.rolling.TimeBasedRollingPolicy&quot;&gt;
+            &lt;fileNamePattern&gt;log/yourname.guestbook2.%d{yyyy-MM-dd}.%i.log&lt;/fileNamePattern&gt;
+            &lt;timeBasedFileNamingAndTriggeringPolicy class=&quot;ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP&quot;&gt;
+                &lt;maxFileSize&gt;100MB&lt;/maxFileSize&gt;
+            &lt;/timeBasedFileNamingAndTriggeringPolicy&gt;
+            &lt;!-- keep 30 days of history --&gt;
+            &lt;maxHistory&gt;30&lt;/maxHistory&gt;
+        &lt;/rollingPolicy&gt;
+        &lt;encoder&gt;
+            &lt;charset&gt;UTF-8&lt;/charset&gt;
+            &lt;pattern&gt;%date{ISO8601} &#91;%thread&#93; %-5level %logger{36} - %msg %n&lt;/pattern&gt;
+        &lt;/encoder&gt;
+    &lt;/appender&gt;
+    &lt;logger name=&quot;com.zaxxer.hikari&quot; level=&quot;warn&quot; /&gt;
+    &lt;logger name=&quot;org.apache.http&quot; level=&quot;warn&quot; /&gt;
+    &lt;logger name=&quot;org.xnio.nio&quot; level=&quot;warn&quot; /&gt;
+    &lt;logger name=&quot;io.undertow&quot; level=&quot;warn&quot; /&gt;
+    &lt;root level=&quot;DEBUG&quot;&gt;
+        &lt;appender-ref ref=&quot;STDOUT&quot; /&gt;
+        &lt;appender-ref ref=&quot;FILE&quot; /&gt;
+    &lt;/root&gt;
+&lt;/configuration&gt;
+
+</code></pre><p>An external logging configuration can be provided by setting the <code>logback.configurationFile</code> Java system property that points to the path of the log configuration file. For example, we could create a production configuration called <code>prod-log-config.xml</code> and have it log to the <code>/var/log/myapp.log</code> location.</p><pre><code class="xml">&lt;?xml version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;
+&lt;configuration&gt;
+    &lt;statusListener class=&quot;ch.qos.logback.core.status.NopStatusListener&quot; /&gt;
+    &lt;appender name=&quot;FILE&quot; class=&quot;ch.qos.logback.core.rolling.RollingFileAppender&quot;&gt;
+        &lt;file&gt;/var/log/myapp.log&lt;/file&gt;
+        &lt;rollingPolicy
+         class=&quot;ch.qos.logback.core.rolling.TimeBasedRollingPolicy&quot;&gt;
+            &lt;fileNamePattern&gt;/var/log/myapp.%d{yyyy-MM-dd}.%i.log&lt;/fileNamePattern&gt;
+            &lt;timeBasedFileNamingAndTriggeringPolicy
+             class=&quot;ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP&quot;&gt;
+                &lt;maxFileSize&gt;100MB&lt;/maxFileSize&gt;
+            &lt;/timeBasedFileNamingAndTriggeringPolicy&gt;
+            &lt;!-- keep 30 days of history --&gt;
+            &lt;maxHistory&gt;30&lt;/maxHistory&gt;
+        &lt;/rollingPolicy&gt;
+        &lt;encoder&gt;
+            &lt;charset&gt;UTF-8&lt;/charset&gt;
+            &lt;pattern&gt;%date{ISO8601} &#91;%thread&#93; %-5level %logger{36} - %msg %n&lt;/pattern&gt;
+        &lt;/encoder&gt;
+    &lt;/appender&gt;
+    &lt;root level=&quot;INFO&quot;&gt;
+        &lt;appender-ref ref=&quot;FILE&quot; /&gt;
+    &lt;/root&gt;
+&lt;/configuration&gt;
+</code></pre><p>Then we can start the app with the following flag to have it use this logging configuration:</p><pre><code>java -Dlogback.configurationFile=prod-log-config.xml -jar myapp.jar
+</code></pre><p>Please refer to the <a href='http://logback.qos.ch/manual/configuration.html'>official documentation</a> for further information on configuring <code>logback</code>.</p>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper">
+      <div id="build-tool-div">
+        <p>Build Tool:
+          <select name="build-tool" id="build-tool" >
+<!--            <option value="lein">lein</option>-->
+            <option value="deps" >deps</option>
+          </select>
+        </p>
+      </div>
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/security.html">
+            Security
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/migrations.html">
+            Database Migrations
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>
