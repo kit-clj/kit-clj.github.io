@@ -3,18 +3,51 @@ ClojureScript is an excellent alternative to JavaScript for client side applicat
 * use the same language on both the client and the server
 * share common code between the front-end and back-end
 * cleaner and more consistent language
-* dependency management via Leiningen
 * immutable data structures
 * powerful standard library
 
 ### Adding ClojureScript Support
 
-ClojureScript support can be added via the official `:cljs` module. Simply run `(kit/install-module :cljs)` in oder to add the assets.
+ClojureScript support can be added via the official `:cljs` module. Simply run `(kit/install-module :cljs)` in order to add the assets. this will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html).
 
-### Using Libraries
+### Managing JavaScript and ClojureScript dependencies
 
-One advantage of using ClojureScript is that it allows managing your client-side libraries using Leiningen. ClojureScript libraries are included under dependencies in the `project.clj` just like any other library.
+#### NPM modules
 
+NPM is used to manage JavaScript modules used in the project. Make sure that you have NPM tools installed for doing that. When the module is added, a `package.json` file
+will be created with the following content:
+
+```
+{
+  "devDependencies": {
+    "shadow-cljs": "^2.14.3"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2"
+  }
+}
+```
+
+Make sure to run `npm install` in order to install the modules above before starting shadow-cljs compiler.
+
+#### ClojureScript libraries
+
+ClojureScript libraries are managed using the `:dependencies` key in the `shadow-cljs.edn`. The module will have generated the following content for this file:
+
+```clojure
+{:nrepl {:port 7002}
+ :source-paths ["src/cljs"]
+ :dependencies [[binaryage/devtools "1.0.3"]
+                [nrepl "0.8.3"]
+                [reagent "1.1.0"]
+                [cljs-ajax "0.8.4"]]
+ :builds       {:app {:target     :browser
+                      :output-dir "target/classes/cljsbuild/public/js"
+                      :asset-path "/js"
+                      :modules    {:app {:entries [kit.guestbook.app]}}
+                      :devtools   {:after-load kit.guestbook.core/mount-root}}}}
+```
 ### Running the Compiler
 
 The easiest way to develop ClojureScript applications is to run the compiler in `watch` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. To start the compiler in this mode simply run:
@@ -25,25 +58,15 @@ npx shadow-cljs watch app
 
 This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
 
-ClojureScript will be compiled with production settings when the uberjar task is run.
+ClojureScript will be compiled with production settings when the `uberjar` task is run.
 
-### ClojureScript with nREPL
+### shadow-cljs with nREPL
 
-To connect the IDE to a ClojureScript REPL make sure that you have the `:nrepl` key in `shadow-cljs.edn`. This key defaults to port `7002`. When  starts, it will open nREPL on the specified port.
+To connect your editor to a ClojureScript REPL make sure that you have the `:nrepl` key in `shadow-cljs.edn`. This key defaults to port `7002`. When the compiler starts, it will open nREPL on the specified port.
 
 Once you run `npx shadow watch app`, then you'll be able to connect to its nREPL at `localhost:7002`. Once connected, you simply have to run `(shadow.cljs.devtools.api/repl :app)` and the ClojureScript nREPL will become available. You can test that everything is working correctly by running `(js/alert "Hi")` in the REPL. This should pop up an alert in the browser.
 
 To exit the ClojureScript nREPL you have to run `:cljs/quit` in the nREPL.
-
-#### shadow-cljs with nREPL
-
-By default, kit configures shadow-cljs' nrepl to run on port 7002. Once you connect to the nREPL you simply have to run `(shadow/repl :app)` to connect to the ClojureScript nREPL.
-
-To exit the ClojureScript nREPL you have to run `:cljs/quit` in the nREPL.
-
-#### Self-managed package.json
-
-By default, luminus configures lein-shadow to store npm dependencies in a `:npm-deps` key in the project.clj file. Sometimes, you may wish to self-manage these, in order to expand on the package.json config. To do this, you have to remove the `:npm-deps` key from your project.clj file, and create a `package.json` file instead. Now lein-shadow will skip checking for npm dependencies on execution, and you will have to manually run `npm install` and update your `package.json` accordingly.
 
 ### Interacting with JavaScript
 
@@ -77,7 +100,7 @@ For more examples of ClojureScript synonyms of common JavaScript operations see 
 
 ### Reagent
 
-[Reagent](http://holmsand.github.io/reagent/) is the recommended approach for building ClojureScript applications with kit.
+[Reagent](http://reagent-project.github.io/) is the recommended approach for building ClojureScript applications with Kit.
 
 Reagent is backed by [React](http://facebook.github.io/react/) and provides an extremely efficient way to manipulate the DOM using [Hiccup](https://github.com/weavejester/hiccup) style syntax. In Reagent, each UI component is simply a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.
 
@@ -149,8 +172,6 @@ Finally, rendering components is accomplished by calling the `render-component` 
   (reagent/render-component [input-field]
                             (.-body js/document))
 ```
-
-A working sample project can be found [here](https://github.com/yogthos/reagent-example). For a real world application using Reagent see the [Yuggoth blog engine](https://github.com/yogthos/yuggoth).
 
 ### Client Side Routing
 
@@ -224,17 +245,9 @@ when the page navigation event is dispatched.
 
 Please refer to the [official documentation](https://metosin.github.io/reitit/) for further details.
 
-### Working With the DOM directly
-
-#### Warning
-
-Since Reagent uses a virtual DOM and renders components as necessary, direct manipulation of the DOM is highly discouraged. Updating DOM elements outside the Reagent components can result in unpredictable behavior.
-
-That said, there are several libraries available for accessing and modifying DOM elements. In particular, you may wish  to take a look at the [Domina](https://github.com/levand/domina) and [Dommy](https://github.com/Prismatic/dommy). Domina is a lightweight library for selecting and manipulating DOM elements as well as handling events. Dommy is a templating library similar to Hiccup.
-
 ### Ajax
 
-Luminus uses [cljs-ajax](https://github.com/JulianBirch/cljs-ajax) for handling Ajax operations. The library provides an easy way to send Ajax queries to the server using `ajax-request`, `GET`, and `POST` functions.
+ClojureScript module uses [cljs-ajax](https://github.com/JulianBirch/cljs-ajax) for handling Ajax operations.
 
 #### ajax-request
 
@@ -304,7 +317,7 @@ The request body will be interpreted using the [ring-middleware-format](https://
 The route should simply return a response map with the body set to the content of the response:
 
 ```clojure
-(ns myapp.routes.services
+(ns <app>.routes.services
   (:require
    [ring.util.response :refer [response status]]))
 
@@ -312,46 +325,23 @@ The route should simply return a response map with the body set to the content o
   (println params)
   (response {:status :success}))
 
-(defroutes services
-  (POST "/send-message" request (save-message! request)))
+(defn service-routes []
+  [""
+   ["/send-message" {:post save-message!}]])
 ```
 
-Note that CSRF middleware is enabled by default. The middleware wraps the `home-routes` in the `handler` namespace of
+Note that CSRF middleware is enabled by default. The middleware wraps the `home-routes` of
 your application. It will intercept any request to the server that isn't a `HEAD` or `GET`.
 
 ```clojure
-(def app
-  (-> (routes
-        (wrap-routes home-routes middleware/wrap-csrf)
-        base-routes)
-      middleware/wrap-base))
-```
-
-The middleware is applied by `wrap-routes` after the routes are resolved and does not affect other route definitions.
-If we wish the services to be accessible to external client then we would update the routes to contain the `service-routes` as seen below.
-
-```clojure
-(ns myapp.handler
-  (:require ...
-            [myapp.routes.services :refer [service-routes]]))
-
-(def app
-  (-> (routes
-        service-routes ;; no CSRF protection
-        (wrap-routes home-routes middleware/wrap-csrf)
-        base-routes)
-      middleware/wrap-base))
-```
-
-Alternatively, we could wrap the `service-routes` using `wrap-csrf` middleware as seen with `home-routes`:
-
-```clojure
-(def app
-  (-> (routes
-        (wrap-routes service-routes middleware/wrap-csrf)
-        (wrap-routes home-routes middleware/wrap-csrf)
-        base-routes)
-      middleware/wrap-base))
+(defn home-routes []
+  [""
+   {:middleware [middleware/wrap-csrf
+                 middleware/wrap-formats]}
+   ["/" {:get home-page}]
+   ["/docs" {:get (fn [_]
+                    (-> (response/ok (-> "docs/docs.md" io/resource slurp))
+                        (response/header "Content-Type" "text/plain; charset=utf-8")))}]])
 ```
 
 We would now need to pass the CSRF token along with the request. One way to do this is to pass the token in the `x-csrf-token` header in the request with the value of the token.
