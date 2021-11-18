@@ -25,47 +25,7 @@ npx shadow-cljs watch app
 
 This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
 
-ClojureScript will be compiled with production settings when the uberjar task is run:
-
-```
-TODO
-```
-
-### Live Code Reloading
-
-A more advanced approach is to setup [Figwheel](https://github.com/bhauman/lein-figwheel) to hot load the code in the browser. The easiest way to get Figwheel support is by using a ClojureScript profile when creating your Luminus project.
-
-<div class="lein">
-Figwheel requires that the server to be running:
-
-```
-lein run
-```
-
-Once the server starts simply run:
-
-```
-lein figwheel
-```
-</div>
-<div class="boot">
-As mentioned above, simply start the server with the figwheel task instead of
-the run task:
-```
-boot figwheel
-```
-
-Once the server starts, simply run:
-```
-boot repl -c
-boot.user=> (adzerk.boot-cljs-repl/start-repl)
-```
-
-And reload the page in your browser. This will start a ClojureScript repl that
-will evaluate in the browser.
-</div>
-
-This will start Figwheel and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
+ClojureScript will be compiled with production settings when the uberjar task is run.
 
 ### ClojureScript with nREPL
 
@@ -77,91 +37,13 @@ To exit the ClojureScript nREPL you have to run `:cljs/quit` in the nREPL.
 
 #### shadow-cljs with nREPL
 
-By default, luminus configures shadow-cljs' nrepl to run on port 7002. Once you connect to the nREPL you simply have to run `(shadow/repl :app)` to connect to the ClojureScript nREPL.
+By default, kit configures shadow-cljs' nrepl to run on port 7002. Once you connect to the nREPL you simply have to run `(shadow/repl :app)` to connect to the ClojureScript nREPL.
 
 To exit the ClojureScript nREPL you have to run `:cljs/quit` in the nREPL.
 
 #### Self-managed package.json
 
 By default, luminus configures lein-shadow to store npm dependencies in a `:npm-deps` key in the project.clj file. Sometimes, you may wish to self-manage these, in order to expand on the package.json config. To do this, you have to remove the `:npm-deps` key from your project.clj file, and create a `package.json` file instead. Now lein-shadow will skip checking for npm dependencies on execution, and you will have to manually run `npm install` and update your `package.json` accordingly.
-
-### Advanced Compilation and Exports
-
-During advanced compilation variable names will be munged by the compiler to shorten the code. If we wish to expose any functions to JavaScript we have to ensure that their names are protected. This is done by using the `^:export` annotation, eg:
-
-```clojure
-(ns main)
-
-(defn ^:export init []
-  (js/alert "hello world"))
-```
-
-We can now call this function from our page like any other:
-
-```html
-<script>
-main.init();
-</script>
-```
-
-If we use a Js library in our code we must protect the names of any functions we call from it as well. For example, if we wanted to use the [AlbumColors](https://github.com/chengyin/albumcolors) library, we could write the following:
-
-```clojure
-(defn ^:export init []
-  (.getColors (js/AlbumColors. "/img/foo.jpg")
-    (fn [[background]]
-     (.log js/console background))))
-```
-
-However, when the script is compiled with the `:advanced` flag, the `AlbumColors` and `getColors` will be munged.
-
-To protect them we have to create a Js file with the names we'd like to protect and reference it in our build:
-
-```javascript
-var AlbumColors = {};
-AlbumColors.getColors = function() {};
-```
-
-Note that in most cases it's possible to simply use the JavaScript library as its own externs file without the need to
-manually write out each function used.
-
-If we put the above code in a file called `externs.js` under the `resources`
-directory then we would reference it in our <span class="lein">`cljsbuild` section as follows:
-
-```clojure
-{:id "release"
- :source-paths ["src/cljs"]
- :compiler
- {:output-to "target/cljsbuild/public/js/app.js"
-  :optimizations :advanced
-  :pretty-print false
-  :output-wrapper false
-  ;;specify the externs file to protect function names
-  :externs ["resources/my-externs.js"]
-  :closure-warnings {:externs-validation :off
-                     :non-standard-jsdoc :off}}}
-```
-</span><span class="boot">`app.cljs.edn` file as follows:
-```clojure
-{:require [boot_proj.core]
- :compiler-options
- {:main "boot-proj.app",
-  :asset-path "/js/out",
-  :output-to "public/js/app.js",
-  :output-dir "public/js/out",
-  :source-map true,
-  :optimizations :advanced,
-  :pretty-print false
-  :output-wrapper false
-  ;;specify the externs file to protect function names
-  :externs ["resources/externs.js"]
-  :closure-warnings {:externs-validation :off
-                     :non-standard-jsdoc :off}}}
-```
-</span>
-A useful site for extracting externs can be found [here](http://www.dotnetwise.com/Code/Externs/).
-
-Please see the [official documentation](https://clojurescript.org/reference/advanced-compilation) for more information.
 
 ### Interacting with JavaScript
 
@@ -195,7 +77,7 @@ For more examples of ClojureScript synonyms of common JavaScript operations see 
 
 ### Reagent
 
-[Reagent](http://holmsand.github.io/reagent/) is the recommended approach for building ClojureScript applications with Luminus. Using the `+reagent` profile in Luminus will create an application with it configured.
+[Reagent](http://holmsand.github.io/reagent/) is the recommended approach for building ClojureScript applications with kit.
 
 Reagent is backed by [React](http://facebook.github.io/react/) and provides an extremely efficient way to manipulate the DOM using [Hiccup](https://github.com/weavejester/hiccup) style syntax. In Reagent, each UI component is simply a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.
 

@@ -2,7 +2,7 @@
 
 By default, logging functionality is provided by the [clojure.tools.logging](https://github.com/clojure/tools.logging)
 library. The library provides macros that delegate to a specific logging implementation.
-The default implementation used in Luminus is the [logback](http://logback.qos.ch/) library.
+The default implementation used in kit is the [logback](http://logback.qos.ch/) library.
 
 There are six log levels in `clojure.tools.logging`, and any Clojure data structures can be logged directly.
 The log levels are `trace`, `debug`, `info`, `warn`, `error`, and `fatal`.
@@ -33,21 +33,21 @@ The default logger configuration is found in the `resources/logback.xml` file an
 
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
-<configuration>
+<configuration scan="true" scanPeriod="10 seconds">
     <statusListener class="ch.qos.logback.core.status.NopStatusListener" />
     <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <!-- encoders are assigned the type
+             ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
         <encoder>
             <charset>UTF-8</charset>
             <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg %n</pattern>
         </encoder>
     </appender>
     <appender name="FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
-        <file>log/myapp.log</file>
-        <rollingPolicy
-         class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
-            <fileNamePattern>log/myapp.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
-            <timeBasedFileNamingAndTriggeringPolicy
-             class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+        <file>log/yourname.guestbook2.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>log/yourname.guestbook2.%d{yyyy-MM-dd}.%i.log</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
                 <maxFileSize>100MB</maxFileSize>
             </timeBasedFileNamingAndTriggeringPolicy>
             <!-- keep 30 days of history -->
@@ -58,11 +58,16 @@ The default logger configuration is found in the `resources/logback.xml` file an
             <pattern>%date{ISO8601} [%thread] %-5level %logger{36} - %msg %n</pattern>
         </encoder>
     </appender>
-    <root level="INFO">
+    <logger name="com.zaxxer.hikari" level="warn" />
+    <logger name="org.apache.http" level="warn" />
+    <logger name="org.xnio.nio" level="warn" />
+    <logger name="io.undertow" level="warn" />
+    <root level="DEBUG">
         <appender-ref ref="STDOUT" />
         <appender-ref ref="FILE" />
     </root>
 </configuration>
+
 ```
 
 An external logging configuration can be provided by setting the `logback.configurationFile` Java system property

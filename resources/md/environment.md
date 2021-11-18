@@ -1,117 +1,67 @@
-Luminus aims to facilitate developing [12 factor](http://12factor.net/) style applications.
+Kit aims to facilitate developing [12 factor](http://12factor.net/) style applications.
 The 12 factor approach states that the configuration should be kept separate from the code. The application
 should not have to be packaged differently for each environment that it's deployed in.
 
-The environment variables are managed by the [cprop](https://github.com/tolitius/cprop) library.
-The configuration is represented by a map. The map is constructed by aggregating variables from
-multiple sources in the environment. The sources include EDN configuration, shell variables,
-and Java system properties.
-
-### EDN Based Configuration
-
-The library will first look for a `config.edn` file on the resource path. This will be used as the
-base configuration for the application. An external configuration file can be specified using the
-`conf` Java option at runtime: `-Dconf=prod-config.edn`.
-
-The configuration placed in `config.edn` should consist of a map such as the following:
+Kit utilizes [aero](https://github.com/juxt/aero) to add reader macros for loading in environment variables in your `system.edn` configuration. For example, say we want to load in the environment variable `PORT`, and if it's not present default back to `3001`. We can do this thanks to aero in our EDN file like so
 
 ```clojure
-{:port 4000}
+#long #or [#env PORT 3001]
+; ^    ^    ^-- tells aero to load the next value from the environment, defaulting to `nil` (falsey value in Clojure)
+; |    |------- tells aero to return the first truthy value from the list of values that follow
+; |------------ tells aero to parse the value as a long
 ```
-
-This configuration will be merged on top of the configuration found on the resource path.
-The library uses a deep merge strategy, so any nested structures will be merged intelligently.
-
-### Managing Environment Variables
-
-The `System/getProperties` will be merged on top of the configuration found on the resource path and
-the optional EDN configuration file.
-
-```
-java -Ddatabase-url="jdbc:postgresql://localhost/app?user=app_user&password=secret" -jar app.jar
-```
-
-The variable names are converted into Clojure style keywords. The variables are lowercased and `_`
-characters are used to indicate nesting, while `.` characters are converted to `-` characters.
-
-* `-Dport=3000` -> `{:port 3000}`
-* `-Dnrepl-port=7000` -> `{:nrepl-port 7000}`
-* `-Ddatabase-url="jdbc:h2:./guestbook_dev.db"` -> `{:database-url "jdbc:h2:./guestbook_dev.db"}`
-* `-Dio_http.max.connections=10` -> `{:io {:http-max-connections 10}}`
-
-Any environment variables found in `System/getenv` will be merged last. These variables are parsed using the
-following strategy:
-
-* `PORT=3000` -> `{:port 3000}`
-* `NREPL_PORT=7000` - `{:nrepl-port 7000}`
-* `DATABASE_URL="jdbc:h2:./guestbook_dev.db"` -> `{:database-url "jdbc:h2:./guestbook_dev.db"}`
-* `IO__HTTP_MAX_CONNECTIONS="{:value 10}"` -> `{:io {:http-max-connections {:value 10}}}`
-
-Note that the `_` is converted to `-`, while `__` is used to indicate nesting for shell variables. These
-conventions can be mixed as seen with `IO__HTTP_MAX_CONNECTIONS`.
-
-See the [official documentation](https://github.com/tolitius/cprop) for further details.
 
 ### Default Environment Variables
 
 Luminus projects use the following environment variables by default:
 
 * `PORT` - HTTP port that the application will attempt to bind to, defaults to `3000`
-* `NREPL_PORT` - when set the application will run the nREPL server on the specified port, defaults to `7000` for development
-* `DATABASE_URL` - the URL for the database connection
-* `APP_CONTEXT` - used to specify an optional context for the routes in the application
+* `REPL_PORT` - when set the application will run the REPL socket server on the specified port, defaults to `7000`
+* `REPL_HOST` - the URL for the database connection
+* `COOKIE_SECRET` - the 16-character secret session cookies will be encrypted with, defaults to `16charsecrethere`. **IMPORTANT** for any production environment you should change this
 
 ### The Config Namespace
 
-The variables are populated in the `env` map that's found in the `<app>.config` namespace that looks as follows:
+By default, we load all our system configuration in one file, `system.edn`, however your application may warrant loading multiple files, or even merging based off of tenant configurations. This can be extended in the `<project-ns>.config` namespace of your project. By default, it is quite simple, only loading in the configuration of that one file as the system-config that integrant will use.
 
 ```clojure
-(ns <app>.config
-  (:require [cprop.core :refer [load-config]]
-            [cprop.source :as source]
-            [mount.core :refer [args defstate]]))
+(ns <project-ns>.config
+  (:require
+    [kit.config :as config]))
 
-(defstate env :start (load-config
-                       :merge
-                       [(args)
-                        (source/from-system-props)
-                        (source/from-env)]))
-```
+(def ^:const system-filename "system.edn")
 
-The configuration will load the environment variables from the known sources and merge it with the
-command line arguments populated by [clojure.tools.cli](https://github.com/clojure/tools.cli) in the
-`<app>.core/start-app` function. The resulting configuration is a map that can be accessed
-as seen in the example below:
-
-```clojure
-(ns <app>.db.core
-  (:require [<app>.config :refer [env]]))
-
-(def database-url
-  (-> env :database :url))
+(defn system-config
+  [options]
+  (config/read-config system-filename options))
 ```
 
 ## Environment Specific Code
 
-Some code, such as development middleware for showing stacktraces in the browser, is dependent on the mode the application
-runs in. For example, we'd only want to run the above middleware during development and not show stacktraces to the client
-in production.
+Some code, such as development middleware, is dependent on the mode the application
+runs in.
 
-Luminus uses `env/dev/clj` and `env/prod/clj` source paths for this purpose. By default the source path will contain the
+Kit uses `env/dev/clj` and `env/prod/clj` source paths for this purpose. By default the source path will contain the
 `<app>.env` namespace that has the environment specific configuration. The `dev` config looks as follows:
 
 ```clojure
 (ns <project-ns>.env
-  (:require [selmer.parser :as parser]
-            [clojure.tools.logging :as log]
-            [<project-ns>.dev-middleware :refer [wrap-dev]]))
+  (:require
+    [clojure.tools.logging :as log]
+    [<project-ns>.dev-middleware :refer [wrap-dev]]
+    ))
 
 (def defaults
-  {:init
-   (fn []
-     (parser/cache-off!)
-     (log/info "\n-=[app started successfully using the development profile]=-"))
-   :middleware wrap-dev}
+  {:init       (fn []
+                 (log/info "\n-=[ starting using the development or test profile]=-"))
+   :started    (fn []
+                 (log/info "\n-=[ started successfully using the development or test profile]=-"))
+   :stop       (fn []
+                 (log/info "\n-=[ has shut down successfully]=-"))
+   :middleware wrap-dev
+   :opts       {:profile       :dev
+                :persist-data? true}})
+
 ```
 
 The config references the `<app>.dev-middleware` namespace found in the same source path. Any development specific middleware
@@ -124,10 +74,14 @@ Meanwhile, the `prod` config will not
   (:require [clojure.tools.logging :as log]))
 
 (def defaults
-  {:init
-   (fn []
-     (log/info "\n-=[app started successfully]=-"))
-   :middleware identity})
+  {:init       (fn []
+                 (log/info "\n-=[ starting]=-"))
+   :started    (fn []
+                 (log/info "\n-=[ started successfully]=-"))
+   :stop       (fn []
+                 (log/info "\n-=[ has shut down successfully]=-"))
+   :middleware (fn [handler _] handler)
+   :opts       {:profile :prod}})
 ```
 
 Only the middleware defined in the `<app>.middleware` namespace is run during production.
