@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% block header %}
 <div id="hero">
-  <h2>Clojure Web Development Made Simple</h2>
+  <h2>Clojure Web Development For Production</h2>
   <p>
-    Kit
+    Kit is a lightweight, modular framework for scalable web development in Clojure.
   </p>
 </div>
 {% endblock %}
@@ -18,7 +18,7 @@
       <ul class="slogan">
         <li>Simple and easy to learn</li>
         <li>REPL driven development</li>
-        <li>Powerful build tools</li>
+        <li>Powerful code generation tools</li>
       </ul>
     </div>
   </div>
@@ -37,25 +37,22 @@
   </div>
   <div class="column column-33">
     <div class="column-wrapper">
-      <h2>Modern Web & Mobile</h2>
+      <h2>Scalable</h2>
       <p>
-        Kit is built for needs of modern web & mobile apps
+        Kit is built for needs of scalable systems.
       </p>
       <br>
       <ul class="slogan">
-        <li>ClojureScript support</li>
+        <li>Easily scalable horizontally</li>
         <li>Stateless web tier</li>
-        <li>Excellent SQL/NoSQL support</li>
+        <li>Support for SQL, caching, scheduling, and more</li>
       </ul>
     </div>
   </div>
 </div>
 
 <div class="column-wrapper" id="easy-start">
-  <p>Using <a href="http://leiningen.org/">Leiningen</a>, getting started is as easy as:</p>
-<pre class="bash hljs"><span class="prompt">$ </span><span class="cmd">lein new kit-clj my-app</span>
-<span class="prompt">$ </span><span class="cmd">cd my-app</span>
-<span class="prompt">$ </span><span class="cmd">lein run</span>
-Started server on port <span class="hljs-number">3000</span></pre>
+  <p>Using <a href="https://clojure.org/guides/getting_started">Clojure tools</a>, getting started is as easy as:</p>
+<pre class="bash hljs"><span class="prompt">$ </span><span class="cmd">clojure -X:new :template kit-clj :name yourname/guestbook</span>
 </div>
 {% endblock %}
