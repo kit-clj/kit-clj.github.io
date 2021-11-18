@@ -1,8 +1,8 @@
 (defproject kit-docs "0.1"
   :description "Documentation site for the Kit framework"
-  :url ""
+  :url "https://kit-clj.github.io/"
   :license {:name "MIT License"
-            :url "http://opensource.org/licenses/MIT"}
+            :url  "http://opensource.org/licenses/MIT"}
   :dependencies [[org.clojure/clojure "1.10.3"]
                  [hiccup "1.0.5"]
                  [markdown-clj "1.10.5"]
