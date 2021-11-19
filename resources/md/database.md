@@ -1,56 +1,28 @@
 ## Configuring the Database
 
-Luminus defaults to using [Migratus](https://github.com/yogthos/migratus) for database migrations and
+Kit has two database paradigms supported as libraries: XTDB (formerly known as Crux), and SQL-style database, however you can easily roll your own connection.
+
+### SQL
+
+Kit defaults to using [Migratus](https://github.com/yogthos/migratus) for SQL database migrations and
 [HugSQL](http://www.hugsql.org/) for database interaction.
-The migrations and a default connection will be setup when using a database profile such as `+postgres`.
 
-### Configuring Migrations
+The migrations and a default connection will be setup when using a database profile such as `+sql`. The default SQL implementation used with this profile is [PostgreSQL](https://www.postgresql.org/), however any SQL solution will work.
 
-We first have to set the connection strings for our database in `dev-config.edn` and `test-config.edn` files. These
-files come with a generated configuration for development and testing respectively:
+#### Configuring Migrations
 
-#### `dev-config.edn`:
-
-```clojure
-{:database-url "jdbc:postgresql://localhost/my_app_dev?user=db_user&password=db_password"}
-```
-
-#### `test-config.edn`:
-
-```clojure
-{:database-url "jdbc:postgresql://localhost/myapp_test?user=db_user&password=db_password"}
-```
+We first have to set the connection configuration for our database in `system.edn`. 
 
 Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the `resources/migrations` folder. The template will generate sample migration files for the users table.
 
 ```
-resources/migrations/20150720004935-add-users-table.down.sql
-resources/migrations/20150720004935-add-users-table.up.sql
+resources/migrations/20210720004935-add-users-table.down.sql
+resources/migrations/20210720004935-add-users-table.up.sql
 ```
 
-With the above setup we can run the migrations as follows:
-<div class="lein">
-```
-lein run migrate
-```
-</div>
-<div class="boot">
-```
-boot dev [ run migrate ]
-```
-</div>
-Applied migration can then be rolled back with:
-<div class="lein">
-```
-lein run rollback
-```
-</div>
-<div class="boot">
-```
-boot dev [ run rollback ]
-```
-</div>
-Migrations can also be run via the REPL, the `user` namespace provides the following
+The default configuration runs any new migrations on startup, but this can be changed.
+
+Migrations can also be run via the REPL. The TODO namespace provides the following
 helper functions:
 
 * `(reset-db)` - resets the state of the database
@@ -239,42 +211,6 @@ macro:
      :last_name  "Smith"
      :email      "sam.smith@example.com"})
   (get-user {:id "foo"}))
-```
-
-### Massaging key names from SQL to Clojure style
-
-HugSQL can be told to automatically transform underscores in the
-result keys into dashes by using
-[camel-snake-kebab](https://clj-commons.org/camel-snake-kebab)
-library:
-
-```clojure
-(ns yuggoth.db.core
-  (:require ...
-            [camel-snake-kebab.extras :refer [transform-keys]]
-            [camel-snake-kebab.core :refer [->kebab-case-keyword]]))
-
-(defn result-one-snake->kebab
-  [this result options]
-  (->> (hugsql.adapter/result-one this result options)
-       (transform-keys ->kebab-case-keyword)))
-
-(defn result-many-snake->kebab
-  [this result options]
-  (->> (hugsql.adapter/result-many this result options)
-       (map #(transform-keys ->kebab-case-keyword %))))
-
-(defmethod hugsql.core/hugsql-result-fn :1 [sym]
-  'yuggoth.db.core/result-one-snake->kebab)
-
-(defmethod hugsql.core/hugsql-result-fn :one [sym]
-  'yuggoth.db.core/result-one-snake->kebab)
-
-(defmethod hugsql.core/hugsql-result-fn :* [sym]
-  'yuggoth.db.core/result-many-snake->kebab)
-
-(defmethod hugsql.core/hugsql-result-fn :many [sym]
-  'yuggoth.db.core/result-many-snake->kebab)
 ```
 
 See the [official documentation](http://www.hugsql.org/) for more details.

@@ -13,14 +13,14 @@ Default libs included with no profile specified:
 Additional profiles:
 
 - `+bare` - Only includes the `kit-core` and `kit-undertow` libraries as the foundation
-- `+crux` - Adds the `kit-crux` lib
+- `+xtdb` - Adds the `kit-xtdb` lib
 - `+hato` - Adds the `kit-hato` lib
 - `+metrics` - Adds the `kit-metrics` lib
 - `+quartz` - Adds the `kit-quartz` lib
 - `+redis` - Adds the `kit-redis` lib
 - `+selmer` - Adds the `kit-selmer` lib
 - `+sql` - Adds the `kit-sql` and `kit-postgres` libs
-- `+full` - Adds the libs `kit-crux`, `kit-hato`, `kit-metrics`, `kit-quartz`, `kit-redis`, `kit-selmer`, and `kit-sql`
+- `+full` - Adds the libs `kit-xtdb`, `kit-hato`, `kit-metrics`, `kit-quartz`, `kit-redis`, `kit-selmer`, and `kit-sql`
 
 To add a profile simply pass it as an argument after your application name, eg:
 
@@ -31,13 +31,13 @@ clojure -X:new :template kit-clj :name yourname/app :args '[+selmer]'
 You can also mix multiple profiles when creating the application, eg:
 
 ```
-clojure -X:new :template kit-clj :name yourname/app :args '[+selmer +crux]'
+clojure -X:new :template kit-clj :name yourname/app :args '[+selmer +xtdb]'
 ```
 
 ### Libraries
 
 - `kit-core` - basic utility functions used by some other libs
-- `kit-crux` - Simple binding to connect to a [crux](https://opencrux.com/) database node
+- `kit-xtdb` - Simple binding to connect to a [XTDB](https://xtdb.com/) database node
 - `kit-hato` - HTTP client using [hato](https://github.com/gnarroway/hato)
 - `kit-metrics` - Configurable metrics using [iapetos](https://github.com/clj-commons/iapetos)
 - `kit-quartz` - Scheduler using [cronut](https://github.com/troy-west/cronut) as an integrant binding for [quartz](http://www.quartz-scheduler.org/). Exposes the `cronut` API, simply some extensions for `aero` and utilities

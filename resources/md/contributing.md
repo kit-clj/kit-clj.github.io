@@ -20,8 +20,10 @@ directory, and update the list of topics [here](https://github.com/kit-clj/kit-d
 
 The maintainers of Kit are:
 
-- [Dan Boykis](http://danboykis.com/)
-- [Nik Peric](https://nikperic.com/). You can support Nik with a 'hi' on your communication channel of choice
-- [Dmitri Sotnikov](https://yogthos.net/). You can support Dmitri on [Patreon](https://www.patreon.com/yogthos), your contribution will help cover development and maintenance costs for the project.
+[Dan Boykis](http://danboykis.com/)
+
+[Nik Peric](https://nikperic.com/). You can support Nik with a 'hi' on your communication channel of choice
+
+[Dmitri Sotnikov](https://yogthos.net/). You can support Dmitri on [Patreon](https://www.patreon.com/yogthos), your contribution will help cover development and maintenance costs for the project.
 
 
