@@ -11,7 +11,18 @@ The migrations and a default connection will be setup when using a database prof
 
 #### Configuring Migrations
 
-We first have to set the connection configuration for our database in `system.edn`. 
+We first have to set the connection configuration for our database in `system.edn`. This is by default in the `+sql` profile for development `jdbc:postgresql://localhost/<app-name>?user=<app-name>&password=<app-name>`, however, you can change it whatever you like
+
+```clojure
+ :db.sql/connection
+ #profile {:dev  {:jdbc-url "jdbc:postgresql://localhost/<app-name>?user=<app-name>&password=<app-name>"}
+           :test {}
+           :prod {:jdbc-url   #env JDBC_URL
+                  :init-size  1
+                  :min-idle   1
+                  :max-idle   8
+                  :max-active 32}}
+```
 
 Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the `resources/migrations` folder. The template will generate sample migration files for the users table.
 
@@ -20,99 +31,70 @@ resources/migrations/20210720004935-add-users-table.down.sql
 resources/migrations/20210720004935-add-users-table.up.sql
 ```
 
-The default configuration runs any new migrations on startup, but this can be changed.
+The default configuration runs any new migrations on startup, but this can be changed by updating the value for `migrate-on-init?`.
 
-Migrations can also be run via the REPL. The TODO namespace provides the following
+```clojure
+ :db.sql/migrations
+ {:store            :database
+  :db               {:datasource #ig/ref :db/connection}
+  :migrate-on-init? true}
+```
+
+Migrations can also be run via the REPL. The `migratus.core` namespace provides the following
 helper functions:
 
-* `(reset-db)` - resets the state of the database
-* `(migrate)` - runs the pending migrations
-* `(rollback)` - rolls back the last set of migrations
-* `(create-migration "add-guestbook-table")` - creates the up/down migration files with the given name
+* `(migratus.core/reset-db)` - resets the state of the database
+* `(migratus.core/migrate)` - runs the pending migrations
+* `(migratus.core/rollback)` - rolls back the last set of migrations
+* `(migratus.core/create-migration "add-guestbook-table")` - creates the up/down migration files with the given name
 
 **important**: the database connection must be initialized before migrations can be run in the REPL
 
 Please refer to the [Database Migrations](/docs/migrations.html) section for more details.
 
-### Setting up the database connection
+### SQL Queries
 
-The connection settings are found in the `<app>.db.core` namespace of the application.
-By default the database connection is expected to be provided as the `DATABASE_URL` environment variable.
-
-The [conman](https://github.com/luminus-framework/conman) library is used to create a pooled connection.
-
-The connection is initialized by calling the `conman/connect!` function with the connection atom and a database specification map.
-The `connect!` function will create a pooled JDBC
-connection using the [HikariCP](https://github.com/brettwooldridge/HikariCP) library. You can see the complete list of the connection options [here](https://github.com/tomekw/hikari-cp#configuration-options).
-The connection can be terminated by calling the `disconnect!` function.
+SQL queries are parsed by HugSQL as defined in your `system.edn` and `resources/queries.sql` file by default. You can update the filename to indicate a different path, e.g. `"sql/queries.sql".
 
 ```clojure
-(ns myapp.db.core
-  (:require
-    ...
-    [<app>.config :refer [env]]
-    [conman.core :as conman]
-    [mount.core :refer [defstate]]))
-
-(defstate ^:dynamic *db*
-          :start (conman/connect!
-                   {:jdbc-url (env :database-url)})
-          :stop (conman/disconnect! *db*))
+:db.sql/query-fn
+{:conn     #ig/ref :db.sql/connection
+ :options  {}
+ :filename "queries.sql"}
 ```
 
-The connection is specified using the `defstate` macro. The `connect!` function is called when the `*db*` component
-enters the `:start` state and the `disconnect!` function is called when it enters the `:stop` state.
+This integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say we had the following SQL:
 
-The connection needs to be dynamic in order to be automatically rebound to a transactional connection when calling
-query functions within the scope of `conman.core/with-transaction`.
+```sql
+-- :name get-user-by-id :? :1
+-- :doc returns a user object by id, or nil if not present
+SELECT *
+FROM users
+WHERE id = :id
+```
 
-The lifecycle of the `*db*` component is managed by the [mount](https://github.com/tolitius/mount) library as discussed in
-the [Managing Component Lifecycle](/docs/components.html) section.
-
-The `<app>.core/start-app` and `<app>.core/stop-app` functions will initialize and tear down any components defined using `defstate` by calling `(mount/start)`
-and `(mount/stop)` respectively. This ensures that the connection is available when the server starts up and that it's cleaned up on server shutdown.
-
-When working with multiple databases, a separate atom is required to track each database connection.
-
-### Translating SQL types
-
-Certain types require translation when persisting and reading the data.
-The specifics of how different types are translated will vary between
-different database engines. It is possible to do automatic coercison of
-types read from the database by extending the `clojure.java.jdbc/IResultSetReadColumn`
-protocol.
-
-For example, if we wanted to convert columns containing `java.sql.Date` objects to `java.util.Date` objects, then
-we could write the following:
+We could simply query this bit with the following `query-fn` call:
 
 ```clojure
-(defn to-date [sql-date]
-  (-> sql-date (.getTime) (java.util.Date.)))
-
-(extend-protocol jdbc/IResultSetReadColumn
-  java.sql.Date
-  (result-set-read-column [value metadata index]
-    (to-date value)))
+(query-fn :get-user-by-id {:id 1})
 ```
 
-The `result-set-read-column` function must accept `value`,
-`metadata`, and `index` parameters. The return value will
-be set as the data in the result map of the query.
-
-Conversely, if we wanted to translate the data to the SQL
-type, then we'd extend the `java.util.Date` type:
+For reference, here is the full definition from the Kit SQL edge:
 
 ```clojure
-(extend-type java.util.Date
-  jdbc/ISQLParameter
-  (set-parameter [value ^PreparedStatement stmt idx]
-    (.setTimestamp stmt idx (java.sql.Timestamp. (.getTime value)))))
+(defmethod ig/init-key :db.sql/query-fn
+  [_ {:keys [conn options filename]
+      :or   {options {}}}]
+  (let [queries (conman/bind-connection-map conn options filename)]
+    (fn
+      ([query params]
+       (conman/query queries query params))
+      ([conn query params & opts]
+       (apply conman/query conn queries query params opts)))))
 ```
 
-The type extensions would typically be placed in the `<app>.db.core`
-namespace, and will get loaded automatically when the project starts.
-The templates using Postgres and MySQL databases come with some extensions
-enabled by default.
+As you can see from this, the two-arity `query-fn` uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.
+
 
 ### Working with HugSQL
 

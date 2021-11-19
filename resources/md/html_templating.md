@@ -1,22 +1,14 @@
 ## Templating Options
 
-Luminus comes with the [Hiccup](https://github.com/weavejester/hiccup) dependency. If you're familiar with Hiccup then
-you can start using it out of the box.
+Kit supports [Selmer](https://github.com/yogthos/Selmer) both as a library, and in the HTML module for traditional style templating using plain text files as templates.
 
-Hiccup uses standard Clojure data structures to represent its templates. On top of that, Hiccup provides a rich API of
-helper functions for generating common HTML elements.
-
-Luminus also packages [Selmer](https://github.com/yogthos/Selmer) for more traditional style templating using plain text files
-as templates.
-
-You can choose to use either templating engine or combine them. Alternatively, you can choose to use a different templating
+Alternatively, you can choose to use a different templating
 engine altogether. A couple of popular options are [Enlive](https://github.com/cgrand/enlive) and [Stencil](https://github.com/davidsantiago/stencil).
 
 ## HTML Templating Using Selmer
 
 Selmer is a templating language similar to Django and Rails templates.
 If you're familiar with Django or similar templating languages you should feel right at home.
-
 
 ### Creating Templates
 
@@ -674,16 +666,3 @@ The above will generate the following HTML:
   <input type="submit" value="login" />
 </form>
 ```
-
-Finally, Luminus template provides a helper function under the `<yourapp>.util` namespace called `md->html`,
-this function will read a markdown file relative to `resources/public/` folder and return an HTML string. This can
-be used in conjunction with Hiccup functions, eg:
-
-```clojure
-(:require [<yourapp>.util :as util])
-...
-(html [:div.container [:p (util/md->html "/md/paragraph.md")]])
-```
-
-The markdown generation is done by markdown-clj, please see the [Github page](https://github.com/yogthos/markdown-clj) for
-details on supported syntax.
