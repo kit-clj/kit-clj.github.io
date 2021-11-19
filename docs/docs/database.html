@@ -59,18 +59,12 @@
       <h1>Database Access</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#configuring_the_database">Configuring the Database</a></li><li><a href="#configuring_migrations">Configuring Migrations</a></li><li><a href="#setting_up_the_database_connection">Setting up the database connection</a></li><li><a href="#translating_sql_types">Translating SQL types</a></li><li><a href="#working_with_hugsql">Working with HugSQL</a></li><li><a href="#massaging_key_names_from_sql_to_clojure_style">Massaging key names from SQL to Clojure style</a></li></ol>
+      <ol class="contents"><li><a href="#configuring_the_database">Configuring the Database</a></li><li><a href="#sql">SQL</a></li><li><a href="#setting_up_the_database_connection">Setting up the database connection</a></li><li><a href="#translating_sql_types">Translating SQL types</a></li><li><a href="#working_with_hugsql">Working with HugSQL</a></li></ol>
       
       <div id="content">
-        <h2 id="configuring&#95;the&#95;database">Configuring the Database</h2><p>Luminus defaults to using <a href='https://github.com/yogthos/migratus'>Migratus</a> for database migrations and <a href='http://www.hugsql.org/'>HugSQL</a> for database interaction. The migrations and a default connection will be setup when using a database profile such as <code>+postgres</code>.</p><h3 id="configuring&#95;migrations">Configuring Migrations</h3><p>We first have to set the connection strings for our database in <code>dev-config.edn</code> and <code>test-config.edn</code> files. These files come with a generated configuration for development and testing respectively:</p><h4 id="<code>dev-config.edn</code>:"><code>dev-config.edn</code>:</h4><pre><code class="clojure">{:database-url &quot;jdbc:postgresql://localhost/my&#95;app&#95;dev?user=db&#95;user&amp;password=db&#95;password&quot;}
-</code></pre><h4 id="<code>test-config.edn</code>:"><code>test-config.edn</code>:</h4><pre><code class="clojure">{:database-url &quot;jdbc:postgresql://localhost/myapp&#95;test?user=db&#95;user&amp;password=db&#95;password&quot;}
-</code></pre><p>Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the <code>resources/migrations</code> folder. The template will generate sample migration files for the users table.</p><pre><code>resources/migrations/20150720004935-add-users-table.down.sql
-resources/migrations/20150720004935-add-users-table.up.sql
-</code></pre><p>With the above setup we can run the migrations as follows: <div class="lein"></p><pre><code>lein run migrate
-</code></pre><p></div> <div class="boot"></p><pre><code>boot dev &#91; run migrate &#93;
-</code></pre><p></div> Applied migration can then be rolled back with: <div class="lein"></p><pre><code>lein run rollback
-</code></pre><p></div> <div class="boot"></p><pre><code>boot dev &#91; run rollback &#93;
-</code></pre><p></div> Migrations can also be run via the REPL, the <code>user</code> namespace provides the following helper functions:</p><ul><li><code>&#40;reset-db&#41;</code> - resets the state of the database</li><li><code>&#40;migrate&#41;</code> - runs the pending migrations</li><li><code>&#40;rollback&#41;</code> - rolls back the last set of migrations</li><li><code>&#40;create-migration &quot;add-guestbook-table&quot;&#41;</code> - creates the up/down migration files with the given name</li></ul><p><strong>important</strong>: the database connection must be initialized before migrations can be run in the REPL</p><p>Please refer to the <a href='/docs/migrations.html'>Database Migrations</a> section for more details.</p><h3 id="setting&#95;up&#95;the&#95;database&#95;connection">Setting up the database connection</h3><p>The connection settings are found in the <code>&lt;app&gt;.db.core</code> namespace of the application. By default the database connection is expected to be provided as the <code>DATABASE&#95;URL</code> environment variable.</p><p>The <a href='https://github.com/luminus-framework/conman'>conman</a> library is used to create a pooled connection.</p><p>The connection is initialized by calling the <code>conman/connect!</code> function with the connection atom and a database specification map. The <code>connect!</code> function will create a pooled JDBC connection using the <a href='https://github.com/brettwooldridge/HikariCP'>HikariCP</a> library. You can see the complete list of the connection options <a href='https://github.com/tomekw/hikari-cp#configuration-options'>here</a>. The connection can be terminated by calling the <code>disconnect!</code> function.</p><pre><code class="clojure">&#40;ns myapp.db.core
+        <h2 id="configuring&#95;the&#95;database">Configuring the Database</h2><p>Kit has two database paradigms supported as libraries: XTDB (formerly known as Crux), and SQL-style database, however you can easily roll your own connection.</p><h3 id="sql">SQL</h3><p>Kit defaults to using <a href='https://github.com/yogthos/migratus'>Migratus</a> for SQL database migrations and <a href='http://www.hugsql.org/'>HugSQL</a> for database interaction.</p><p>The migrations and a default connection will be setup when using a database profile such as <code>+sql</code>. The default SQL implementation used with this profile is <a href='https://www.postgresql.org/'>PostgreSQL</a>, however any SQL solution will work.</p><h4 id="configuring&#95;migrations">Configuring Migrations</h4><p>We first have to set the connection configuration for our database in <code>system.edn</code>. </p><p>Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the <code>resources/migrations</code> folder. The template will generate sample migration files for the users table.</p><pre><code>resources/migrations/20210720004935-add-users-table.down.sql
+resources/migrations/20210720004935-add-users-table.up.sql
+</code></pre><p>The default configuration runs any new migrations on startup, but this can be changed.</p><p>Migrations can also be run via the REPL. The TODO namespace provides the following helper functions:</p><ul><li><code>&#40;reset-db&#41;</code> - resets the state of the database</li><li><code>&#40;migrate&#41;</code> - runs the pending migrations</li><li><code>&#40;rollback&#41;</code> - rolls back the last set of migrations</li><li><code>&#40;create-migration &quot;add-guestbook-table&quot;&#41;</code> - creates the up/down migration files with the given name</li></ul><p><strong>important</strong>: the database connection must be initialized before migrations can be run in the REPL</p><p>Please refer to the <a href='/docs/migrations.html'>Database Migrations</a> section for more details.</p><h3 id="setting&#95;up&#95;the&#95;database&#95;connection">Setting up the database connection</h3><p>The connection settings are found in the <code>&lt;app&gt;.db.core</code> namespace of the application. By default the database connection is expected to be provided as the <code>DATABASE&#95;URL</code> environment variable.</p><p>The <a href='https://github.com/luminus-framework/conman'>conman</a> library is used to create a pooled connection.</p><p>The connection is initialized by calling the <code>conman/connect!</code> function with the connection atom and a database specification map. The <code>connect!</code> function will create a pooled JDBC connection using the <a href='https://github.com/brettwooldridge/HikariCP'>HikariCP</a> library. You can see the complete list of the connection options <a href='https://github.com/tomekw/hikari-cp#configuration-options'>here</a>. The connection can be terminated by calling the <code>disconnect!</code> function.</p><pre><code class="clojure">&#40;ns myapp.db.core
   &#40;:require
     ...
     &#91;&lt;app&gt;.config :refer &#91;env&#93;&#93;
@@ -124,32 +118,6 @@ VALUES &#40;:id, :first&#95;name, :last&#95;name, :email, :pass&#41;
      :last&#95;name  &quot;Smith&quot;
      :email      &quot;sam.smith@example.com&quot;}&#41;
   &#40;get-user {:id &quot;foo&quot;}&#41;&#41;
-</code></pre><h3 id="massaging&#95;key&#95;names&#95;from&#95;sql&#95;to&#95;clojure&#95;style">Massaging key names from SQL to Clojure style</h3><p>HugSQL can be told to automatically transform underscores in the result keys into dashes by using <a href='https://clj-commons.org/camel-snake-kebab'>camel-snake-kebab</a> library:</p><pre><code class="clojure">&#40;ns yuggoth.db.core
-  &#40;:require ...
-            &#91;camel-snake-kebab.extras :refer &#91;transform-keys&#93;&#93;
-            &#91;camel-snake-kebab.core :refer &#91;-&gt;kebab-case-keyword&#93;&#93;&#41;&#41;
-
-&#40;defn result-one-snake-&gt;kebab
-  &#91;this result options&#93;
-  &#40;-&gt;&gt; &#40;hugsql.adapter/result-one this result options&#41;
-       &#40;transform-keys -&gt;kebab-case-keyword&#41;&#41;&#41;
-
-&#40;defn result-many-snake-&gt;kebab
-  &#91;this result options&#93;
-  &#40;-&gt;&gt; &#40;hugsql.adapter/result-many this result options&#41;
-       &#40;map #&#40;transform-keys -&gt;kebab-case-keyword %&#41;&#41;&#41;&#41;
-
-&#40;defmethod hugsql.core/hugsql-result-fn :1 &#91;sym&#93;
-  'yuggoth.db.core/result-one-snake-&gt;kebab&#41;
-
-&#40;defmethod hugsql.core/hugsql-result-fn :one &#91;sym&#93;
-  'yuggoth.db.core/result-one-snake-&gt;kebab&#41;
-
-&#40;defmethod hugsql.core/hugsql-result-fn :&#42; &#91;sym&#93;
-  'yuggoth.db.core/result-many-snake-&gt;kebab&#41;
-
-&#40;defmethod hugsql.core/hugsql-result-fn :many &#91;sym&#93;
-  'yuggoth.db.core/result-many-snake-&gt;kebab&#41;
 </code></pre><p>See the <a href='http://www.hugsql.org/'>official documentation</a> for more details.</p>
       </div>
     </div>
