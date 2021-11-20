@@ -59,34 +59,43 @@
       <h1>Database Access</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#configuring_the_database">Configuring the Database</a></li><li><a href="#sql">SQL</a></li><li><a href="#setting_up_the_database_connection">Setting up the database connection</a></li><li><a href="#translating_sql_types">Translating SQL types</a></li><li><a href="#working_with_hugsql">Working with HugSQL</a></li></ol>
+      <ol class="contents"><li><a href="#configuring_the_database">Configuring the Database</a></li><li><a href="#sql">SQL</a></li><li><a href="#sql_queries">SQL Queries</a></li><li><a href="#working_with_hugsql">Working with HugSQL</a></li></ol>
       
       <div id="content">
-        <h2 id="configuring&#95;the&#95;database">Configuring the Database</h2><p>Kit has two database paradigms supported as libraries: XTDB (formerly known as Crux), and SQL-style database, however you can easily roll your own connection.</p><h3 id="sql">SQL</h3><p>Kit defaults to using <a href='https://github.com/yogthos/migratus'>Migratus</a> for SQL database migrations and <a href='http://www.hugsql.org/'>HugSQL</a> for database interaction.</p><p>The migrations and a default connection will be setup when using a database profile such as <code>+sql</code>. The default SQL implementation used with this profile is <a href='https://www.postgresql.org/'>PostgreSQL</a>, however any SQL solution will work.</p><h4 id="configuring&#95;migrations">Configuring Migrations</h4><p>We first have to set the connection configuration for our database in <code>system.edn</code>. </p><p>Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the <code>resources/migrations</code> folder. The template will generate sample migration files for the users table.</p><pre><code>resources/migrations/20210720004935-add-users-table.down.sql
+        <h2 id="configuring&#95;the&#95;database">Configuring the Database</h2><p>Kit has two database paradigms supported as libraries: XTDB (formerly known as Crux), and SQL-style database, however you can easily roll your own connection.</p><h3 id="sql">SQL</h3><p>Kit defaults to using <a href='https://github.com/yogthos/migratus'>Migratus</a> for SQL database migrations and <a href='http://www.hugsql.org/'>HugSQL</a> for database interaction.</p><p>The migrations and a default connection will be setup when using a database profile such as <code>+sql</code>. The default SQL implementation used with this profile is <a href='https://www.postgresql.org/'>PostgreSQL</a>, however any SQL solution will work.</p><h4 id="configuring&#95;migrations">Configuring Migrations</h4><p>We first have to set the connection configuration for our database in <code>system.edn</code>. This is by default in the <code>+sql</code> profile for development <code>jdbc:postgresql://localhost/&lt;app-name&gt;?user=&lt;app-name&gt;&amp;password=&lt;app-name&gt;</code>, however, you can change it whatever you like</p><pre><code class="clojure"> :db.sql/connection
+ #profile {:dev  {:jdbc-url &quot;jdbc:postgresql://localhost/&lt;app-name&gt;?user=&lt;app-name&gt;&amp;password=&lt;app-name&gt;&quot;}
+           :test {}
+           :prod {:jdbc-url   #env JDBC&#95;URL
+                  :init-size  1
+                  :min-idle   1
+                  :max-idle   8
+                  :max-active 32}}
+</code></pre><p>Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the <code>resources/migrations</code> folder. The template will generate sample migration files for the users table.</p><pre><code>resources/migrations/20210720004935-add-users-table.down.sql
 resources/migrations/20210720004935-add-users-table.up.sql
-</code></pre><p>The default configuration runs any new migrations on startup, but this can be changed.</p><p>Migrations can also be run via the REPL. The TODO namespace provides the following helper functions:</p><ul><li><code>&#40;reset-db&#41;</code> - resets the state of the database</li><li><code>&#40;migrate&#41;</code> - runs the pending migrations</li><li><code>&#40;rollback&#41;</code> - rolls back the last set of migrations</li><li><code>&#40;create-migration &quot;add-guestbook-table&quot;&#41;</code> - creates the up/down migration files with the given name</li></ul><p><strong>important</strong>: the database connection must be initialized before migrations can be run in the REPL</p><p>Please refer to the <a href='/docs/migrations.html'>Database Migrations</a> section for more details.</p><h3 id="setting&#95;up&#95;the&#95;database&#95;connection">Setting up the database connection</h3><p>The connection settings are found in the <code>&lt;app&gt;.db.core</code> namespace of the application. By default the database connection is expected to be provided as the <code>DATABASE&#95;URL</code> environment variable.</p><p>The <a href='https://github.com/luminus-framework/conman'>conman</a> library is used to create a pooled connection.</p><p>The connection is initialized by calling the <code>conman/connect!</code> function with the connection atom and a database specification map. The <code>connect!</code> function will create a pooled JDBC connection using the <a href='https://github.com/brettwooldridge/HikariCP'>HikariCP</a> library. You can see the complete list of the connection options <a href='https://github.com/tomekw/hikari-cp#configuration-options'>here</a>. The connection can be terminated by calling the <code>disconnect!</code> function.</p><pre><code class="clojure">&#40;ns myapp.db.core
-  &#40;:require
-    ...
-    &#91;&lt;app&gt;.config :refer &#91;env&#93;&#93;
-    &#91;conman.core :as conman&#93;
-    &#91;mount.core :refer &#91;defstate&#93;&#93;&#41;&#41;
-
-&#40;defstate &#94;:dynamic &#42;db&#42;
-          :start &#40;conman/connect!
-                   {:jdbc-url &#40;env :database-url&#41;}&#41;
-          :stop &#40;conman/disconnect! &#42;db&#42;&#41;&#41;
-</code></pre><p>The connection is specified using the <code>defstate</code> macro. The <code>connect!</code> function is called when the <code>&#42;db&#42;</code> component enters the <code>:start</code> state and the <code>disconnect!</code> function is called when it enters the <code>:stop</code> state.</p><p>The connection needs to be dynamic in order to be automatically rebound to a transactional connection when calling query functions within the scope of <code>conman.core/with-transaction</code>.</p><p>The lifecycle of the <code>&#42;db&#42;</code> component is managed by the <a href='https://github.com/tolitius/mount'>mount</a> library as discussed in the <a href='/docs/components.html'>Managing Component Lifecycle</a> section.</p><p>The <code>&lt;app&gt;.core/start-app</code> and <code>&lt;app&gt;.core/stop-app</code> functions will initialize and tear down any components defined using <code>defstate</code> by calling <code>&#40;mount/start&#41;</code> and <code>&#40;mount/stop&#41;</code> respectively. This ensures that the connection is available when the server starts up and that it's cleaned up on server shutdown.</p><p>When working with multiple databases, a separate atom is required to track each database connection.</p><h3 id="translating&#95;sql&#95;types">Translating SQL types</h3><p>Certain types require translation when persisting and reading the data. The specifics of how different types are translated will vary between different database engines. It is possible to do automatic coercison of types read from the database by extending the <code>clojure.java.jdbc/IResultSetReadColumn</code> protocol.</p><p>For example, if we wanted to convert columns containing <code>java.sql.Date</code> objects to <code>java.util.Date</code> objects, then we could write the following:</p><pre><code class="clojure">&#40;defn to-date &#91;sql-date&#93;
-  &#40;-&gt; sql-date &#40;.getTime&#41; &#40;java.util.Date.&#41;&#41;&#41;
-
-&#40;extend-protocol jdbc/IResultSetReadColumn
-  java.sql.Date
-  &#40;result-set-read-column &#91;value metadata index&#93;
-    &#40;to-date value&#41;&#41;&#41;
-</code></pre><p>The <code>result-set-read-column</code> function must accept <code>value</code>, <code>metadata</code>, and <code>index</code> parameters. The return value will be set as the data in the result map of the query.</p><p>Conversely, if we wanted to translate the data to the SQL type, then we'd extend the <code>java.util.Date</code> type:</p><pre><code class="clojure">&#40;extend-type java.util.Date
-  jdbc/ISQLParameter
-  &#40;set-parameter &#91;value &#94;PreparedStatement stmt idx&#93;
-    &#40;.setTimestamp stmt idx &#40;java.sql.Timestamp. &#40;.getTime value&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>The type extensions would typically be placed in the <code>&lt;app&gt;.db.core</code> namespace, and will get loaded automatically when the project starts. The templates using Postgres and MySQL databases come with some extensions enabled by default.</p><h3 id="working&#95;with&#95;hugsql">Working with HugSQL</h3><p>HugSQL takes the approach similar to HTML templating for writing SQL queries. The queries are written using plain SQL, and the dynamic parameters are specified using Clojure keyword syntax. HugSQL will use the SQL templates to automatically generate the functions for interacting with the database.</p><p>Conventionally the queries are placed in the <code>resources/sql/queries.sql</code> file. However, once your application grows you may consider splitting the queries into multiple files.</p><p>The format for the file can be seen below:</p><pre><code class="sql">-- :name create-user! :! :n
+</code></pre><p>The default configuration runs any new migrations on startup, but this can be changed by updating the value for <code>migrate-on-init?</code>.</p><pre><code class="clojure"> :db.sql/migrations
+ {:store            :database
+  :db               {:datasource #ig/ref :db/connection}
+  :migrate-on-init? true}
+</code></pre><p>Migrations can also be run via the REPL. The <code>migratus.core</code> namespace provides the following helper functions:</p><ul><li><code>&#40;migratus.core/reset-db&#41;</code> - resets the state of the database</li><li><code>&#40;migratus.core/migrate&#41;</code> - runs the pending migrations</li><li><code>&#40;migratus.core/rollback&#41;</code> - rolls back the last set of migrations</li><li><code>&#40;migratus.core/create-migration &quot;add-guestbook-table&quot;&#41;</code> - creates the up/down migration files with the given name</li></ul><p><strong>important</strong>: the database connection must be initialized before migrations can be run in the REPL</p><p>Please refer to the <a href='/docs/migrations.html'>Database Migrations</a> section for more details.</p><h3 id="sql&#95;queries">SQL Queries</h3><p>SQL queries are parsed by HugSQL as defined in your <code>system.edn</code> and <code>resources/queries.sql</code> file by default. You can update the filename to indicate a different path, e.g. `"sql/queries.sql".</p><pre><code class="clojure">:db.sql/query-fn
+{:conn     #ig/ref :db.sql/connection
+ :options  {}
+ :filename &quot;queries.sql&quot;}
+</code></pre><p>This integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say we had the following SQL:</p><pre><code class="sql">-- :name get-user-by-id :? :1
+-- :doc returns a user object by id, or nil if not present
+SELECT &#42;
+FROM users
+WHERE id = :id
+</code></pre><p>We could simply query this bit with the following <code>query-fn</code> call:</p><pre><code class="clojure">&#40;query-fn :get-user-by-id {:id 1}&#41;
+</code></pre><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defmethod ig/init-key :db.sql/query-fn
+  &#91;&#95; {:keys &#91;conn options filename&#93;
+      :or   {options {}}}&#93;
+  &#40;let &#91;queries &#40;conman/bind-connection-map conn options filename&#41;&#93;
+    &#40;fn
+      &#40;&#91;query params&#93;
+       &#40;conman/query queries query params&#41;&#41;
+      &#40;&#91;conn query params &amp; opts&#93;
+       &#40;apply conman/query conn queries query params opts&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>As you can see from this, the two-arity <code>query-fn</code> uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.</p><h3 id="working&#95;with&#95;hugsql">Working with HugSQL</h3><p>HugSQL takes the approach similar to HTML templating for writing SQL queries. The queries are written using plain SQL, and the dynamic parameters are specified using Clojure keyword syntax. HugSQL will use the SQL templates to automatically generate the functions for interacting with the database.</p><p>Conventionally the queries are placed in the <code>resources/sql/queries.sql</code> file. However, once your application grows you may consider splitting the queries into multiple files.</p><p>The format for the file can be seen below:</p><pre><code class="sql">-- :name create-user! :! :n
 -- :doc creates a new user record
 INSERT INTO users
 &#40;id, first&#95;name, last&#95;name, email, pass&#41;
@@ -193,21 +202,9 @@ VALUES &#40;:id, :first&#95;name, :last&#95;name, :email, :pass&#41;
           </a>
         </li>
         
-        <li >
-          <a href="/docs/security.html">
-            Security
-          </a>
-        </li>
-        
         <li class="selected" >
           <a href="/docs/database.html">
             Database Access
-          </a>
-        </li>
-        
-        <li >
-          <a href="/docs/migrations.html">
-            Database Migrations
           </a>
         </li>
         

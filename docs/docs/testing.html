@@ -59,51 +59,24 @@
       <h1>Testing</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#clojure">Clojure</a></li><li><a href="#clojurescript">ClojureScript</a></li></ol>
+      <ol class="contents"><li><a href="#clojure">Clojure</a></li></ol>
       
       <div id="content">
-        <h3 id="clojure">Clojure</h3><p>Luminus sets up a default test harness found in the <code>test</code> directory of the project.</p><p>The database tests run using the <code>:test</code> profile. This profile reads the environment variables from the <code>test-config.edn</code> file.</p><p>The recommended way to run the tests is using the <a href='https://github.com/jakemcc/lein-test-refresh'>lein-test-refresh</a> plugin. The plugin watches namespaces for changes, and runs tests accordingly. The plugin can be run using the following command out of the box:</p><pre><code>lein test-refresh
-</code></pre><p>A default test will be created for the application handler:</p><pre><code class="clojure">&#40;ns myapp.test.handler
-  &#40;:require &#91;clojure.test :refer :all&#93;
-            &#91;ring.mock.request :refer :all&#93;
-            &#91;&lt;app&gt;.handler :refer :all&#93;&#41;&#41;
+        <h3 id="clojure">Clojure</h3><p>Kit sets up a default test harness found in the <code>test</code> directory of the project. It comes supplied with a <code>test-utils</code> namespace that has some handy utilities for testing</p><pre><code>&#40;ns &lt;app-ns&gt;.test-utils
+  &#40;:require
+    &#91;&lt;app-ns&gt;.core :as core&#93;&#41;&#41;
 
-&#40;deftest test-app
-  &#40;testing &quot;main route&quot;
-    &#40;let &#91;response &#40;app &#40;request :get &quot;/&quot;&#41;&#41;&#93;
-      &#40;is &#40;= 200 &#40;:status response&#41;&#41;&#41;&#41;&#41;
+&#40;defn system-state &#91;&#93;
+  &#40;or @core/system state/system&#41;&#41;
 
-  &#40;testing &quot;not-found route&quot;
-    &#40;let &#91;response &#40;app &#40;request :get &quot;/invalid&quot;&#41;&#41;&#93;
-      &#40;is &#40;= 404 &#40;:status response&#41;&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>In the tests, a mock request generated using the <code>ring.mock.request/request</code> function is generated and passed to the <code>&lt;app&gt;.handler/app</code> function. The response is tested against the expected response for the route. The example tests simply test that a valid route returns a response with a status <code>200</code>, while an invalid one results in a <code>404</code> response.</p><p>When a relational database profile is used, such as <code>+postgres</code>, then a set of tests for the database are added to the project.</p><pre><code class="clojure">&#40;ns myapp.test.db.core
-  &#40;:require &#91;clojure.test :refer :all&#93;
-            &#91;myapp.db.core :refer :all&#93;
-            &#91;myapp.db.migrations :as migrations&#93;&#41;&#41;
+&#40;defn system-fixture
+  &#91;&#93;
+  &#40;fn &#91;f&#93;
+    &#40;when &#40;nil? &#40;system-state&#41;&#41;
+      &#40;core/start-app {:opts {:profile :test}}&#41;&#41;
+    &#40;f&#41;&#41;&#41;
 
-&#40;deftest test-users
-  ;; Make sure the user with id 1 doesn't exist.
-  ;; You can also use transactions around tests to ensure that.
-  &#40;delete-user! {:id &quot;1&quot;}&#41;
-  &#40;is &#40;= 1 &#40;create-user! {:id         &quot;1&quot;
-                          :first&#95;name &quot;Sam&quot;
-                          :last&#95;name  &quot;Smith&quot;
-                          :email      &quot;sam.smith@example.com&quot;
-                          :pass       &quot;pass&quot;}&#41;&#41;&#41;
-  &#40;is &#40;= &#40;get-user {:id &quot;1&quot;}&#41;
-         &#91;{:id         &quot;1&quot;
-           :first&#95;name &quot;Sam&quot;
-           :last&#95;name  &quot;Smith&quot;
-           :email      &quot;sam.smith@example.com&quot;
-           :pass       &quot;pass&quot;
-           :admin      nil
-           :last&#95;login nil
-           :is&#95;active  nil}&#93;&#41;&#41;&#41;
-
-&#40;use-fixtures :once &#40;fn &#91;f&#93; &#40;migrations/migrate &#91;&quot;migrate&quot;&#93;&#41; &#40;f&#41;&#41;&#41;
-</code></pre><p>The database connection for the test database should be defined in the <code>test-config.edn</code> file.</p><h3 id="clojurescript">ClojureScript</h3><p>Luminus uses <a href='https://github.com/bensu/doo'>doo</a> for running ClojureScript tests. ClojureScript tests are located in <code>test/cljs</code>. Doo runs tests in namespaces that have been given as a parameter to 'doo.runner/doo-tests' macro in doo_runner.cljs, that is located in 'test/cljs' directory of the project.</p><p>Doo requires a JavaScript environment where to run the tests. This can be a headless environment, such as <a href='http://phantomjs.org'>PhantomJS</a>, or a browser. Prerequisites to run ClojureScript tests depend on the environment. For further information, <a href='https://github.com/bensu/doo#setting-up-environments'>refer to the documentation provided by doo</a>.</p><p>To run tests using PhantomJS, PhantomJS needs to be installed. Once PhantomJS has been installed, tests can be ran using test profile with doo:</p><pre><code>lein with-profile test doo phantom
-</code></pre><p>For running tests in a browser, Javascript test runner Karma and related plugins are needed. These can be set up by following <a href='https://github.com/bensu/doo#karma'>Karma installation instructions provided by doo</a>. Once all the prerequisites are fulfilled, tests can be ran in a given browser, for example in Safari, with command</p><pre><code>lein with-profile test doo safari
-</code></pre><p>Using doo with the above commands builds ClojureScript with the tests included accordingly to test profile definitions, executes the tests, displays their results and watches for changes in files and runs the tests again when changes happen.</p>
+</code></pre><p>The <code>system-fixture</code> can be used as a fixture before any tests that require your system to be started. It ensures that the system boots with the test environment.</p><p>You can use <code>system-state</code> to get the current running state of your system. This is handy if you need to reference, access, or override components for individual tests.</p>
       </div>
     </div>
   </div>
@@ -179,20 +152,8 @@
         </li>
         
         <li >
-          <a href="/docs/security.html">
-            Security
-          </a>
-        </li>
-        
-        <li >
           <a href="/docs/database.html">
             Database Access
-          </a>
-        </li>
-        
-        <li >
-          <a href="/docs/migrations.html">
-            Database Migrations
           </a>
         </li>
         
