@@ -14,13 +14,12 @@ Review
 - [x] html_templating.md
 - [x] learning_clojure.md - no change
 - [x] logging.md
-- [ ] middleware.md
+- [x] middleware.md
 - [x] profiles.md
 - [x] repl.md
 - [x] requests_responses.md
 - [ ] routes.md
-- [ ] security.md
-- [ ] servers.md
+- [x] servers.md
 - [x] sessions.md
 - [x] testing.md
 - [x] upgrading.md

@@ -1,8 +1,10 @@
 ## Adding custom middleware
 
-Since Luminus uses Ring for routing the application handler
+Since Kit uses Ring and Reitit for routing the application handler
 is a standard Ring handler and can be wrapped in middleware
 just like you would in any other Ring based application.
+
+Traditionally, you can define Ring middleware as functions, however Reitit also allows us to define middleware as data. All value
 
 The middleware allows wrapping the handlers in functions which can modify the way the request is processed. 
 Middleware functions are often used to extend the base functionality of Ring handlers to match the needs of 
@@ -19,23 +21,19 @@ A middleware is simply a function which accepts an existing handler with some op
 
 As you can see the wrapper accepts the handler and returns a function which in turn accepts the request. Since the returned function was defined in the scope where the handler exists, it can use it internally. When called, it will call the handler with the request and add Pragma: no-cache to the response map. For detailed information please refer to the official [Ring documentation](https://github.com/ring-clojure/ring/wiki).
 
-
-The middleware is added in the `middleware` namespace of your project. The `wrap-base` function aggregates all the common middleware for the application.
-Only add middleware that you also wish to use in production in the `wrap-base` function.
+This same code written as Reitit compatible data middleware is
 
 ```clojure
-(defn wrap-base [handler]
-  (-> ((:middleware defaults) handler)
-      wrap-formats
-      wrap-webjars
-      wrap-flash
-      (wrap-session {:cookie-attrs {:http-only true}})
-      (wrap-defaults
-        (-> site-defaults
-            (assoc-in [:security :anti-forgery] false)
-            (dissoc :session)))
-      wrap-context
-      wrap-internal-error))
+(defn nocache-handler
+  [handler]
+  (fn [request]
+    (let [response (handler request)]
+      (assoc-in response [:headers  "Pragma"] "no-cache"))))
+
+(def wrap-nocache
+  {:name        ::wrap-nocache
+   :description "Calls the handler with the request and add Pragma: no-cache to the response map"
+   :wrap        nocache-handler})
 ```
 
 Any development middleware, such as middleware for showing stacktraces, should be added in the `wrap-dev` function found in the `<app>.dev-middleware` namespace.
@@ -64,9 +62,16 @@ The request is passed through these functions in the following order:
 handler <- wrap-formats <- wrap-defaults <- request
 ```
 
-## Useful ring middleware
+On the other hand, any middleware that is set via the `:middleware` key in any Reitit routes is kept in the order as written, i.e.
 
-* [ring-ratelimit](https://github.com/myfreeweb/ring-ratelimit) - Rate limiting middleware
-* [ring-etag-middleware](https://github.com/mikejs/ring-etag-middleware) - Calculates etags for ring responses and returns 304 responses when appropriate
-* [ring-gzip-middleware](https://github.com/amalloy/ring-gzip-middleware) - Gzips ring responses for user agents which can handle it
-* [ring-upload-progress](https://github.com/joodie/ring-upload-progress) - Provide upload progress data in ring session
+```clojure
+["/api" {:middleware [middleware-1 middleware-2]}]
+```
+
+executes the middleware in the order of 
+
+```
+middleware-1 -> middleware-2
+```
+
+This is much easier to reason about and typically you should set your middleware in the appropriate routes so that they do not apply on all routes of your applicaiton unless necessary.
