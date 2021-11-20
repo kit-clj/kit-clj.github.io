@@ -59,40 +59,26 @@
       <h1>Server Tuning</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#application_middleware">Application Middleware</a></li><li><a href="#immutant_configuration">Immutant Configuration</a></li><li><a href="#context_paths">Context paths</a></li></ol>
+      <ol class="contents"><li><a href="#undertow_configuration">Undertow Configuration</a></li></ol>
       
       <div id="content">
-        <p>While Luminus aims to provide reasonable defaults, you will likely want to tune your server configuration to fit the needs of your specific application.</p><h3 id="application&#95;middleware">Application Middleware</h3><p>Luminus includes a number of useful wrappers in its default middleware stack. These include <a href='https://github.com/ring-clojure/ring-defaults'>ring-defaults</a>, session middleware, <a href='https://github.com/ngrunwald/ring-middleware-format'>ring-middleware-format</a>, and <a href='https://github.com/weavejester/ring-webjars'>ring-webjars</a>.</p><p>While such middleware is useful in most situations, it will also incur a performance cost. In cases where you wish to optimize for performance, only wrap the routes with the necessary middleware. For example, if a route doesn't server static resources, then you would not need to wrap it with the webjars middleware.</p><h3 id="immutant&#95;configuration">Immutant Configuration</h3><p>Luminus used to using <a href='http://immutant.org/'>Immutant</a> as the default server, but now it defaults to Jetty.  The following information is still applicable to using <code>+immutant</code>.</p><p>The <a href='http://immutant.org/'>Immutant</a> server provides a number of options that are unique to it.</p><p>Immutant allows setting the number of worker and IO threads using the <code>:worker-threads</code> and the <code>:io-threads</code> keys respectively. For example, we could update the default configuration as follows:</p><pre><code class="clojure">&#40;mount/defstate http-server
-  :start
-  &#40;http/start
-    &#40;-&gt; env
-        &#40;assoc
-          :handler handler/app
-          :worker-threads 200
-          :io-threads &#40;&#42; 2 &#40;.availableProcessors &#40;Runtime/getRuntime&#41;&#41;&#41;&#41;
-        &#40;update :port #&#40;or &#40;-&gt; env :options :port&#41; %&#41;&#41;&#41;&#41;
-  :stop
-  &#40;http/stop http-server&#41;&#41;
-</code></pre><p>Note that the <code>env</code> is used to supply the base configuration, meaning that any initialization parameters can also be supplied using the environment variables at runtime.</p><p>Another feature provided by Immutant is the ability to chain multiple independent handlers together. Luminus provides the <code>wrap-handler</code> helper function for this purpose:</p><pre><code class="clojure">&#40;mount/defstate http-server
-                :start
-                &#40;-&gt;
-                   &#40;http/start
-                     &#40;-&gt; env
-                        &#40;assoc :handler handler/app&#41;
-                        &#40;update :port #&#40;or &#40;-&gt; env :options :port&#41; %&#41;&#41;&#41;&#41;
-                   &#40;http/wrap-handler io-routes {:path &quot;/io&quot; :dispatch? false}&#41;&#41;
-                :stop
-                &#40;http/stop http-server&#41;&#41;
-</code></pre><p>The additional handler uses a <code>:path</code> prefix as a context. All the routes served by this handler will be prefixed with the supplied path. Each handler can have its own middleware stack that's independent of other handlers in the application.</p><p>Immutant uses separate thread pools for managing the IO and the worker threads. The <code>:dispatch?</code> flag is used to decide whether the request should be dispatched by the IO thread to a separate worker thread. Since dispatching the request to a worker carries overhead, it may be more performant to handle some requests, such as hardcoded text responses, directly in the IO thread.</p><h3 id="context&#95;paths">Context paths</h3><p>Set the value of <code>:handler-path</code> key to customize the global path for the application (default is <code>/</code>). In the example below the value is gotten from a custom environment variable <code>:my-path</code>.</p><pre><code class="clojure">&#40;mount/defstate http-server
-    :start
-    &#40;http/start
-      &#40;-&gt; env
-        &#40;assoc :handler &#40;handler/app&#41;&#41;
-        &#40;update :port #&#40;or &#40;-&gt; env :options :port&#41; %&#41;&#41;
-        &#40;update :handler-path #&#40;or &#40;-&gt; env :my-path&#41; %&#41;&#41;&#41;&#41;
-    :stop
-    &#40;http/stop http-server&#41;&#41;
-</code></pre><p>You can also supply the <code>:app-context</code> key in the environment that's used by the <code>wrap-context</code> wrapper in the <code>middleware</code> namespace. It will populate the <code>&#42;app-context&#42;</code> variable in the <code>layout</code> namespace. That can be used to populate the context on the page for the client to use.</p>
+        <p>Out of the box Kit supports the <a href='https://undertow.io/'>Undertow</a> web server via the <a href='https://github.com/luminus-framework/ring-undertow-adapter'>ring-undertow-adapter</a></p><h3 id="undertow&#95;configuration">Undertow Configuration</h3><p>Undertow allows setting the number of worker and IO threads using the <code>:worker-threads</code> and the <code>:io-threads</code> keys respectively. For example, we could update the default configuration in the <code>system.edn</code> as follows:</p><pre><code class="clojure">:server/undertow
+{:port #long #or &#91;#env PORT 3000&#93;
+ :handler #ig/ref :handler/ring
+ :worker-threads 200
+ :io-threads 4}
+</code></pre><p>If you want to do a custom configuration that includes calculating the <code>io-threads</code> at runtime, you can override the default <code>ig/init-key</code> for <code>server/undertow</code>. This is the definition in <code>kit.edge.server.undertow</code></p><pre><code class="clojure">&#40;defmethod ig/prep-key :server/undertow
+  &#91;&#95; config&#93;
+  &#40;merge {:port 3000
+          :host &quot;0.0.0.0&quot;}
+         config&#41;&#41;
+</code></pre><p>For example,</p><pre><code class="clojure">&#40;defmethod ig/prep-key :server/undertow
+  &#91;&#95; config&#93;
+  &#40;merge {:port 3000
+          :host &quot;0.0.0.0&quot;
+          :io-threads &#40;&#42; 2 &#40;.availableProcessors &#40;Runtime/getRuntime&#41;&#41;&#41;}
+         config&#41;&#41;
+</code></pre><p>For a full listing of all configuration options, review the <a href='https://github.com/luminus-framework/ring-undertow-adapter'>ring-undertow-adapter documentation</a>.</p><p>Undertow uses separate thread pools for managing the IO and the worker threads. The <code>:dispatch?</code> flag is used to decide whether the request should be dispatched by the IO thread to a separate worker thread. Since dispatching the request to a worker carries overhead, it may be more performant to handle some requests, such as hardcoded text responses, directly in the IO thread.</p>
       </div>
     </div>
   </div>
@@ -168,20 +154,8 @@
         </li>
         
         <li >
-          <a href="/docs/security.html">
-            Security
-          </a>
-        </li>
-        
-        <li >
           <a href="/docs/database.html">
             Database Access
-          </a>
-        </li>
-        
-        <li >
-          <a href="/docs/migrations.html">
-            Database Migrations
           </a>
         </li>
         

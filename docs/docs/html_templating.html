@@ -62,7 +62,7 @@
       <ol class="contents"><li><a href="#templating_options">Templating Options</a></li><li><a href="#html_templating_using_selmer">HTML Templating Using Selmer</a></li><li><a href="#creating_templates">Creating Templates</a></li><li><a href="#filters">Filters</a></li><li><a href="#defining_custom_filters">Defining Custom Filters</a></li><li><a href="#tags">Tags</a></li><li><a href="#defining_custom_tags">Defining Custom Tags</a></li><li><a href="#template_inheritance">Template inheritance</a></li><li><a href="#html_templating_using_hiccup">HTML Templating Using Hiccup</a></li><li><a href="#forms_and_input">Forms and Input</a></li></ol>
       
       <div id="content">
-        <h2 id="templating&#95;options">Templating Options</h2><p>Luminus comes with the <a href='https://github.com/weavejester/hiccup'>Hiccup</a> dependency. If you're familiar with Hiccup then you can start using it out of the box.</p><p>Hiccup uses standard Clojure data structures to represent its templates. On top of that, Hiccup provides a rich API of helper functions for generating common HTML elements.</p><p>Luminus also packages <a href='https://github.com/yogthos/Selmer'>Selmer</a> for more traditional style templating using plain text files as templates.</p><p>You can choose to use either templating engine or combine them. Alternatively, you can choose to use a different templating engine altogether. A couple of popular options are <a href='https://github.com/cgrand/enlive'>Enlive</a> and <a href='https://github.com/davidsantiago/stencil'>Stencil</a>.</p><h2 id="html&#95;templating&#95;using&#95;selmer">HTML Templating Using Selmer</h2><p>Selmer is a templating language similar to Django and Rails templates. If you're familiar with Django or similar templating languages you should feel right at home.</p><h3 id="creating&#95;templates">Creating Templates</h3><p>By design, Selmer separates the presentation logic from the program logic. The templates are simply HTML files with additional template tags for dynamic elements. The dynamc elements in the template are resolved during the rendering step. Let's take a look at an example template below:</p><pre><code class="xml">&lt;html&gt;
+        <h2 id="templating&#95;options">Templating Options</h2><p>Kit supports <a href='https://github.com/yogthos/Selmer'>Selmer</a> both as a library, and in the HTML module for traditional style templating using plain text files as templates.</p><p>Alternatively, you can choose to use a different templating engine altogether. A couple of popular options are <a href='https://github.com/cgrand/enlive'>Enlive</a> and <a href='https://github.com/davidsantiago/stencil'>Stencil</a>.</p><h2 id="html&#95;templating&#95;using&#95;selmer">HTML Templating Using Selmer</h2><p>Selmer is a templating language similar to Django and Rails templates. If you're familiar with Django or similar templating languages you should feel right at home.</p><h3 id="creating&#95;templates">Creating Templates</h3><p>By design, Selmer separates the presentation logic from the program logic. The templates are simply HTML files with additional template tags for dynamic elements. The dynamc elements in the template are resolved during the rendering step. Let's take a look at an example template below:</p><pre><code class="xml">&lt;html&gt;
     &lt;head&gt;
         &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
         &lt;title&gt;My First Template&lt;/title&gt;
@@ -187,10 +187,7 @@
   &lt;input id=&quot;pass&quot; name=&quot;pass&quot; placeholder=&quot;password&quot; type=&quot;password&quot; /&gt;
   &lt;input type=&quot;submit&quot; value=&quot;login&quot; /&gt;
 &lt;/form&gt;
-</code></pre><p>Finally, Luminus template provides a helper function under the <code>&lt;yourapp&gt;.util</code> namespace called <code>md-&gt;html</code>, this function will read a markdown file relative to <code>resources/public/</code> folder and return an HTML string. This can be used in conjunction with Hiccup functions, eg:</p><pre><code class="clojure">&#40;:require &#91;&lt;yourapp&gt;.util :as util&#93;&#41;
-...
-&#40;html &#91;:div.container &#91;:p &#40;util/md-&gt;html &quot;/md/paragraph.md&quot;&#41;&#93;&#93;&#41;
-</code></pre><p>The markdown generation is done by markdown-clj, please see the <a href='https://github.com/yogthos/markdown-clj'>Github page</a> for details on supported syntax.</p>
+</code></pre>
       </div>
     </div>
   </div>
@@ -266,20 +263,8 @@
         </li>
         
         <li >
-          <a href="/docs/security.html">
-            Security
-          </a>
-        </li>
-        
-        <li >
           <a href="/docs/database.html">
             Database Access
-          </a>
-        </li>
-        
-        <li >
-          <a href="/docs/migrations.html">
-            Database Migrations
           </a>
         </li>
         
