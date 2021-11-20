@@ -56,46 +56,10 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>Sessions</h1>
-      
-      <h2>Contents</h2>
-      <ol class="contents"><li><a href="#sessions">Sessions</a></li><li><a href="#accessing_the_session">Accessing the session</a></li><li><a href="#flash_sessions">Flash sessions</a></li><li><a href="#cookies">Cookies</a></li></ol>
+      <h1>Caching</h1>
       
       <div id="content">
-        <h2 id="sessions">Sessions</h2><p>Kit defaults to using cookie-based sessions.</p><p>The session middleware is configured in the <code>:cookie-session-config</code> of the <code>:handler/ring</code> component. Session timeout is specified in seconds and defaults to 24 hours (i.e. 86400 seconds) of inactivity. Here is the default configuration. The business logic is provided by <code>ring.middleware.session.cookie/cookie-store</code>.</p><pre><code class="clojure">{:cookie-secret #or &#91;#env COOKIE&#95;SECRET &quot;16charsecrethere&quot;&#93;
- :cookie-name &quot;&lt;project-ns&gt;&quot;
- :cookie-default-max-age 86400}
-</code></pre><h3 id="accessing&#95;the&#95;session">Accessing the session</h3><p>Ring tracks sessions using the request map and the current session will be found under the <code>:session</code> key. Below we have a simple example of interaction with the session.</p><pre><code class="clojure">&#40;ns myapp.home
-  &#40;:require
-   &#91;ring.util.response :refer &#91;response&#93;&#93;&#41;&#41;
-
-&#40;defn set-user! &#91;id {session :session}&#93;
-  &#40;-&gt; &#40;response &#40;str &quot;User set to: &quot; id&#41;&#41;
-      &#40;assoc :session &#40;assoc session :user id&#41;&#41;
-      &#40;assoc :headers {&quot;Content-Type&quot; &quot;text/plain&quot;}&#41;&#41;&#41;
-
-&#40;defn remove-user! &#91;{session :session}&#93;
-  &#40;-&gt; &#40;response &quot;User removed&quot;&#41;
-      &#40;assoc :session &#40;dissoc session :user&#41;&#41;
-      &#40;assoc :headers {&quot;Content-Type&quot; &quot;text/plain&quot;}&#41;&#41;&#41;
-
-&#40;defn clear-session! &#91;&#93;
-  &#40;-&gt; &#40;response &quot;Session cleared&quot;&#41;
-      &#40;dissoc :session&#41;
-      &#40;assoc :headers {&quot;Content-Type&quot; &quot;text/plain&quot;}&#41;&#41;&#41;
-
-&#40;def app-routes
-  &#91;&quot;&quot;
-   {:middleware &#91;middleware/wrap-csrf
-                 middleware/wrap-formats&#93;}
-   &#91;&quot;/login/:id&quot; {:get &#40;fn &#91;{:keys &#91;path-params&#93; :as req}&#93;
-                         &#40;set-user! &#40;:id path-params&#41; req&#41;&#41;}&#93;
-   &#91;&quot;/remove&quot; {:get remove-user!}&#93;
-   &#91;&quot;/logout&quot; {:get clear-session!&#93;&#93;&#41;
-</code></pre><h3 id="flash&#95;sessions">Flash sessions</h3><p>Flash sessions have a lifespan of a single request, these can be accessed using the <code>:flash</code> key instead of the <code>:session</code> key used for regular sessions.</p><h2 id="cookies">Cookies</h2><p>Cookies are found under the <code>:cookies</code> key of the request, eg:</p><pre><code class="clojure">{:cookies {&quot;username&quot; {:value &quot;Bob&quot;}}}
-
-</code></pre><p>Conversely, to set a cookie on the response we simply update the response map with the desired cookie value:</p><pre><code class="clojure">&#40;-&gt; &quot;response with a cookie&quot; response &#40;assoc-in &#91;:cookies &quot;username&quot; :value&#93; &quot;Alice&quot;&#41;&#41;
-</code></pre><p>Cookies can contain the following additional attributes in addition to the <code>:value</code> key:</p><ul><li>:domain - restrict the cookie to a specific domain</li><li>:path - restrict the cookie to a specific path</li><li>:secure - restrict the cookie to HTTPS URLs if true</li><li>:http-only - restrict the cookie to HTTP if true (not accessible via e.g. JavaScript)</li><li>:max-age - the number of seconds until the cookie expires</li><li>:expires - a specific date and time the cookie expires</li></ul>
+        <p>TODO</p>
       </div>
     </div>
   </div>
@@ -164,7 +128,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/sessions.html">
             Sessions
           </a>
@@ -176,7 +140,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/caching.html">
             Caching
           </a>
