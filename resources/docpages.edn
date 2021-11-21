@@ -23,4 +23,5 @@
  ["upgrading.md"          "Upgrading"               "topic"]
  ["learning_clojure.md"   "Clojure Resources"       "topic"]
 
- ["kit-core.md"           "kit-core"                  "lib"]]
+ ["kit-core.md"           "kit-core"                  "lib"]
+ ["kit-hato.md"           "kit-hato"                  "lib"]]
