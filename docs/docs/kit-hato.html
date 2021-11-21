@@ -56,10 +56,41 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>Sample Applications</h1>
+      <h1>kit-hato</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:http.client/hato">:http.client/hato</a></li></ol>
       
       <div id="content">
-        <p>Below are a few sample applications built using Kit:</p><p>TODO</p><ul><li>[guestbook - complete source listing for the guestbook example]()</li></ul>
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":http.client/hato">:http.client/hato</h3><p>Component that creates a <a href='https://github.com/gnarroway/hato'>hato</a> HTTP client for use throughout your application. </p><p>For example, you may configure it as follows in your <code>system.edn</code></p><pre><code class="clojure">:http.client.hato/auth0
+{:connect-timeout 3000}
+</code></pre><p>And as follows in your Clojure code:</p><pre><code class="clojure">&#40;derive :http.client.hato/auth0 :http.client/hato&#41;
+</code></pre><p>Note the derivation allows you to have multiple clients should you want one per individual service</p><p>Now you can use this component throughout the application, e.g.</p><pre><code class="clojure">;; system.edn
+:reitit.routes/api
+{:base-path &quot;/api&quot;
+ :env #ig/ref :system/env
+ :auth0-http-client :http.client.hato/auth0}
+
+;; clojure &#40;in default template your &lt;&lt;app-name&gt;&gt;.web.routes.api&#41;
+&#40;defn auth0-call
+  &#91;req&#93;
+  &#40;-&gt; &#40;hato/get &quot;https://YOUR&#95;DOMAIN/wsfed/YOUR&#95;CLIENT&#95;ID&quot;
+                {:http-client &#40;utils/route-data-key req :auth0-http-client&#41;}&#41;
+      :body
+      &#40;http-response/ok&#41;&#41;&#41;
+
+&#40;defn api-routes &#91;base-path&#93;
+  &#91;base-path
+   &#91;&quot;/swagger.json&quot;
+    {:get {:no-doc  true
+           :swagger {:info {:title &quot; API&quot;}}
+           :handler &#40;swagger/create-swagger-handler&#41;}}&#93;
+   &#91;&quot;/health&quot;
+    {:get health/healthcheck!}&#93;
+   ;; New code here
+   &#91;&quot;/auth0-call&quot;
+    {:post auth0-call}&#93;&#93;&#41;
+</code></pre><p><code>http.client/hato</code> is derived from <code>http/client</code>. This is useful should you want to extend behaviour for multiple HTTP clients and want to apply the same logic across all of them.</p>
       </div>
     </div>
   </div>
@@ -194,7 +225,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/apps.html">
             Sample Applications
           </a>
@@ -222,7 +253,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/kit-hato.html">
             kit-hato
           </a>
