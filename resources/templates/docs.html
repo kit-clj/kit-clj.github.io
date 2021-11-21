@@ -25,6 +25,16 @@
         </li>
         {% endfor %}
       </ul>
+      <h2>Libs</h2>
+      <ul>
+        {% for lib in libs %}
+        <li {%ifequal lib.1 title %}class="selected" {% endifequal %}>
+          <a href="/docs/{{lib.0}}">
+            {{lib.1}}
+          </a>
+        </li>
+        {% endfor %}
+      </ul>
     </div>
   </div>
 </div>

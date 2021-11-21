@@ -31,3 +31,16 @@ New
 - [ ] caching
 - [ ] scheduling
 - [ ] metrics
+
+Lib docs
+
+- [x] kit-core
+- [ ] kit-hato
+- [ ] kit-metrics
+- [ ] kit-postgres
+- [ ] kit-quartz
+- [ ] kit-redis
+- [ ] kit-repl
+- [ ] kit-sql
+- [ ] kit-undertow
+- [ ] kit-xtdb

@@ -75,5 +75,6 @@
       (fn [docs id]
         (let [doc (parse-doc id)]
           (assoc docs id {:toc (generate-toc doc) :content doc})))
-      {:topics pages :docs-by-topic (into {} pages)}
+      {:topics pages :docs-by-topic (reduce (fn [out [k v _]]
+                                              (assoc out k v)) {} pages)}
       (map first pages))))

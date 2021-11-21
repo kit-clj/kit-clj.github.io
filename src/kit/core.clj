@@ -19,15 +19,17 @@
 
 (defn translated-topics [docs]
   (mapv
-    (fn [[doc-id title]]
-      [(string/replace doc-id #".md$" ".html") title])
+    (fn [[doc-id title type]]
+      [(string/replace doc-id #".md$" ".html") title type])
     (:topics docs)))
 
 (defn render-doc [docs doc-id]
-  (merge
-    {:title  (get-in docs [:docs-by-topic doc-id])
-     :topics (translated-topics docs)}
-    (get docs doc-id)))
+  (let [translated-topics (translated-topics docs)]
+    (merge
+      {:title  (get-in docs [:docs-by-topic doc-id])
+       :topics (filter #(= "topic" (nth % 2)) translated-topics)
+       :libs   (filter #(= "lib" (nth % 2)) translated-topics)}
+      (get docs doc-id))))
 
 (defn doc-page [docs doc-id]
   [(str "/docs/" (string/replace doc-id #".md$" ".html"))
