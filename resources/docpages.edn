@@ -24,4 +24,12 @@
  ["learning_clojure.md"   "Clojure Resources"       "topic"]
 
  ["kit-core.md"           "kit-core"                  "lib"]
- ["kit-hato.md"           "kit-hato"                  "lib"]]
+ ["kit-hato.md"           "kit-hato"                  "lib"]
+ ["kit-metrics.md"        "kit-metrics"               "lib"]
+ ["kit-postgres.md"       "kit-postgres"              "lib"]
+ ["kit-quartz.md"         "kit-quartz"                "lib"]
+ ["kit-redis.md"          "kit-redis"                 "lib"]
+ ["kit-repl.md"           "kit-repl"                  "lib"]
+ ["kit-undertow.md"       "kit-undertow"              "lib"]
+ ["kit-xtdb.md"           "kit-xtdb"                  "lib"]
+ ]
