@@ -29,7 +29,7 @@ New
 
 - [x] integrant
 - [ ] caching
-- [ ] scheduling
+- [x] scheduling
 - [ ] metrics
 
 Lib docs
@@ -37,10 +37,10 @@ Lib docs
 - [x] kit-core
 - [x] kit-hato
 - [ ] kit-metrics
-- [ ] kit-postgres
-- [ ] kit-quartz
+- [x] kit-postgres
+- [x] kit-quartz
 - [ ] kit-redis
-- [ ] kit-repl
+- [x] kit-repl
 - [ ] kit-sql
-- [ ] kit-undertow
-- [ ] kit-xtdb
+- [x] kit-undertow
+- [x] kit-xtdb
