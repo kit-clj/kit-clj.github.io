@@ -59,15 +59,15 @@
       <h1>kit-core</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#&lt;code&gt;:system/env&lt;/code&gt;">{:tag :code, :attrs nil, :content [":system/env"]}</a></li><li><a href="#utilities">Utilities</a></li><li><a href="#&lt;code&gt;kit.config/read-config&lt;/code&gt;">{:tag :code, :attrs nil, :content ["kit.config/read-config"]}</a></li><li><a href="#&lt;code&gt;kit.ig-utils/resume-handler&lt;/code&gt;">{:tag :code, :attrs nil, :content ["kit.ig-utils/resume-handler"]}</a></li></ol>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:system/env">:system/env</a></li><li><a href="#utilities">Utilities</a></li><li><a href="#kit.config/read-config">kit.config/read-config</a></li><li><a href="#kit.ig-utils/resume-handler">kit.ig-utils/resume-handler</a></li></ol>
       
       <div id="content">
-        <h2 id="integrant&#95;components">Integrant components</h2><h3 id="<code>:system/env</code>"><code>:system/env</code></h3><p>Component that returns the configuration option passed in when resolved. Useful for passing in environment to share across components. For instance, here is what the kit template produces</p><pre><code class="clojure">:system/env
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":system/env">:system/env</h3><p>Component that returns the configuration option passed in when resolved. Useful for passing in environment to share across components. For instance, here is what the kit template produces in <code>system.edn</code></p><pre><code class="clojure">:system/env
  #profile {:dev  :dev
            :test :test
            :prod :prod}
-</code></pre><h2 id="utilities">Utilities</h2><h3 id="<code>kit.config/read-config</code>"><code>kit.config/read-config</code></h3><p>Reads a resource using the <code>aero</code> edn reader with optional options passed in.</p><p>Usage:</p><pre><code class="clojure">&#40;config/read-config &quot;system.edn&quot; {:opts {:profile :test}}&#41;
-</code></pre><h3 id="<code>kit.ig-utils/resume-handler</code>"><code>kit.ig-utils/resume-handler</code></h3><p>Utility to not reset an integrant component during development on hot reload. Checks to see if new configuration options are different from previous ones, and if they are the same, do nothing but return the old implementation.</p><p>Usage:</p><pre><code class="clojure">&#40;defmethod ig/resume-key :db.sql/connection
+</code></pre><h2 id="utilities">Utilities</h2><h3 id="kit.config/read-config">kit.config/read-config</h3><p>Reads a resource using the <code>aero</code> edn reader with optional options passed in.</p><p>Usage:</p><pre><code class="clojure">&#40;config/read-config &quot;system.edn&quot; {:opts {:profile :test}}&#41;
+</code></pre><h3 id="kit.ig-utils/resume-handler">kit.ig-utils/resume-handler</h3><p>Utility to not reset an integrant component during development on hot reload. Checks to see if new configuration options are different from previous ones, and if they are the same, do nothing but return the old implementation.</p><p>Usage:</p><pre><code class="clojure">&#40;defmethod ig/resume-key :db.sql/connection
   &#91;key opts old-opts old-impl&#93;
   &#40;ig-utils/resume-handler key opts old-opts old-impl&#41;&#41;
 </code></pre>
@@ -233,6 +233,12 @@
           </a>
         </li>
         
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
       </ul>
     </div>
   </div>
@@ -248,6 +254,8 @@
             Copyright ©
             <span id="cpyear"></span>
           </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
         </div>
       </article>
     </footer>
