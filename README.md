@@ -35,7 +35,7 @@ New
 Lib docs
 
 - [x] kit-core
-- [ ] kit-hato
+- [x] kit-hato
 - [ ] kit-metrics
 - [ ] kit-postgres
 - [ ] kit-quartz
