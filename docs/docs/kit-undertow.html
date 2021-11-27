@@ -58,8 +58,20 @@
     <div class="column-wrapper">
       <h1>kit-undertow</h1>
       
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:server/undertow">:server/undertow</a></li></ol>
+      
       <div id="content">
-        
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":server/undertow">:server/undertow</h3><p>Configures and starts an undertow server, defaults to port <code>3000</code> on host <code>&quot;0.0.0.0&quot;</code></p><p>Sample configuration, does not include all options. Full options for the ring undertow adapter can be found <a href='https://github.com/luminus-framework/ring-undertow-adapter'>here</a></p><pre><code class="clojure"> :server/undertow
+ {:host            &quot;0.0.0.0&quot;
+  :port            #long #or &#91;#env PORT 3000&#93;
+  :handler         #ig/ref :handler/ring
+  :http2?          false
+  :dispatch?       true
+  :websocket?      false
+  :async?          false
+  :session-manager false}
+</code></pre>
       </div>
     </div>
   </div>

@@ -58,8 +58,17 @@
     <div class="column-wrapper">
       <h1>kit-quartz</h1>
       
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:scheduling.quartz/env-properties">:scheduling.quartz/env-properties</a></li></ol>
+      
       <div id="content">
-        
+        <p>The <code>kit-quartz</code> library adds <a href='https://github.com/juxt/aero'>aero</a> reader support around the <a href='https://github.com/troy-west/cronut'>cronut</a> library for the [quartz]() scheduler.</p><h2 id="integrant&#95;components">Integrant components</h2><p>See the <a href='https://github.com/troy-west/cronut'>cronut readme</a> for a full overview of the integration component, jobs, triggers, and more.</p><h3 id=":scheduling.quartz/env-properties">:scheduling.quartz/env-properties</h3><p>This is a means of setting environment properties during runtime. It is useful in case there's a scenario where you can't (for whatever reason) set secrets in your JVM properties.</p><p>For example, let's say you are using MongoDB as your Quartz scheduler cluster and fetching the configuration on production from environment variables. For whatever reason, you cannot simply pipe in these environment variables on startup (maybe some devops restriction, who knows), then you can set it as follows. </p><pre><code class="clojure">:quartz/env-properties
+      #profile {:default {}
+                :prod    {:org.quartz.jobStore.collectionPrefix &quot;my&#95;mongo&#95;coll&#95;prefix&quot;
+                          :org.quartz.jobStore.addresses        #env MONGODB&#95;CLUSTERS
+                          :org.quartz.jobStore.username         #env MONGODB&#95;USERNAME
+                          :org.quartz.jobStore.password         #env MONGODB&#95;PASSWORD}}
+</code></pre>
       </div>
     </div>
   </div>
