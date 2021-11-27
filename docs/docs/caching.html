@@ -58,8 +58,34 @@
     <div class="column-wrapper">
       <h1>Caching</h1>
       
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#setup">Setup</a></li><li><a href="#basic_usage">Basic Usage</a></li></ol>
+      
       <div id="content">
-        <p>TODO</p>
+        <p>The <code>kit-redis</code> library provides us with a nice interface over <a href='https://github.com/clojure/core.cache'>clojure.core.cache</a> when connecting to Redis. Many thanks to <a href='https://github.com/strongh/crache'>crache</a> for the inspiration</p><h2 id="setup">Setup</h2><p>Let's assume we have Redis setup and running on our local machine. We can configure our integrant component as follows</p><pre><code class="clojure">:cache/redis
+{:ttl  3600
+ :conn {:pool {}
+        :spec #profile {:dev  {:host &quot;localhost&quot; :port 6379}
+                        :test {:host &quot;localhost&quot; :port 6379}
+                        :prod {:uri #env REDIS&#95;URI}}}}
+</code></pre><h2 id="basic&#95;usage">Basic Usage</h2><p>A typical pattern with a cache is to lookup a key and when missed, execute a separate IO operation to find the value if it exists. If we get back a <code>nil</code> we will assume it doesn't exist and not add it to the cache. This may not be applicable in all cases! Sometimes you may wish to cache the nil. For our purposes here let's assume we do not. </p><pre><code class="clojure">&#40;require '&#91;clojure.core.cache :as cache&#93;&#41;
+
+&#40;defn cache-lookup-or-add
+  &#91;cache key lookup-fn &amp; &#91;ttl&#93;&#93;
+  &#40;or &#40;cache/lookup cache key&#41;
+      &#40;let &#91;value &#40;lookup-fn&#41;&#93;
+        &#40;cache/miss cache key {:val value :ttl ttl}&#41;
+        value&#41;&#41;&#41;
+</code></pre><p>Now let's use our function. Say we have a scenario where we want to get users by ID, and cache any users we have found. If we cannot find the user, we will throw an exception with the <code>:type</code> <code>::no-user-found</code>.</p><p>Let's assume we have already written a database lookup function called <code>:get-user-by-id</code> that retrieves a single user entry given an ID. We will pass both the <code>query-fn</code> and our <code>cache/redis</code> (as <code>cache</code>) in our <code>ctx</code> as the first argument.</p><pre><code class="clojure">&#40;defn user-by-id
+  &#91;{:keys &#91;query-fn cache&#93; :as &#95;ctx} id&#93;
+  &#40;or &#40;cache-lookup-or-add cache
+                           ;; key to match in cache on
+                           &#40;str &quot;users/&quot; id&#41;
+                           ;; miss function to execute when not found in cache
+                           #&#40;query-fn :get-user-by-id {:id id}&#41;&#41;
+      &#40;throw &#40;ex-info &quot;No user found&quot; {:id   id
+                                       :type ::no-user-found}&#41;&#41;&#41;&#41;
+</code></pre>
       </div>
     </div>
   </div>
