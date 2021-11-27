@@ -28,7 +28,7 @@ Review
 New
 
 - [x] integrant
-- [ ] caching
+- [x] caching
 - [x] scheduling
 - [ ] metrics
 
@@ -39,8 +39,8 @@ Lib docs
 - [ ] kit-metrics
 - [x] kit-postgres
 - [x] kit-quartz
-- [ ] kit-redis
+- [x] kit-redis
 - [x] kit-repl
-- [ ] kit-sql
+- [x] kit-sql
 - [x] kit-undertow
 - [x] kit-xtdb
