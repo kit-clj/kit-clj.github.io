@@ -59,10 +59,26 @@
       <h1>kit-metrics</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:metrics/prometheus">:metrics/prometheus</a></li></ol>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:metrics/prometheus">:metrics/prometheus</a></li><li><a href="#implementing_ring_metrics">Implementing Ring Metrics</a></li></ol>
       
       <div id="content">
-        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":metrics/prometheus">:metrics/prometheus</h3><p>TODO</p>
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":metrics/prometheus">:metrics/prometheus</h3><p>The component initializes an in-memory <a href='https://prometheus.io/'>prometheus</a> registry per instance. The following are the default options:</p><pre><code class="clojure">:metrics/prometheus
+{:jvm?        true
+ :fn?         true
+ :ring?       true
+ :definitions &#91;&#93;}
+</code></pre><p>You can define specific functions to be benchmarked in the definitions key. Here is a sample definition:</p><pre><code class="clojure">{:type   :histogram
+ :metric :app/duration-seconds
+ :opts   {}}
+</code></pre><p>The types available are</p><ul><li><code>:histogram</code></li><li><code>:gauge</code></li><li><code>:counter</code></li><li><code>:summary</code></li></ul><p>See <a href='https://github.com/clj-commons/iapetos'>iapetos</a> documentation for more information,</p><h2 id="implementing&#95;ring&#95;metrics">Implementing Ring Metrics</h2><p>In addition to initializing the registry in the configuration, for your ring HTTP requests to be measured you will need to wrap in the iapetos ring middleware along with your configuration.</p><p>For example:</p><p><code>system.edn</code></p><pre><code class="clojure">:handler/ring
+{
+ ;; ... other stuff
+ :metrics #ig/ref :metrics/prometheus}
+</code></pre><p>Wherever your middleware is chained at the top level</p><pre><code class="clojure">&#40;require '&#91;iapetos.collector.ring :as prometheus-ring&#93;&#41;
+
+;; ... middleware wrapping
+&#40;prometheus-ring/wrap-metrics metrics&#41;
+</code></pre>
       </div>
     </div>
   </div>
@@ -158,12 +174,6 @@
         <li >
           <a href="/docs/logging.html">
             Logging
-          </a>
-        </li>
-        
-        <li >
-          <a href="/docs/metrics.html">
-            Metrics
           </a>
         </li>
         
