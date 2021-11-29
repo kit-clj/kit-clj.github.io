@@ -13,7 +13,6 @@
  ["caching.md"            "Caching"                 "topic"]
  ["scheduling.md"         "Scheduling"              "topic"]
  ["logging.md"            "Logging"                 "topic"]
- ["metrics.md"            "Metrics"                 "topic"]
  ["testing.md"            "Testing"                 "topic"]
  ["servers.md"            "Server Tuning"           "topic"]
  ["environment.md"        "Environment Variables"   "topic"]

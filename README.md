@@ -30,13 +30,12 @@ New
 - [x] integrant
 - [x] caching
 - [x] scheduling
-- [ ] metrics
 
 Lib docs
 
 - [x] kit-core
 - [x] kit-hato
-- [ ] kit-metrics
+- [x] kit-metrics
 - [x] kit-postgres
 - [x] kit-quartz
 - [x] kit-redis
