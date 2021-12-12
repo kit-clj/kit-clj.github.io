@@ -2,7 +2,7 @@
 
 Review
 
-- [ ] apps.md
+- [x] apps.md
 - [x] assets.md
 - [ ] clojurescript.md
 - [ ] community.md
