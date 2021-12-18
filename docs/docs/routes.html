@@ -80,21 +80,15 @@ query params: {&quot;foo&quot; &quot;bar&quot;}
 body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
 </code></pre><p>In the guestbook application example we saw the following route defined:</p><pre><code class="clojure">&#91;&quot;/&quot; {:get home-page
       :post save-message!}&#93;
-</code></pre><p>This route serves the home page when it receives a <code>GET</code> request and extracts the name and the message form parameters when it receives a <code>POST</code> request. Note that <code>POST</code> requests must contain a CSRF token by default. This is handled by the <code>middleware/wrap-csrf</code> declaration below:</p><pre><code class="clojure">&#40;defn home-routes &#91;&#93;
-  &#91;&quot;&quot;
-   {:middleware &#91;middleware/wrap-csrf
-                 middleware/wrap-formats&#93;}
+</code></pre><p>This route serves the home page when it receives a <code>GET</code> request and extracts the name and the message form parameters when it receives a <code>POST</code> request. Note that <code>POST</code> requests must contain a CSRF token by default. This is handled by the <code>middleware/wrap-csrf</code> declaration below:</p><pre><code class="clojure">&#40;defn home-routes &#91;base-path&#93;
+  &#91;base-path
    &#91;&quot;/&quot; {:get home-page
-         :post save-message!}&#93;
-   &#91;&quot;/about&quot; {:get about-page}&#93;&#93;&#41;
-</code></pre><p>Please refer <a href='/docs/security.html#cross_site_request_forgery_protection'>here</a> for more details on managing CSRF middleware.</p><h3 id="return&#95;values">Return values</h3><p>The return value of a route block determines at least the response body passed on to the HTTP client, or at least the next middleware in the ring stack. Most commonly, this is a string, as in the above examples. But, we may also return a <a href='https://github.com/mmcgrana/ring/blob/master/SPEC'>response map</a>:</p><pre><code class="clojure">&#40;GET &quot;/&quot; &#91;&#93;
-    {:status 200 :body &quot;Hello World&quot;}&#41;
+         :post save-message!}&#93;&#93;&#41;
+</code></pre><p>Please refer <a href='/docs/security.html#cross_site_request_forgery_protection'>here</a> for more details on managing CSRF middleware.</p><h3 id="return&#95;values">Return values</h3><p>The return value of a route block determines at least the response body passed on to the HTTP client, or at least the next middleware in the ring stack. Most commonly, this is a string, as in the above examples. But, we may also return a <a href='https://github.com/ring-clojure/ring/blob/master/SPEC'>response map</a>:</p><pre><code class="clojure">&#91;&quot;/&quot; {:get &#40;fn &#91;request&#93; {:status 200 :body &quot;Hello World&quot;}&#41;}&#93;
 
-&#40;GET &quot;/is-403&quot; &#91;&#93;
-    {:status 403 :body &quot;&quot;}&#41;
+&#91;&quot;/is-403&quot; {:get &#40;fn &#91;request&#93; {:status 403 :body &quot;&quot;}&#41;}&#93;
 
-&#40;GET &quot;/is-json&quot; &#91;&#93;
-    {:status 200 :headers {&quot;Content-Type&quot; &quot;application/json&quot;} :body &quot;{}&quot;}&#41;
+&#91;&quot;/is-json&quot; {:get &#40;fn &#91;request&#93; {:status 200 :headers {&quot;Content-Type&quot; &quot;application/json&quot;} :body &quot;{}&quot;}&#41;}&#93;
 </code></pre><h2 id="static&#95;resources">Static Resources</h2><p>By default, any resources located under the <code>resources/public</code> directory will be available to the clients. This is handled by the <code>reitit.ring/resource-handler</code> handler found in the <code>&lt;app&gt;.handler</code> namespace:</p><pre><code class="clojure">&#40;ring/create-resource-handler {:path &quot;/&quot;}&#41;
 </code></pre><p>Any resources found on the classpath of the application can be accessed using <code>clojure.java.io/resource</code> function:</p><pre><code class="clojure">&#40;slurp &#40;clojure.java.io/resource &quot;myfile.md&quot;&#41;&#41;
 </code></pre><p>Conventionally, non-source resources should be placed in the <code>resources</code> directory of the project.</p><h3 id="handling&#95;file&#95;uploads">Handling file uploads</h3><p>Given a page called <code>upload.html</code> with the following form:</p><pre><code class="xml">&lt;h2&gt;Upload a file&lt;/h2&gt;
@@ -127,21 +121,17 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
         &#40;.transferFrom dest source 0 &#40;.size source&#41;&#41;
         &#40;.flush out&#41;&#41;&#41;&#41;&#41;
 
-&#40;def home-routes
-  &#91;&quot;&quot;
-   {:middleware &#91;middleware/wrap-csrf
-                 middleware/wrap-formats&#93;}
+&#40;defn home-routes &#91;base-path&#93;
+  &#91;base-path
+   &#91;&quot;/upload&quot; {:get &#40;fn &#91;req&#93;
+                      &#40;layout/render request &quot;upload.html&quot;&#41;&#41;
 
-  &#91;&quot;/upload&quot; {:get &#40;fn &#91;req&#93;
-                     &#40;layout/render request &quot;upload.html&quot;&#41;&#41;
+               :post &#40;fn &#91;{{{:keys &#91;file&#93;} :multipart} :parameters}&#93;
+                       &#40;upload-file resource-path file&#41;
+                       &#40;redirect &#40;str &quot;/files/&quot; &#40;:filename file&#41;&#41;&#41;&#41;}&#93;
 
-              :post &#40;fn &#91;{{{:keys &#91;file&#93;} :multipart} :parameters}&#93;
-                      &#40;upload-file resource-path file&#41;
-                      &#40;redirect &#40;str &quot;/files/&quot; &#40;:filename file&#41;&#41;&#41;&#41;}&#93;
-
-  &#91;&quot;/files/:filename&quot; {:get &#40;fn &#91;{{:keys &#91;filename&#93;} :path-params}&#93;
-
-                              &#40;file-response &#40;str resource-path filename&#41;&#41;&#41;}&#93;&#93;&#41;
+   &#91;&quot;/files/:filename&quot; {:get &#40;fn &#91;{{:keys &#91;filename&#93;} :path-params}&#93;
+                               &#40;file-response &#40;str resource-path filename&#41;&#41;&#41;}&#93;&#93;&#41;
 </code></pre><p>Th <code>:file</code> request form parameter points to a map containing the description of the file that will be uploaded. Our <code>upload-file</code> function above uses <code>:tempfile</code>, <code>:size</code> and <code>:filename</code> keys from this map to save the file on disk.</p><p>A file upload progress listener can be added in the <code>&lt;app&gt;.middleware/wrap-base</code> function by updating <code>wrap-defaults</code> as follows:</p><pre><code class="clojure">&#40;wrap-defaults
   &#40;-&gt; site-defaults
       &#40;assoc-in &#91;:security :anti-forgery&#93; false&#41;
@@ -152,25 +142,23 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
                    &#40;log/info &quot;bytes read:&quot; bytes-read
                              &quot;\ncontent length:&quot; content-length
                              &quot;\nitem count:&quot; item-count&#41;&#41;}&#41;&#41;&#41;
-</code></pre><p>Alternatively, if you're fronting with Nginx then you can use its <a href='http://wiki.nginx.org/HttpUploadProgressModule'>Upload Progress Module</a>.</p><h2 id="organizing&#95;application&#95;routes">Organizing application routes</h2><p>It's a good practice to organize your application routes together by functionality. Your application will typically have two types of routes. The first type is used to serve HTML pages that are rendered by the browser. The second type are routes used to expose your service API. These are accessed by the client to retrieve data from the server via AJAX.</p><p>Once all your application routes are defined you can add them to the main handler of your application. You'll notice that the template already defined the <code>app</code> route group in the <code>handler</code> namespace of your application. All you have to do is add your new routes there.</p><pre><code class="clojure">&#40;mount/defstate app
-  :start
-  &#40;middleware/wrap-base
-    &#40;ring/ring-handler
-      &#40;ring/router
-        &#91;&#40;home-routes&#41;&#93;&#41;
-      &#40;ring/routes
-        &#40;ring/create-resource-handler
-          {:path &quot;/&quot;}&#41;
-        &#40;wrap-content-type
-          &#40;wrap-webjars &#40;constantly nil&#41;&#41;&#41;
-        &#40;ring/create-default-handler
-          {:not-found
-           &#40;constantly &#40;error-page {:status 404, :title &quot;404 - Page not found&quot;}&#41;&#41;
-           :method-not-allowed
-           &#40;constantly &#40;error-page {:status 405, :title &quot;405 - Not allowed&quot;}&#41;&#41;
-           :not-acceptable
-           &#40;constantly &#40;error-page {:status 406, :title &quot;406 - Not acceptable&quot;}&#41;&#41;}&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>Further documentation is available on the <a href='https://metosin.github.io/reitit/'>official Reitit documentation</a></p><h2 id="restricting&#95;access">Restricting access</h2><p>Some pages should only be accessible if specific conditions are met. For example, you may wish to define admin pages only visible to the administrator, or a user profile page which is only visible if there is a user in the session.</p><h3 id="restricting&#95;access&#95;based&#95;on&#95;route&#95;groups">Restricting access based on route groups</h3><p>The simplest way to restrict access is by applying the <code>restrict</code> middleware to groups of routes that should not be publicly accessible. First, we'll add the following code in the <code>&lt;app&gt;.middleware</code> namespace:</p><pre><code class="clojure">&#40;ns &lt;app&gt;.middleware
+</code></pre><p>Alternatively, if you're fronting with Nginx then you can use its <a href='http://wiki.nginx.org/HttpUploadProgressModule'>Upload Progress Module</a>.</p><h2 id="organizing&#95;application&#95;routes">Organizing application routes</h2><p>It's a good practice to organize your application routes together by functionality. Your application will typically have two types of routes. The first type is used to serve HTML pages that are rendered by the browser. The second type are routes used to expose your service API. These are accessed by the client to retrieve data from the server via AJAX.</p><p>Once all your application routes are defined you can add them to the main handler of your application. You'll notice that the template already defined the <code>app</code> route group in the <code>handler</code> namespace of your application. All you have to do is add your new routes there.</p><pre><code class="clojure">&#40;defmethod ig/init-key :handler/ring
+  &#91;&#95; {:keys &#91;router api-path&#93; :as opts}&#93;
+  &#40;ring/ring-handler
+    router
+    &#40;ring/routes
+      &#40;when &#40;some? api-path&#41;
+        &#40;swagger-ui/create-swagger-ui-handler {:path api-path
+                                               :url  &#40;str api-path &quot;/swagger.json&quot;&#41;}&#41;&#41;
+      &#40;ring/create-default-handler
+        {:not-found
+         &#40;constantly {:status 404, :body &quot;Page not found&quot;}&#41;
+         :method-not-allowed
+         &#40;constantly {:status 405, :body &quot;Not allowed&quot;}&#41;
+         :not-acceptable
+         &#40;constantly {:status 406, :body &quot;Not acceptable&quot;}&#41;}&#41;&#41;
+    {:middleware &#91;&#40;middleware/wrap-base opts&#41;&#93;}&#41;&#41;
+</code></pre><p>Further documentation is available on the <a href='https://metosin.github.io/reitit/'>official Reitit documentation</a></p><h2 id="restricting&#95;access">Restricting access</h2><p>Some pages should only be accessible if specific conditions are met. For example, you may wish to define admin pages only visible to the administrator, or a user profile page which is only visible if there is a user in the session.</p><h3 id="restricting&#95;access&#95;based&#95;on&#95;route&#95;groups">Restricting access based on route groups</h3><p>The simplest way to restrict access is by applying the <code>restrict</code> middleware from <a href='https://github.com/funcool/buddy-auth'>buddy-auth</a> to groups of routes that should not be publicly accessible. First, we'll add the following code in the <code>&lt;app&gt;.middleware</code> namespace:</p><pre><code class="clojure">&#40;ns &lt;app&gt;.middleware
   &#40;:require
     ...
     &#91;buddy.auth.middleware :refer &#91;wrap-authentication&#93;&#93;
@@ -188,18 +176,14 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
   &#40;restrict handler {:handler authenticated?
                      :on-error on-error}&#41;&#41;
 
-&#40;defn wrap-base &#91;handler&#93;
-  &#40;-&gt; handler
-      wrap-dev
-      &#40;wrap-authentication &#40;session-backend&#41;&#41;
-      ...&#41;&#41;
-</code></pre><p>We'll wrap the authentication middleware that will set the <code>:identity</code> key in the request if it's present in the session. The session backend is the simplest one available, however Buddy provides a number of different authentications backends as described <a href='https://funcool.github.io/buddy-auth/latest/#_authentication'>here</a>.</p><p>The <code>authenticated?</code> helper is used to check the <code>:identity</code> key in the request and pass it to the handler when it's present. Otherwise, the <code>on-error</code> function will be called.</p><p>This is the default authentication setup that will be produced using the <code>+auth</code> profile when creating a new project.</p><p>We can now wrap the route groups we wish to be private using the <code>wrap-restricted</code> middleware in the <code>&lt;app&gt;.handler/app</code> function:</p><pre><code class="clojure">&#40;def app
-  &#40;-&gt; &#40;routes
-        &#40;-&gt; home-routes
-            &#40;wrap-routes middleware/wrap-csrf&#41;
-            &#40;wrap-routes middleware/wrap-restricted&#41;&#41;
-        base-routes&#41;
-      middleware/wrap-base&#41;&#41;
+&#40;defn wrap-base
+  &#91;{:keys &#91;metrics site-defaults-config cookie-session&#93; :as opts}&#93;
+  &#40;fn &#91;handler&#93;
+    &#40;cond-&gt; &#40;&#40;:middleware env/defaults&#41; handler opts&#41;
+            true &#40;defaults/wrap-defaults
+                   &#40;assoc-in site-defaults-config &#91;:session :store&#93; &#40;cookie/cookie-store cookie-session&#41;&#41;&#41;
+            true &#40;wrap-authentication &#40;session-backend&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>We'll wrap the authentication middleware that will set the <code>:identity</code> key in the request if it's present in the session. The session backend is the simplest one available, however Buddy provides a number of different authentications backends as described <a href='https://funcool.github.io/buddy-auth/latest/#_authentication'>here</a>.</p><p>The <code>authenticated?</code> helper is used to check the <code>:identity</code> key in the request and pass it to the handler when it's present. Otherwise, the <code>on-error</code> function will be called.</p><p>We can now wrap the route groups we wish to be private using the <code>wrap-restricted</code> middleware as follows:</p><pre><code class="clojure">&#40;wrap-routes middleware/wrap-restricted&#41;
 </code></pre><h3 id="restricting&#95;access&#95;based&#95;on&#95;uri">Restricting access based on URI</h3><p>Using the <code>buddy.auth.accessrules</code> namespace from <a href='https://funcool.github.io/buddy-auth/latest/'>Buddy</a>, we can define rules for restricting access to specific pages based on its URI pattern.</p><h3 id="specifying&#95;access&#95;rules">Specifying Access Rules</h3><p>Let's take a look at how to create a rule to specify that restricted routes should only be accessible if the <code>:identity</code> key is present in the session.</p><p>First, we'll reference several Buddy namespaces in the <code>&lt;app&gt;.middleware</code> namespace.</p><pre><code class="clojure">&#40;ns myapp.middleware
   &#40;:require ...
             &#91;buddy.auth.middleware :refer &#91;wrap-authentication&#93;&#93;
@@ -214,11 +198,14 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
   {:status 403
    :headers {}
    :body &quot;Not authorized&quot;}&#41;
-</code></pre><p>Finally, we have to add the necessary middleware to enable the access rules and authentication using a session backend.</p><pre><code class="clojure">&#40;defn wrap-base &#91;handler&#93;
-  &#40;-&gt; handler
-      &#40;wrap-access-rules {:rules rules :on-error on-error}&#41;
-      &#40;wrap-authentication &#40;session-backend&#41;&#41;
-      ...&#41;&#41;
+</code></pre><p>Finally, we have to add the necessary middleware to enable the access rules and authentication using a session backend.</p><pre><code class="clojure">&#40;defn wrap-base
+  &#91;{:keys &#91;metrics site-defaults-config cookie-session&#93; :as opts}&#93;
+  &#40;fn &#91;handler&#93;
+    &#40;cond-&gt; &#40;&#40;:middleware env/defaults&#41; handler opts&#41;
+            true &#40;defaults/wrap-defaults
+                   &#40;assoc-in site-defaults-config &#91;:session :store&#93; &#40;cookie/cookie-store cookie-session&#41;&#41;&#41;
+            true &#40;wrap-access-rules {:rules rules :on-error on-error}&#41;
+            true &#40;wrap-authentication &#40;session-backend&#41;&#41;&#41;&#41;&#41;
 </code></pre><p>Note that the order of the middleware matters and <code>wrap-access-rules</code> must precede <code>wrap-authentication</code>.</p><p>Buddy session based authentication is triggered by setting the <code>:identity</code> key in the session when the user is successfully authenticated.</p><pre><code class="clojure">&#40;def user {:id &quot;bob&quot; :pass &quot;secret&quot;}&#41;
 
 &#40;defn login! &#91;{:keys &#91;params session&#93;}&#93;

@@ -252,9 +252,7 @@ VALUES &#40;:name, :message, :timestamp&#41;
 -- :name get-messages :? :&#42;
 -- :doc selects all available messages
 SELECT &#42; FROM guestbook
-</code></pre><p>Now that our model is all setup, let's start up the application.</p><h3 id="running&#95;the&#95;application">Running the Application</h3><p>We can run our application in development mode as follows:</p><pre><code><div class="lein">
-&gt;lein run</div><div class="boot">
-&gt;boot dev run</div>
+</code></pre><p>Now that our model is all setup, let's start up the application.</p><h3 id="running&#95;the&#95;application">Running the Application</h3><p>We can run our application in development mode as follows:</p><pre><code>&gt;clj -M:dev
 2019-03-17 09:01:03,709 &#91;main&#93; DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
 2019-03-17 09:01:04,614 &#91;main&#93; INFO  guestbook.env -
 -=&#91;guestbook started successfully using the development profile&#93;=-
@@ -267,34 +265,16 @@ SELECT &#42; FROM guestbook
 2019-03-17 09:01:05,076 &#91;main&#93; INFO  guestbook.core - #'guestbook.core/http-server started
 2019-03-17 09:01:05,076 &#91;main&#93; INFO  guestbook.core - #'guestbook.core/repl-server started
 -=&#91;guestbook started successfully using the development profile&#93;=-
-</code></pre><p>Once server starts, you should be able to navigate to <a href='http://localhost:3000'>http://localhost:3000</a> and see the app running. The server can be started on an alternate port by either passing it as a parameter as seen below, or setting the <code>PORT</code> environment variable.</p><p><div class="lein"></p><pre><code>lein run -p 8000
-</code></pre><p></div><div class="boot"></p><pre><code>boot dev &#91; run -- -p 8000 &#93;
-</code></pre><p></div></p><p>Alternatively, you can start the application from the REPL using <code>start</code> function defined in the <code>user</code> namespace, e.g:</p><pre><code><div class="lein">
-lein repl
-</div><div class="boot">
-boot repl
-</div>
-2018-01-30 15:48:31,147 &#91;main&#93; DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
-nREPL server started on port 51655 on host 127.0.0.1 - nrepl://127.0.0.1:51655
-REPL-y 0.3.7, nREPL 0.2.12
-Clojure 1.9.0
-Java HotSpot&#40;TM&#41; 64-Bit Server VM 1.8.0&#95;45-b14
-    Docs: &#40;doc function-name-here&#41;
-          &#40;find-doc &quot;part-of-name-here&quot;&#41;
-  Source: &#40;source function-name-here&#41;
- Javadoc: &#40;javadoc java-object-or-class-here&#41;
-    Exit: Control+D or &#40;exit&#41; or &#40;quit&#41;
- Results: Stored in vars &#42;1, &#42;2, &#42;3, an exception in &#42;e
-
-user=&gt;&#40;start&#41;
-018-01-30 15:48:58,211 &#91;nREPL-worker-0&#93; INFO  guestbook.env -
--=&#91;guestbook started successfully using the development profile&#93;=-
-2018-01-30 15:48:58,505 &#91;nREPL-worker-0&#93; INFO  luminus.http-server - starting HTTP server on port 3000
-2018-01-30 15:48:58,547 &#91;nREPL-worker-0&#93; DEBUG io.undertow - starting undertow server io.undertow.Undertow@115503d9
-2018-01-30 15:48:58,593 &#91;nREPL-worker-0&#93; INFO  org.xnio - XNIO version 3.3.6.Final
-2018-01-30 15:48:58,707 &#91;nREPL-worker-0&#93; DEBUG io.undertow - Configuring listener with protocol HTTP for interface 0.0.0.0 and port 3000
-2018-01-30 15:48:58,745 &#91;nREPL-worker-0&#93; INFO  org.projectodd.wunderboss.web.Web - Registered web context /
-{:started &#91;&quot;#'guestbook.config/env&quot; &quot;#'guestbook.handler/init-app&quot; &quot;#'guestbook.handler/app&quot; &quot;#'guestbook.core/http-server&quot;&#93;}
+</code></pre><p>Once server starts, you should be able to navigate to <a href='http://localhost:3000'>http://localhost:3000</a> and see the app running. The server can be started on an alternate port by either passing it as a parameter as seen below, or setting the <code>PORT</code> environment variable.</p><p>;;TODO test this</p><pre><code>clj -M:dev -p 8000
+</code></pre><p>Alternatively, you can start the application from the REPL using <code>start</code> function defined in the <code>user</code> namespace, e.g:</p><pre><code>clj -M:dev -M:repl
+#object&#91;clojure.lang.MultiFn 0x34594779 &quot;clojure.lang.MultiFn@34594779&quot;&#93;
+user=&gt; &#40;go&#41;
+2021-12-18 11:35:41,821 &#91;main&#93; INFO  kit.config - Reading config system.edn
+2021-12-18 11:35:41,951 &#91;main&#93; DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
+2021-12-18 11:35:41,969 &#91;main&#93; INFO  org.xnio - XNIO version 3.8.4.Final
+2021-12-18 11:35:42,113 &#91;main&#93; INFO  org.jboss.threads - JBoss Threads version 3.1.0.Final
+2021-12-18 11:35:42,183 &#91;main&#93; INFO  luminus.http-server - server started on port 3000
+user=&gt;
 </code></pre><p>Note that the page is prompting us to run the migrations in order to initialize the database. However, we've already done that earlier, so we won't need to do that again.</p><h3 id="creating&#95;pages&#95;and&#95;handling&#95;form&#95;input">Creating Pages and Handling Form Input</h3><p>Our routes are defined in the <code>guestbook.routes.home</code> namespace. Let's open it up and add the logic for rendering the messages from the database. We'll first need to add a reference to our <code>db</code> namespace along with references for <a href='https://github.com/leonardoborges/bouncer'>Bouncer</a> validators and <a href='http://ring-clojure.github.io/ring/ring.util.response.html'>ring.util.response</a></p><pre><code class="clojure">&#40;ns guestbook.routes.home
   &#40;:require
    &#91;guestbook.layout :as layout&#93;
