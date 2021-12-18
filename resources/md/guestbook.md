@@ -485,9 +485,7 @@ Now that our model is all setup, let's start up the application.
 We can run our application in development mode as follows:
 
 ```
-<lein-div>
->lein run</lein-div><boot-div>
->boot dev run</boot-div>
+>clj -M:dev
 2019-03-17 09:01:03,709 [main] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
 2019-03-17 09:01:04,614 [main] INFO  guestbook.env -
 -=[guestbook started successfully using the development profile]=-
@@ -506,45 +504,23 @@ Once server starts, you should be able to navigate to [http://localhost:3000](ht
 the app running. The server can be started on an alternate port by either passing it as a parameter as seen below,
 or setting the `PORT` environment variable.
 
-<div class="lein">
+;;TODO test this
 ```
-lein run -p 8000
+clj -M:dev -p 8000
 ```
-</div><div class="boot">
-```
-boot dev [ run -- -p 8000 ]
-```
-</div>
 
 Alternatively, you can start the application from the REPL using `start` function defined in the `user` namespace, e.g:
 
 ```
-<lein-div>
-lein repl
-</lein-div><boot-div>
-boot repl
-</boot-div>
-2018-01-30 15:48:31,147 [main] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
-nREPL server started on port 51655 on host 127.0.0.1 - nrepl://127.0.0.1:51655
-REPL-y 0.3.7, nREPL 0.2.12
-Clojure 1.9.0
-Java HotSpot(TM) 64-Bit Server VM 1.8.0_45-b14
-    Docs: (doc function-name-here)
-          (find-doc "part-of-name-here")
-  Source: (source function-name-here)
- Javadoc: (javadoc java-object-or-class-here)
-    Exit: Control+D or (exit) or (quit)
- Results: Stored in vars *1, *2, *3, an exception in *e
-
-user=>(start)
-018-01-30 15:48:58,211 [nREPL-worker-0] INFO  guestbook.env -
--=[guestbook started successfully using the development profile]=-
-2018-01-30 15:48:58,505 [nREPL-worker-0] INFO  luminus.http-server - starting HTTP server on port 3000
-2018-01-30 15:48:58,547 [nREPL-worker-0] DEBUG io.undertow - starting undertow server io.undertow.Undertow@115503d9
-2018-01-30 15:48:58,593 [nREPL-worker-0] INFO  org.xnio - XNIO version 3.3.6.Final
-2018-01-30 15:48:58,707 [nREPL-worker-0] DEBUG io.undertow - Configuring listener with protocol HTTP for interface 0.0.0.0 and port 3000
-2018-01-30 15:48:58,745 [nREPL-worker-0] INFO  org.projectodd.wunderboss.web.Web - Registered web context /
-{:started ["#'guestbook.config/env" "#'guestbook.handler/init-app" "#'guestbook.handler/app" "#'guestbook.core/http-server"]}
+clj -M:dev -M:repl
+#object[clojure.lang.MultiFn 0x34594779 "clojure.lang.MultiFn@34594779"]
+user=> (go)
+2021-12-18 11:35:41,821 [main] INFO  kit.config - Reading config system.edn
+2021-12-18 11:35:41,951 [main] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
+2021-12-18 11:35:41,969 [main] INFO  org.xnio - XNIO version 3.8.4.Final
+2021-12-18 11:35:42,113 [main] INFO  org.jboss.threads - JBoss Threads version 3.1.0.Final
+2021-12-18 11:35:42,183 [main] INFO  luminus.http-server - server started on port 3000
+user=>
 ```
 
 Note that the page is prompting us to run the migrations in order to initialize the database. However, we've already done that earlier, so we won't need to do that again.

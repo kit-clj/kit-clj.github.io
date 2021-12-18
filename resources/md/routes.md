@@ -64,13 +64,10 @@ This route serves the home page when it receives a `GET` request and extracts th
 Note that `POST` requests must contain a CSRF token by default. This is handled by the `middleware/wrap-csrf` declaration below:
 
 ```clojure
-(defn home-routes []
-  [""
-   {:middleware [middleware/wrap-csrf
-                 middleware/wrap-formats]}
+(defn home-routes [base-path]
+  [base-path
    ["/" {:get home-page
-         :post save-message!}]
-   ["/about" {:get about-page}]])
+         :post save-message!}]])
 ```
 
 Please refer [here](/docs/security.html#cross_site_request_forgery_protection) for more details on managing CSRF middleware.
@@ -80,17 +77,14 @@ Please refer [here](/docs/security.html#cross_site_request_forgery_protection) f
 The return value of a route block determines at least the response body
 passed on to the HTTP client, or at least the next middleware in the
 ring stack. Most commonly, this is a string, as in the above examples.
-But, we may also return a [response map](https://github.com/mmcgrana/ring/blob/master/SPEC):
+But, we may also return a [response map](https://github.com/ring-clojure/ring/blob/master/SPEC):
 
 ```clojure
-(GET "/" []
-    {:status 200 :body "Hello World"})
+["/" {:get (fn [request] {:status 200 :body "Hello World"})}]
 
-(GET "/is-403" []
-    {:status 403 :body ""})
+["/is-403" {:get (fn [request] {:status 403 :body ""})}]
 
-(GET "/is-json" []
-    {:status 200 :headers {"Content-Type" "application/json"} :body "{}"})
+["/is-json" {:get (fn [request] {:status 200 :headers {"Content-Type" "application/json"} :body "{}"})}]
 ```
 
 ## Static Resources
@@ -150,21 +144,17 @@ we could then render the page and handle the file upload as follows:
         (.transferFrom dest source 0 (.size source))
         (.flush out)))))
 
-(def home-routes
-  [""
-   {:middleware [middleware/wrap-csrf
-                 middleware/wrap-formats]}
+(defn home-routes [base-path]
+  [base-path
+   ["/upload" {:get (fn [req]
+                      (layout/render request "upload.html"))
 
-  ["/upload" {:get (fn [req]
-                     (layout/render request "upload.html"))
+               :post (fn [{{{:keys [file]} :multipart} :parameters}]
+                       (upload-file resource-path file)
+                       (redirect (str "/files/" (:filename file))))}]
 
-              :post (fn [{{{:keys [file]} :multipart} :parameters}]
-                      (upload-file resource-path file)
-                      (redirect (str "/files/" (:filename file))))}]
-
-  ["/files/:filename" {:get (fn [{{:keys [filename]} :path-params}]
-
-                              (file-response (str resource-path filename)))}]])
+   ["/files/:filename" {:get (fn [{{:keys [filename]} :path-params}]
+                               (file-response (str resource-path filename)))}]])
 ```
 
 Th `:file` request form parameter points to a map containing the description of the file that will be uploaded. Our `upload-file` function above uses `:tempfile`, `:size` and `:filename` keys from this map to save the file on disk.
@@ -198,24 +188,22 @@ You'll notice that the template already defined the `app` route group in the `ha
 application. All you have to do is add your new routes there.
 
 ```clojure
-(mount/defstate app
-  :start
-  (middleware/wrap-base
-    (ring/ring-handler
-      (ring/router
-        [(home-routes)])
-      (ring/routes
-        (ring/create-resource-handler
-          {:path "/"})
-        (wrap-content-type
-          (wrap-webjars (constantly nil)))
-        (ring/create-default-handler
-          {:not-found
-           (constantly (error-page {:status 404, :title "404 - Page not found"}))
-           :method-not-allowed
-           (constantly (error-page {:status 405, :title "405 - Not allowed"}))
-           :not-acceptable
-           (constantly (error-page {:status 406, :title "406 - Not acceptable"}))})))))
+(defmethod ig/init-key :handler/ring
+  [_ {:keys [router api-path] :as opts}]
+  (ring/ring-handler
+    router
+    (ring/routes
+      (when (some? api-path)
+        (swagger-ui/create-swagger-ui-handler {:path api-path
+                                               :url  (str api-path "/swagger.json")}))
+      (ring/create-default-handler
+        {:not-found
+         (constantly {:status 404, :body "Page not found"})
+         :method-not-allowed
+         (constantly {:status 405, :body "Not allowed"})
+         :not-acceptable
+         (constantly {:status 406, :body "Not acceptable"})}))
+    {:middleware [(middleware/wrap-base opts)]}))
 ```
 
 Further documentation is available on the [official Reitit documentation](https://metosin.github.io/reitit/)
@@ -228,7 +216,7 @@ page which is only visible if there is a user in the session.
 
 ### Restricting access based on route groups
 
-The simplest way to restrict access is by applying the `restrict` middleware to
+The simplest way to restrict access is by applying the `restrict` middleware from [buddy-auth](https://github.com/funcool/buddy-auth) to
 groups of routes that should not be publicly accessible.
 First, we'll add the following code in the `<app>.middleware` namespace:
 
@@ -251,11 +239,13 @@ First, we'll add the following code in the `<app>.middleware` namespace:
   (restrict handler {:handler authenticated?
                      :on-error on-error}))
 
-(defn wrap-base [handler]
-  (-> handler
-      wrap-dev
-      (wrap-authentication (session-backend))
-      ...))
+(defn wrap-base
+  [{:keys [metrics site-defaults-config cookie-session] :as opts}]
+  (fn [handler]
+    (cond-> ((:middleware env/defaults) handler opts)
+            true (defaults/wrap-defaults
+                   (assoc-in site-defaults-config [:session :store] (cookie/cookie-store cookie-session)))
+            true (wrap-authentication (session-backend)))))
 ```
 
 We'll wrap the authentication middleware that will set the `:identity` key in the request if it's present in the session.
@@ -265,18 +255,10 @@ as described [here](https://funcool.github.io/buddy-auth/latest/#_authentication
 The `authenticated?` helper is used to check the `:identity` key in the request and pass it to the handler when it's present.
 Otherwise, the `on-error` function will be called.
 
-This is the default authentication setup that will be produced using the `+auth` profile when creating a new project.
-
-We can now wrap the route groups we wish to be private using the `wrap-restricted` middleware in the `<app>.handler/app` function:
+We can now wrap the route groups we wish to be private using the `wrap-restricted` middleware as follows:
 
 ```clojure
-(def app
-  (-> (routes
-        (-> home-routes
-            (wrap-routes middleware/wrap-csrf)
-            (wrap-routes middleware/wrap-restricted))
-        base-routes)
-      middleware/wrap-base))
+(wrap-routes middleware/wrap-restricted)
 ```
 
 ### Restricting access based on URI
@@ -320,11 +302,14 @@ We'll also define an error handler function that will be used when access to a p
 Finally, we have to add the necessary middleware to enable the access rules and authentication using a session backend.
 
 ```clojure
-(defn wrap-base [handler]
-  (-> handler
-      (wrap-access-rules {:rules rules :on-error on-error})
-      (wrap-authentication (session-backend))
-      ...))
+(defn wrap-base
+  [{:keys [metrics site-defaults-config cookie-session] :as opts}]
+  (fn [handler]
+    (cond-> ((:middleware env/defaults) handler opts)
+            true (defaults/wrap-defaults
+                   (assoc-in site-defaults-config [:session :store] (cookie/cookie-store cookie-session)))
+            true (wrap-access-rules {:rules rules :on-error on-error})
+            true (wrap-authentication (session-backend)))))
 ```
 
 Note that the order of the middleware matters and `wrap-access-rules` must precede `wrap-authentication`.
