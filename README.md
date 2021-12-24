@@ -18,7 +18,7 @@ Review
 - [x] profiles.md
 - [x] repl.md
 - [x] requests_responses.md
-- [ ] routes.md
+- [x] routes.md
 - [x] servers.md
 - [x] sessions.md
 - [x] testing.md
