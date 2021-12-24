@@ -5,7 +5,7 @@ Review
 - [x] apps.md
 - [x] assets.md
 - [x] clojurescript.md
-- [ ] community.md
+- [x] community.md
 - [x] contributing.md
 - [x] database.md
 - [ ] deployment.md
