@@ -246,13 +246,13 @@ Since our application needs to serve some HTML content, let's add the official H
 ;; Let's list out our available modules
 (kit/list-modules)
 ;; =>
-;; :html - adds support for HTML templating using Selmer
-;; :sqlite - adds support for SQLite embedded database
-;; :cljs - adds support for cljs using shadow-cljs
+;; :kit/html - adds support for HTML templating using Selmer
+;; :kit/sqlite - adds support for SQLite embedded database
+;; :kit/cljs - adds support for cljs using shadow-cljs
 ;; nil
 
 ;; We'll want to install the :html module to serve some HTML pages
-(kit/install-module :html)
+(kit/install-module :kit/html)
 ;; =>
 ;; updating file: resources/system.edn
 ;; injecting

@@ -8,7 +8,7 @@ ClojureScript is an excellent alternative to JavaScript for client side applicat
 
 ### Adding ClojureScript Support
 
-ClojureScript support can be added via the official `:cljs` module. Simply run `(kit/install-module :cljs)` in order to add the assets. this will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html).
+ClojureScript support can be added via the official `:kit/cljs` module. Simply run `(kit/install-module :kit/cljs)` in order to add the assets. this will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html).
 
 ### Managing JavaScript and ClojureScript dependencies
 
@@ -58,7 +58,14 @@ npx shadow-cljs watch app
 
 This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
 
-ClojureScript will be compiled with production settings when the `uberjar` task is run.
+ClojureScript will be compiled with production settings when the `uberjar` task is run. This task will run the following function to compile ClojureScript for release:
+
+```
+ (defn build-cljs []
+   (println "npx shadow-cljs release app...")
+   (let [{:keys [exit], :as s} (sh "npx" "shadow-cljs" "release" "app")]
+     (when-not (zero? exit) (throw (ex-info "could not compile cljs" s)))))
+ ```
 
 ### shadow-cljs with nREPL
 
@@ -123,9 +130,9 @@ The values of the components are stored in Reagent atoms. These atoms behave jus
 
 ```clojure
 (ns myapp
-  (:require [reagent.core :as reagent :refer [atom]]))
+  (:require [reagent.core :as reagent]))
 
-(def state (atom nil))
+(def state (reagent/atom nil))
 
 (defn input-field [label-text]
   [:div
@@ -154,13 +161,12 @@ In the previous example, we used a global atom to hold the state. While it's con
 
 ```clojure
 (defn input-field [label-text id]
-  (let [value (atom nil)]
-    (fn []
-      [:div
-        [label "The value is: " @value]
-        [:input {:type "text"
-                 :value @value
-                 :on-change #(reset! value (-> % .-target .-value))}]])))
+  (reagent/with-let [value (reagent/atom nil)]
+    [:div
+     [label "The value is: " @value]
+      [:input {:type "text"
+               :value @value
+               :on-change #(reset! value (-> % .-target .-value))}]]))
 ```
 
 All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.
@@ -169,8 +175,7 @@ Finally, rendering components is accomplished by calling the `render-component` 
 
 ```clojure
 (defn render-simple []
-  (reagent/render-component [input-field]
-                            (.-body js/document))
+  (reagent/render-component [input-field] (.-body js/document))
 ```
 
 ### Client Side Routing
@@ -334,14 +339,11 @@ Note that CSRF middleware is enabled by default. The middleware wraps the `home-
 your application. It will intercept any request to the server that isn't a `HEAD` or `GET`.
 
 ```clojure
-(defn home-routes []
-  [""
+(defn home-routes [base-path]
+  [base-path
    {:middleware [middleware/wrap-csrf
                  middleware/wrap-formats]}
-   ["/" {:get home-page}]
-   ["/docs" {:get (fn [_]
-                    (-> (response/ok (-> "docs/docs.md" io/resource slurp))
-                        (response/header "Content-Type" "text/plain; charset=utf-8")))}]])
+   ["/" {:get home-page}]])
 ```
 
 We would now need to pass the CSRF token along with the request. One way to do this is to pass the token in the `x-csrf-token` header in the request with the value of the token.
