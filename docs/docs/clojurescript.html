@@ -62,7 +62,7 @@
       <ol class="contents"><li><a href="#adding_clojurescript_support">Adding ClojureScript Support</a></li><li><a href="#managing_javascript_and_clojurescript_dependencies">Managing JavaScript and ClojureScript dependencies</a></li><li><a href="#running_the_compiler">Running the Compiler</a></li><li><a href="#shadow-cljs_with_nrepl">shadow-cljs with nREPL</a></li><li><a href="#interacting_with_javascript">Interacting with JavaScript</a></li><li><a href="#reagent">Reagent</a></li><li><a href="#client_side_routing">Client Side Routing</a></li><li><a href="#ajax">Ajax</a></li></ol>
       
       <div id="content">
-        <p>ClojureScript is an excellent alternative to JavaScript for client side application logic. Some of the advantages of using ClojureScript include:</p><ul><li>use the same language on both the client and the server</li><li>share common code between the front-end and back-end</li><li>cleaner and more consistent language</li><li>immutable data structures</li><li>powerful standard library</li></ul><h3 id="adding&#95;clojurescript&#95;support">Adding ClojureScript Support</h3><p>ClojureScript support can be added via the official <code>:cljs</code> module. Simply run <code>&#40;kit/install-module :cljs&#41;</code> in order to add the assets. this will add support for compiling ClojureScript using <a href='https://shadow-cljs.github.io/docs/UsersGuide.html'>shadow-cljs</a>.</p><h3 id="managing&#95;javascript&#95;and&#95;clojurescript&#95;dependencies">Managing JavaScript and ClojureScript dependencies</h3><h4 id="npm&#95;modules">NPM modules</h4><p>NPM is used to manage JavaScript modules used in the project. Make sure that you have NPM tools installed for doing that. When the module is added, a <code>package.json</code> file will be created with the following content:</p><pre><code>{
+        <p>ClojureScript is an excellent alternative to JavaScript for client side application logic. Some of the advantages of using ClojureScript include:</p><ul><li>use the same language on both the client and the server</li><li>share common code between the front-end and back-end</li><li>cleaner and more consistent language</li><li>immutable data structures</li><li>powerful standard library</li></ul><h3 id="adding&#95;clojurescript&#95;support">Adding ClojureScript Support</h3><p>ClojureScript support can be added via the official <code>:kit/cljs</code> module. Simply run <code>&#40;kit/install-module :kit/cljs&#41;</code> in order to add the assets. this will add support for compiling ClojureScript using <a href='https://shadow-cljs.github.io/docs/UsersGuide.html'>shadow-cljs</a>.</p><h3 id="managing&#95;javascript&#95;and&#95;clojurescript&#95;dependencies">Managing JavaScript and ClojureScript dependencies</h3><h4 id="npm&#95;modules">NPM modules</h4><p>NPM is used to manage JavaScript modules used in the project. Make sure that you have NPM tools installed for doing that. When the module is added, a <code>package.json</code> file will be created with the following content:</p><pre><code>{
   &quot;devDependencies&quot;: {
     &quot;shadow-cljs&quot;: &quot;&#94;2.14.3&quot;
   },
@@ -83,7 +83,11 @@
                       :modules    {:app {:entries &#91;kit.guestbook.app&#93;}}
                       :devtools   {:after-load kit.guestbook.core/mount-root}}}}
 </code></pre><h3 id="running&#95;the&#95;compiler">Running the Compiler</h3><p>The easiest way to develop ClojureScript applications is to run the compiler in <code>watch</code> mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. To start the compiler in this mode simply run:</p><pre><code>npx shadow-cljs watch app
-</code></pre><p>This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.</p><p>ClojureScript will be compiled with production settings when the <code>uberjar</code> task is run.</p><h3 id="shadow-cljs&#95;with&#95;nrepl">shadow-cljs with nREPL</h3><p>To connect your editor to a ClojureScript REPL make sure that you have the <code>:nrepl</code> key in <code>shadow-cljs.edn</code>. This key defaults to port <code>7002</code>. When the compiler starts, it will open nREPL on the specified port.</p><p>Once you run <code>npx shadow watch app</code>, then you'll be able to connect to its nREPL at <code>localhost:7002</code>. Once connected, you simply have to run <code>&#40;shadow.cljs.devtools.api/repl :app&#41;</code> and the ClojureScript nREPL will become available. You can test that everything is working correctly by running <code>&#40;js/alert &quot;Hi&quot;&#41;</code> in the REPL. This should pop up an alert in the browser.</p><p>To exit the ClojureScript nREPL you have to run <code>:cljs/quit</code> in the nREPL.</p><h3 id="interacting&#95;with&#95;javascript">Interacting with JavaScript</h3><p>All the global JavaScript functions and variables are available via the <code>js</code> namespace.</p><h4 id="method&#95;calls">Method Calls</h4><pre><code class="clojure">&#40;.method object params&#41;
+</code></pre><p>This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.</p><p>ClojureScript will be compiled with production settings when the <code>uberjar</code> task is run. This task will run the following function to compile ClojureScript for release:</p><pre><code> &#40;defn build-cljs &#91;&#93;
+   &#40;println &quot;npx shadow-cljs release app...&quot;&#41;
+   &#40;let &#91;{:keys &#91;exit&#93;, :as s} &#40;sh &quot;npx&quot; &quot;shadow-cljs&quot; &quot;release&quot; &quot;app&quot;&#41;&#93;
+     &#40;when-not &#40;zero? exit&#41; &#40;throw &#40;ex-info &quot;could not compile cljs&quot; s&#41;&#41;&#41;&#41;&#41;
+ </code></pre><h3 id="shadow-cljs&#95;with&#95;nrepl">shadow-cljs with nREPL</h3><p>To connect your editor to a ClojureScript REPL make sure that you have the <code>:nrepl</code> key in <code>shadow-cljs.edn</code>. This key defaults to port <code>7002</code>. When the compiler starts, it will open nREPL on the specified port.</p><p>Once you run <code>npx shadow watch app</code>, then you'll be able to connect to its nREPL at <code>localhost:7002</code>. Once connected, you simply have to run <code>&#40;shadow.cljs.devtools.api/repl :app&#41;</code> and the ClojureScript nREPL will become available. You can test that everything is working correctly by running <code>&#40;js/alert &quot;Hi&quot;&#41;</code> in the REPL. This should pop up an alert in the browser.</p><p>To exit the ClojureScript nREPL you have to run <code>:cljs/quit</code> in the nREPL.</p><h3 id="interacting&#95;with&#95;javascript">Interacting with JavaScript</h3><p>All the global JavaScript functions and variables are available via the <code>js</code> namespace.</p><h4 id="method&#95;calls">Method Calls</h4><pre><code class="clojure">&#40;.method object params&#41;
 
 &#40;.log js/console &quot;hello world!&quot;&#41;
 </code></pre><h4 id="accessing&#95;properties">Accessing Properties</h4><pre><code class="clojure">&#40;.-property object&#41;
@@ -96,9 +100,9 @@
 </code></pre><p>Components can also be functions:</p><pre><code class="clojure">&#40;defn label &#91;text&#93;
   &#91;:label text&#93;&#41;
 </code></pre><p>The values of the components are stored in Reagent atoms. These atoms behave just like regular Clojure atoms, except for one important property. When an atom is updated it causes any components that dereference it to be repainted. Let's take a look at an example.</p><p><strong>Important:</strong> Make sure that you require Reagent atom in the namespace, otherwise regular Clojure atoms will be used and components will not be repainted on change.</p><pre><code class="clojure">&#40;ns myapp
-  &#40;:require &#91;reagent.core :as reagent :refer &#91;atom&#93;&#93;&#41;&#41;
+  &#40;:require &#91;reagent.core :as reagent&#93;&#41;&#41;
 
-&#40;def state &#40;atom nil&#41;&#41;
+&#40;def state &#40;reagent/atom nil&#41;&#41;
 
 &#40;defn input-field &#91;label-text&#93;
   &#91;:div
@@ -111,16 +115,14 @@
 |                                                          V
 +--&#40;event handlers update&#41;--&#40;Stores emit &quot;change&quot; events&#41;--+
 </code></pre><p>Our view components dispatch updates to the atoms, which represent the stores. The atoms in turn notify any components that dereference them when their state changes.</p><p>In the previous example, we used a global atom to hold the state. While it's convenient for small applications this approach doesn't scale well. Fortunately, Reagent allows us to have localized states in our components. Let's take a look at how this works.</p><pre><code class="clojure">&#40;defn input-field &#91;label-text id&#93;
-  &#40;let &#91;value &#40;atom nil&#41;&#93;
-    &#40;fn &#91;&#93;
-      &#91;:div
-        &#91;label &quot;The value is: &quot; @value&#93;
-        &#91;:input {:type &quot;text&quot;
-                 :value @value
-                 :on-change #&#40;reset! value &#40;-&gt; % .-target .-value&#41;&#41;}&#93;&#93;&#41;&#41;&#41;
+  &#40;reagent/with-let &#91;value &#40;reagent/atom nil&#41;&#93;
+    &#91;:div
+     &#91;label &quot;The value is: &quot; @value&#93;
+      &#91;:input {:type &quot;text&quot;
+               :value @value
+               :on-change #&#40;reset! value &#40;-&gt; % .-target .-value&#41;&#41;}&#93;&#93;&#41;&#41;
 </code></pre><p>All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.</p><p>Finally, rendering components is accomplished by calling the <code>render-component</code> function:</p><pre><code class="clojure">&#40;defn render-simple &#91;&#93;
-  &#40;reagent/render-component &#91;input-field&#93;
-                            &#40;.-body js/document&#41;&#41;
+  &#40;reagent/render-component &#91;input-field&#93; &#40;.-body js/document&#41;&#41;
 </code></pre><h3 id="client&#95;side&#95;routing">Client Side Routing</h3><p>Reitit is used to handle both client and server routes. We'd need to require Reitit in the routing namespace along with Google Closure history and events helpers.</p><pre><code class="clojure">&#40;ns &lt;app&gt;.core
  &#40;:require
   &#91;reagent.core :as r&#93;
@@ -191,14 +193,11 @@
 &#40;defn service-routes &#91;&#93;
   &#91;&quot;&quot;
    &#91;&quot;/send-message&quot; {:post save-message!}&#93;&#93;&#41;
-</code></pre><p>Note that CSRF middleware is enabled by default. The middleware wraps the <code>home-routes</code> of your application. It will intercept any request to the server that isn't a <code>HEAD</code> or <code>GET</code>.</p><pre><code class="clojure">&#40;defn home-routes &#91;&#93;
-  &#91;&quot;&quot;
+</code></pre><p>Note that CSRF middleware is enabled by default. The middleware wraps the <code>home-routes</code> of your application. It will intercept any request to the server that isn't a <code>HEAD</code> or <code>GET</code>.</p><pre><code class="clojure">&#40;defn home-routes &#91;base-path&#93;
+  &#91;base-path
    {:middleware &#91;middleware/wrap-csrf
                  middleware/wrap-formats&#93;}
-   &#91;&quot;/&quot; {:get home-page}&#93;
-   &#91;&quot;/docs&quot; {:get &#40;fn &#91;&#95;&#93;
-                    &#40;-&gt; &#40;response/ok &#40;-&gt; &quot;docs/docs.md&quot; io/resource slurp&#41;&#41;
-                        &#40;response/header &quot;Content-Type&quot; &quot;text/plain; charset=utf-8&quot;&#41;&#41;&#41;}&#93;&#93;&#41;
+   &#91;&quot;/&quot; {:get home-page}&#93;&#93;&#41;
 </code></pre><p>We would now need to pass the CSRF token along with the request. One way to do this is to pass the token in the <code>x-csrf-token</code> header in the request with the value of the token.</p><p>To do that we'll first need to set the token as a hidden field on the page:</p><pre><code class="xml">&lt;input id=&quot;csrf-token&quot; type=&quot;hidden&quot; value=&quot;{{csrf-token}}&quot;&gt;&lt;/input&gt;
 </code></pre><p>Then we'll have to set the header in the request:</p><pre><code class="clojure">&#40;POST &quot;/send-message&quot;
         {:headers {&quot;Accept&quot; &quot;application/transit+json&quot;
