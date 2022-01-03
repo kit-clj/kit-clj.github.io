@@ -59,7 +59,7 @@
       <h1>Your First Application</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#guestbook_application">Guestbook Application</a></li><li><a href="#installing_jdk">Installing JDK</a></li><li><a href="#installing_a_build_tool">Installing a Build Tool</a></li><li><a href="#creating_a_new_application">Creating a new application</a></li><li><a href="#anatomy_of_a_kit_application">Anatomy of a Kit application</a></li><li><a href="#the_source_directory">The Source Directory</a></li><li><a href="#the_env_directory">The Env Directory</a></li><li><a href="#the_test_directory">The Test Directory</a></li><li><a href="#the_resources_directory">The Resources Directory</a></li><li><a href="#starting_our_server">Starting Our Server</a></li><li><a href="#system">System</a></li><li><a href="#project_configuration">Project Configuration</a></li><li><a href="#kit_modules">Kit Modules</a></li><li><a href="#"></a></li><li><a href="#accessing_the_database">Accessing The Database</a></li><li><a href="#running_the_application">Running the Application</a></li><li><a href="#creating_pages_and_handling_form_input">Creating Pages and Handling Form Input</a></li><li><a href="#adding_some_tests">Adding some tests</a></li><li><a href="#packaging_the_application">Packaging the application</a></li></ol>
+      <ol class="contents"><li><a href="#guestbook_application">Guestbook Application</a></li><li><a href="#installing_jdk">Installing JDK</a></li><li><a href="#installing_a_build_tool">Installing a Build Tool</a></li><li><a href="#creating_a_new_application">Creating a new application</a></li><li><a href="#anatomy_of_a_kit_application">Anatomy of a Kit application</a></li><li><a href="#the_source_directory">The Source Directory</a></li><li><a href="#the_env_directory">The Env Directory</a></li><li><a href="#the_test_directory">The Test Directory</a></li><li><a href="#the_resources_directory">The Resources Directory</a></li><li><a href="#starting_our_server">Starting Our Server</a></li><li><a href="#system">System</a></li><li><a href="#project_configuration">Project Configuration</a></li><li><a href="#kit_modules">Kit Modules</a></li><li><a href="#"></a></li><li><a href="#accessing_the_database">Accessing The Database</a></li><li><a href="#running_the_application">Running the Application</a></li><li><a href="#creating_a_controller_for_the_guestbook">Creating a controller for the guestbook</a></li><li><a href="#creating_pages_and_handling_form_input">Creating Pages and Handling Form Input</a></li><li><a href="#adding_some_tests">Adding some tests</a></li><li><a href="#packaging_the_application">Packaging the application</a></li></ol>
       
       <div id="content">
         <h2 id="guestbook&#95;application">Guestbook Application</h2><p>This tutorial will guide you through building a simple guestbook application using Kit. The guestbook allows users to leave a message and to view a list of messages left by others. The application will demonstrate the basics of HTML templating, database access, and project architecture.</p><p>If you don't have a preferred Clojure editor already, then it's recommended that you use <a href='https://calva.io/getting-started/'>Calva</a> to follow along with this tutorial.</p><h3 id="installing&#95;jdk">Installing JDK</h3><p>Clojure runs on the JVM and requires a copy of JDK to be installed. IF you don't have JDK already on your system then OpenJDK is recommended and can be downloaded <a href='http://www.azul.com/downloads/zulu/'>here</a>. Note that Kit requires JDK 11 or greater to work with the default settings.</p><p>TODO: Maybe instead of direct download, package manager for macos/linux. idk windows</p><h3 id="installing&#95;a&#95;build&#95;tool">Installing a Build Tool</h3><p>For building and running a project, Kit supports <a href='https://clojure.org/guides/deps_and_cli'>Clojure Deps and CLI</a>.</p><p>TODO: Future add Leiningen</p><p><div class="deps"> Installing Clojure CLI is accomplished by followings the step below, based on your operating system</p><p>MacOS</p><pre><code>brew install clojure/tools/clojure
@@ -161,7 +161,7 @@ cd guestbook
 ;; html installed successfully!
 ;; restart required!
 ;; nil
-</code></pre><p>If you have issues with syncing your modules, refer to [TODO DOCS HERE]()</p><p>We can see from the output of the <code>kit/install-module</code> that we need to restart our REPL. Let's do that. Once we are up again, we can test if our module is installed correctly by starting up the server with <code>&#40;go&#41;</code> and navigating to <a href='http://localhost:3000'>localhost:3000</a>.</p><h4 id="html&#95;templates">HTML templates</h4><p>The module generated the following files under the <code>resources/html</code> directory:</p><ul><li><code>home.html</code> - home page</li><li><code>error.html</code> - error page template</li></ul><p>This directory is reserved for HTML templates that represent the application pages.</p><p>The module also generated the namespace <code>yourname.guestbook.web.pages.layout</code> which helps you render HTML pages using <a href='https://github.com/yogthos/Selmer'>Selmer templating engine</a></p><h4 id="routing">Routing</h4><p>The module also helped generate some routes for us under <code>yourname.guestbook.web.routes.pages</code>. </p><p>TODO: add a bit in general about routing with kit</p><h4 id="adding&#95;a&#95;database">Adding a database</h4><p>Similarly to the way we installed the HTML module, we can add a SQLite module called <code>:sqlite</code>.</p><pre><code class="clojure">&#40;kit/install-module :sqlite&#41;
+</code></pre><p>If you have issues with syncing your modules, refer to [TODO DOCS HERE]()</p><p>We can see from the output of the <code>kit/install-module</code> that we need to restart our REPL. Let's do that. Once we are up again, we can test if our module is installed correctly by starting up the server with <code>&#40;go&#41;</code> and navigating to <a href='http://localhost:3000'>localhost:3000</a>.</p><h4 id="html&#95;templates">HTML templates</h4><p>The module generated the following files under the <code>resources/html</code> directory:</p><ul><li><code>home.html</code> - home page</li><li><code>error.html</code> - error page template</li></ul><p>This directory is reserved for HTML templates that represent the application pages.</p><p>The module also generated the namespace <code>yourname.guestbook.web.pages.layout</code> which helps you render HTML pages using <a href='https://github.com/yogthos/Selmer'>Selmer templating engine</a></p><h4 id="routing">Routing</h4><p>The module also helped generate some routes for us under <code>yourname.guestbook.web.routes.pages</code>. See <a href='/docs/routes.html'>routing</a> documentation for more details.</p><h4 id="adding&#95;a&#95;database">Adding a database</h4><p>Similarly to the way we installed the HTML module, we can add a SQLite module called <code>:sqlite</code>.</p><pre><code class="clojure">&#40;kit/install-module :sqlite&#41;
 ;; updating file: resources/system.edn
 ;; injecting
 ;;  path: &#91;:db.sql/connection&#93; 
@@ -196,7 +196,10 @@ cd guestbook
  message VARCHAR&#40;200&#41;,
  timestamp TIMESTAMP&#40;7&#41;&#41;;
 </code></pre><p>The guestbook table will store all the fields describing the message, such as the name of the commenter, the content of the message and a timestamp. Next, let's replace the contents of the <code>&lt;date&gt;-add-guestbook-table.down.sql</code> file accordingly:</p><pre><code class="sql">DROP TABLE guestbook;
-</code></pre><p>TODO: mention this is ran automatically, configured in system.edn</p><h4 id="sql&#95;queries">SQL Queries</h4><p>The SQL queries are found in the <code>resources/sql</code> folder.</p><ul><li><code>queries.sql</code> - defines the SQL queries and their associated function names</li></ul><p>The file initially contains some placeholder queries to help remind you of basic SQL syntax. As we can see each function is defined using the comment that starts with <code>-- :name</code> followed by the name of the function. The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the <a href='https://www.hugsql.org/'>HugSQL documentation</a>. The parameters are denoted using <code>:</code> notation. Let's replace the existing queries with some of our own:</p><pre><code class="sql">-- :name save-message! :! :n
+</code></pre><p>Migrations will be run automatically using the configuration found in <code>system.edn</code>:</p><pre><code class="clojure">:db.sql/migrations {:store :database,
+                     :db {:datasource #ig/ref :db.sql/connection},
+                     :migrate-on-init? true}
+</code></pre><h4 id="sql&#95;queries">SQL Queries</h4><p>The SQL queries are found in the <code>resources/sql</code> folder.</p><ul><li><code>queries.sql</code> - defines the SQL queries and their associated function names</li></ul><p>The file initially contains some placeholder queries to help remind you of basic SQL syntax. As we can see each function is defined using the comment that starts with <code>-- :name</code> followed by the name of the function. The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the <a href='https://www.hugsql.org/'>HugSQL documentation</a>. The parameters are denoted using <code>:</code> notation. Let's replace the existing queries with some of our own:</p><pre><code class="sql">-- :name save-message! :! :n
 -- :doc creates a new message
 INSERT INTO guestbook
 &#40;name, message, timestamp&#41;
@@ -215,7 +218,16 @@ SELECT &#42; FROM guestbook
 
 &#40;query-fn :get-messages {}&#41;
 ;; =&gt; &#91;{:id 1, :name &quot;m1&quot;, :message &quot;hello world&quot;, :timestamp 1636480432353}&#93;
-</code></pre><h2></h2><h3 id="accessing&#95;the&#95;database">Accessing The Database</h3><p>Next, we'll take a look at the <code>src/clj/guestbook/db/core.clj</code> file. Here, we can see that we already have the definition for our database connection.</p><pre><code class="clojure">&#40;ns guestbook.db.core
+</code></pre><h2></h2><h3 id="accessing&#95;the&#95;database">Accessing The Database</h3><p>Let's create a new controller for our app.</p><pre><code>&#40;defmethod ig/init-key :db.sql/query-fn
+  &#91;&#95; {:keys &#91;conn options filename&#93;
+      :or   {options {}}}&#93;
+  &#40;let &#91;queries &#40;conman/bind-connection-map conn options filename&#41;&#93;
+    &#40;fn
+      &#40;&#91;query params&#93;
+       &#40;conman/query queries query params&#41;&#41;
+      &#40;&#91;conn query params &amp; opts&#93;
+       &#40;apply conman/query conn queries query params opts&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>Next, we'll take a look at the <code>src/clj/guestbook/db/core.clj</code> file. Here, we can see that we already have the definition for our database connection.</p><pre><code class="clojure">&#40;ns guestbook.db.core
   &#40;:require
     &#91;conman.core :as conman&#93;
     &#91;mount.core :refer &#91;defstate&#93;&#93;
@@ -275,60 +287,44 @@ user=&gt; &#40;go&#41;
 2021-12-18 11:35:42,113 &#91;main&#93; INFO  org.jboss.threads - JBoss Threads version 3.1.0.Final
 2021-12-18 11:35:42,183 &#91;main&#93; INFO  luminus.http-server - server started on port 3000
 user=&gt;
-</code></pre><p>Note that the page is prompting us to run the migrations in order to initialize the database. However, we've already done that earlier, so we won't need to do that again.</p><h3 id="creating&#95;pages&#95;and&#95;handling&#95;form&#95;input">Creating Pages and Handling Form Input</h3><p>Our routes are defined in the <code>guestbook.routes.home</code> namespace. Let's open it up and add the logic for rendering the messages from the database. We'll first need to add a reference to our <code>db</code> namespace along with references for <a href='https://github.com/leonardoborges/bouncer'>Bouncer</a> validators and <a href='http://ring-clojure.github.io/ring/ring.util.response.html'>ring.util.response</a></p><pre><code class="clojure">&#40;ns guestbook.routes.home
-  &#40;:require
-   &#91;guestbook.layout :as layout&#93;
-   &#91;guestbook.db.core :as db&#93;
-   &#91;clojure.java.io :as io&#93;
-   &#91;guestbook.middleware :as middleware&#93;
-   &#91;ring.util.http-response :as response&#93;&#41;&#41;
-</code></pre><p>Next, we'll create a schema that defines the form parameters and add a function to validate them. We'll first have to update the namespace declaration above to require <a href='http://funcool.github.io/struct/latest/'>Struct</a> library:</p><pre><code>&#40;ns guestbook.routes.home
-  &#40;:require
-   ...
-   &#91;struct.core :as st&#93;&#41;
-</code></pre><pre><code class="clojure">&#40;def message-schema
-  &#91;&#91;:name
-    st/required
-    st/string&#93;
+</code></pre><p>Note that the page is prompting us to run the migrations in order to initialize the database. However, we've already done that earlier, so we won't need to do that again.</p><h3 id="creating&#95;a&#95;controller&#95;for&#95;the&#95;guestbook">Creating a controller for the guestbook</h3><p>We'll create a new controller that will be responsible for loading existing messages from our database as well as adding new messages. Let's call this namespace <code>kit.guestbook.web.controllers.guestbook</code>, and add the following content to it:</p><pre><code class="clojure">&#40;ns kit.guestbook.web.controllers.guestbook
+  &#40;:require   
+   &#91;clojure.tools.logging :as log&#93;
+   &#91;kit.guestbook.web.routes.utils :as utils&#93;   
+   &#91;ring.util.http-response :as http-response&#93;&#41;&#41;
 
-   &#91;:message
-    st/required
-    st/string
-    {:message &quot;message must contain at least 10 characters&quot;
-     :validate #&#40;&gt; &#40;count %&#41; 9&#41;}&#93;&#93;&#41;
+&#40;defn get-messages
+  &#91;req&#93;
+  &#40;log/debug &quot;loading messages&quot;&#41;
+  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data req&#41;&#93;
+    &#40;http-response/ok &#40;query-fn :get-messages {}&#41;&#41;&#41;&#41;
 
-&#40;defn validate-message &#91;params&#93;
-  &#40;first &#40;st/validate params message-schema&#41;&#41;&#41;
-</code></pre><p>The function uses the <code>validate</code> function from Struct to check that the <code>:name</code> and the <code>:message</code> keys conform to the rules we specified. Specifically, the name is required and the message must contain at least 10 characters. Struct uses a vector to specify the fields being validated where each field is itself a vector starting with the keyword pointing to the value being validated followed by one or more validators. Custom validators can be specified using a map as seen with with the validator for the character count in the message.</p><p>We'll now add a function to validate and save messages:</p><pre><code class="clojure">&#40;defn save-message! &#91;{:keys &#91;params&#93;}&#93;
-  &#40;if-let &#91;errors &#40;validate-message params&#41;&#93;
-    &#40;-&gt; &#40;response/found &quot;/&quot;&#41;
-        &#40;assoc :flash &#40;assoc params :errors errors&#41;&#41;&#41;
-    &#40;do
-      &#40;db/save-message!
-       &#40;assoc params :timestamp &#40;java.util.Date.&#41;&#41;&#41;
-      &#40;response/found &quot;/&quot;&#41;&#41;&#41;&#41;
-</code></pre><p>The function will grab the <code>:params</code> key from the request that contains the form parameters. When the <code>validate-message</code> functions returns errors we'll redirect back to <code>/</code>, we'll associate a <code>:flash</code> key with the response where we'll put the supplied parameters along with the errors. Otherwise, we'll save the message in our database and redirect.</p><p>We can now change the <code>home-page</code> handler function to look as follows:</p><pre><code class="clojure">&#40;defn home-page &#91;{:keys &#91;flash&#93; :as request}&#93;
-  &#40;layout/render
-   request
-   &quot;home.html&quot;
-   &#40;merge {:messages &#40;db/get-messages&#41;}
-          &#40;select-keys flash &#91;:name :message :errors&#93;&#41;&#41;&#41;&#41;
-</code></pre><p>The function renders the home page template and passes it the currently stored messages along with any parameters from the <code>:flash</code> session, such as validation errors.</p><p>Recall that the database accessor functions were automatically generated for us by the <code>&#40;conman/bind-connection &#42;db&#42; &quot;sql/queries.sql&quot;&#41;</code> statement ran in the <code>guestbook.db.core</code> namespace. The names of these functions are inferred from the <code>-- :name</code> comments in the SQL templates found in the <code>resources/sq/queries.sql</code> file.</p><p>Our routes will now have to pass the request to both the <code>home-page</code> and the <code>save-message!</code> handlers:</p><pre><code class="clojure">&#40;defn home-routes &#91;&#93;
-  &#91;&quot;&quot;
-   {:middleware &#91;middleware/wrap-csrf
-                 middleware/wrap-formats&#93;}
-   &#91;&quot;/&quot; {:get home-page
-         :post save-message!}&#93;
-   &#91;&quot;/about&quot; {:get about-page}&#93;&#93;&#41;
-</code></pre><p>Now that we have our controllers setup, let's open the <code>home.html</code> template located under the <code>resources/html</code> directory. Currently, it simply renders the contents of the <code>content</code> variable inside the content block:</p><pre><code class="xml">{% extends &quot;base.html&quot; %}
-{% block content %}
-  &lt;div class=&quot;content&quot;&gt;
-  {{docs|markdown}}
-  &lt;/div&gt;
-{% endblock %}
-</code></pre><p>We'll update our <code>content</code> block to iterate over the messages and print each one in a list:</p><pre><code class="xml">{% extends &quot;base.html&quot; %}
-{% block content %}
-&lt;div class=&quot;content&quot;&gt;
+&#40;defn save-message!
+  &#91;{:keys &#91;form-params&#93; :as req}&#93;
+  &#40;log/debug &quot;saving message&quot; form-params&#41;
+  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data req&#41;&#93;
+    &#40;try
+      &#40;query-fn :save-message &#40;select-keys form-params &#91;:name :message&#93;&#41;&#41;
+      &#40;http-response/found &quot;/&quot;&#41;
+      &#40;catch Exception e
+        &#40;log/error e &quot;failed to save message!&quot;&#41;
+        &#40;http-response/found &quot;/error&quot;&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>As you can see, the namespace contains two functions using the queries we defined earlier. The first runs the query to get the messages from the databse, and the second runs the query that adds a new message. The queries are accessed from the request route data using the <code>kit.guestbook.web.routes.utils/route-data</code> function. The function returns a map containing the <code>query-fn</code> key that in turn contains a map of the query functions.</p><p>Recall that the database accessor functions were automatically generated for us by the <code>&#40;conman/bind-connection &#42;db&#42; &quot;sql/queries.sql&quot;&#41;</code> statement ran in the <code>guestbook.db.core</code> namespace. The names of these functions are inferred from the <code>-- :name</code> comments in the SQL templates found in the <code>resources/sq/queries.sql</code> file.</p><p>The <code>save-message!</code> function will grab the <code>form-params</code> key from the request that contains the form parameters and attempt to save the message in our database and redirect. If the message is added successfully then the controller will redirect to the home page, otherwise an error page will be displayed.</p><h3 id="creating&#95;pages&#95;and&#95;handling&#95;form&#95;input">Creating Pages and Handling Form Input</h3><p>The routes for the HTML pages are defined in the <code>kit.guestbook.web.routes.pages</code> namespace. Let's open it up and add the logic for rendering the messages from the database. We'll first need to add a reference to our <code>kit.guestbook.web.controllers.guestbook</code> namespace.</p><pre><code class="clojure">&#40;ns kit.guestbook.web.routes.pages
+  &#40;:require
+    &#91;kit.guestbook.web.controllers.guestbook :as guestbook&#93;
+    &#91;kit.guestbook.web.middleware.exception :as exception&#93;
+    &#91;kit.guestbook.web.pages.layout :as layout&#93;
+    &#91;integrant.core :as ig&#93;
+    &#91;reitit.ring.middleware.muuntaja :as muuntaja&#93;
+    &#91;reitit.ring.middleware.parameters :as parameters&#93;
+    &#91;ring.middleware.anti-forgery :refer &#91;wrap-anti-forgery&#93;&#93;&#41;&#41;
+</code></pre><p>We can now change the <code>home-page</code> handler function to look as follows:</p><pre><code class="clojure">&#40;defn home &#91;request&#93;
+  &#40;layout/render request &quot;home.html&quot; {:messages &#40;guestbook/get-messages request&#41;}&#41;&#41;
+</code></pre><p>The function renders the home page template and passes it the currently stored messages along with any parameters from the <code>:flash</code> session, such as validation errors.</p><pre><code class="clojure">&#40;defn page-routes &#91;base-path&#93;
+  &#91;base-path
+   &#91;&quot;/&quot; {:get home}&#93;
+   &#91;&quot;/save-message&quot; {:post guestbook/save-message!}&#93;&#93;&#41;
+</code></pre><p>Now that we have our controllers setup, let's open the <code>home.html</code> template located under the <code>resources/html</code> directory. Currently, it simply renders a static page. We'll update our <code>content</code> block to iterate over the messages and print each one in a list:</p><pre><code class="xml">&lt;div class=&quot;content&quot;&gt;
   &lt;div class=&quot;columns&quot;&gt;
     &lt;div class=&quot;column&quot;&gt;
       &lt;h3&gt;Messages&lt;/h3&gt;
@@ -344,7 +340,6 @@ user=&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-{% endblock %}
 </code></pre><p>As you can see above, we use a <code>for</code> iterator to walk the messages. Since each message is a map with the message, name, and timestamp keys, we can access them by name. Also, notice the use of the <code>date</code> filter to format the timestamps into a human readable form.</p><p>Finally, we'll create a form to allow users to submit their messages. We'll populate the name and message values if they're supplied and render any errors associated with them. Note that the forms also uses the <code>csrf-field</code> tag that's required for cross-site request forgery protection.</p><pre><code class="xml">&lt;div class=&quot;columns&quot;&gt;
     &lt;div class=&quot;column&quot;&gt;
       &lt;form method=&quot;POST&quot; action=&quot;/&quot;&gt;
@@ -367,9 +362,7 @@ user=&gt;
       &lt;/form&gt;
     &lt;/div&gt;
   &lt;/div&gt;
-</code></pre><p>Our final <code>home.html</code> template should look as follows:</p><pre><code class="xml">{% extends &quot;base.html&quot; %}
-{% block content %}
-&lt;div class=&quot;content&quot;&gt;
+</code></pre><p>Our final <code>content</code> div should look as follows:</p><pre><code class="xml">&lt;div class=&quot;content&quot;&gt;
   &lt;div class=&quot;columns&quot;&gt;
     &lt;div class=&quot;column&quot;&gt;
       &lt;h3&gt;Messages&lt;/h3&gt;
@@ -407,7 +400,6 @@ user=&gt;
     &lt;/div&gt;
   &lt;/div&gt;
 &lt;/div&gt;
-{% endblock %}
 </code></pre><p>Finally, we can update the <code>screen.css</code> file located in the <code>resources/public/css</code> folder to format our form nicer:</p><pre><code>ul {
 	list-style: none;
 }
@@ -433,7 +425,7 @@ form, .error {
 	margin-bottom: 50px;
 	position: relative;
 }
-</code></pre><p>When we reload the page in the browser we should be greeted by the guestbook page. We can test that everything is working as expected by adding a comment in our comment form.</p><h2 id="adding&#95;some&#95;tests">Adding some tests</h2><p>Now that we have our application working we can add some tests for it. Let's open up the <code>test/clj/guestbook/test/db/core.clj</code> namespace and update it as follows:</p><pre><code class="clojure">&#40;ns guestbook.test.db.core
+</code></pre><p>When we reload the page in the browser we should be greeted by the guestbook page. We can test that everything is working as expected by adding a comment in our comment form.</p><p>TODO figure out tests using deps<h2 id="adding&#95;some&#95;tests">Adding some tests</h2></p><p>Now that we have our application working we can add some tests for it. Let's open up the <code>test/clj/guestbook/test/db/core.clj</code> namespace and update it as follows:</p><pre><code class="clojure">&#40;ns guestbook.test.db.core
   &#40;:require
    &#91;guestbook.db.core :refer &#91;&#42;db&#42;&#93; :as db&#93;
    &#91;luminus-migrations.core :as migrations&#93;
@@ -468,13 +460,9 @@ form, .error {
            &#40;-&gt; &#40;db/get-messages t-conn {}&#41;
                &#40;first&#41;
                &#40;select-keys &#91;:name :message :timestamp&#93;&#41;&#41;&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>We can now run <div class="lein"><code>lein test</code></div><div class="boot">`boot testing test`</div> in the terminal to see that our database interaction works as expected.</p><p><div class="lein"> Luminus comes with <a href='https://github.com/jakemcc/lein-test-refresh'>lein-test-refresh</a> enabled by default. This plugin allows running tests continuously whenever a change in a namespace is detected. We can start a test runner in a new terminal using the <code>lein test-refresh</code> command. </div> <div class="boot"> An auto test can be easily enabled by using the <code>watch</code> task in boot. We encourage you to start a test runner in a new terminal using `boot testing watch test` </div></p><h2 id="packaging&#95;the&#95;application">Packaging the application</h2><p>The application can be packaged for standalone deployment by running the following command:</p><p><div class="lein"></p><pre><code>lein uberjar
-</code></pre><p></div> <div class="boot"></p><pre><code>boot uberjar
-</code></pre><p></div></p><p>This will create a runnable jar that can be run as seen below:</p><p><div class="lein"></p><pre><code>export DATABASE&#95;URL=&quot;jdbc:h2:./guestbook&#95;dev.db&quot;
+</code></pre><p>We can now run <code>clj -M:test</code> in the terminal to see that our database interaction works as expected.</p><h2 id="packaging&#95;the&#95;application">Packaging the application</h2><p>The application can be packaged for standalone deployment by running the following command:</p><p>clj -Sforce -T:build all</p><p>This will create a runnable jar that can be run as seen below:</p><pre><code>export JDBC&#95;URL=&quot;jdbc:h2:./guestbook&#95;dev.db&quot;
 java -jar target/uberjar/guestbook.jar
-</code></pre><p></div> <div class="boot"></p><pre><code>export DATABASE&#95;URL=&quot;jdbc:h2:./guestbook&#95;dev.db&quot;
-java -jar target/guestbook.jar
-</code></pre><p></div></p><p>Note that we have to supply the <code>DATABASE&#95;URL</code> environment variable when running as a jar, as it's not packaged with the application.</p><hr/><p>Complete source listing for the tutorial is available <a href='https://github.com/luminus-framework/examples/tree/master/guestbook'>here</a>.</p>
+</code></pre><p>Note that we have to supply the <code>JDBC&#95;URL</code> environment variable when running as a jar, as it's not packaged with the application.</p><hr/><p>TODO Complete source listing for the tutorial is available <a href='https://github.com/kit-clj/examples/tree/master/guestbook'>here</a>.</p>
       </div>
     </div>
   </div>

@@ -59,7 +59,7 @@
       <h1>Deployment</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#running_standalone">Running Standalone</a></li><li><a href="#vps_deployment">VPS Deployment</a></li><li><a href="#application_deployment">Application deployment</a></li><li><a href="#systemd_start_configuration">systemd start configuration</a></li><li><a href="#fronting_with_nginx">Fronting with Nginx</a></li><li><a href="#setting_up_ssl">Setting up SSL</a></li><li><a href="#heroku_deployment">Heroku Deployment</a></li><li><a href="#enabling_nrepl">Enabling nREPL</a></li><li><a href="#resources">Resources</a></li></ol>
+      <ol class="contents"><li><a href="#running_standalone">Running Standalone</a></li><li><a href="#vps_deployment">VPS Deployment</a></li><li><a href="#application_deployment">Application deployment</a></li><li><a href="#systemd_start_configuration">systemd start configuration</a></li><li><a href="#fronting_with_nginx">Fronting with Nginx</a></li><li><a href="#setting_up_ssl">Setting up SSL</a></li><li><a href="#heroku_deployment">Heroku Deployment</a></li><li><a href="#enabling_socket_repl">Enabling Socket REPL</a></li><li><a href="#resources">Resources</a></li></ol>
       
       <div id="content">
         <h2 id="running&#95;standalone">Running Standalone</h2><p>To create a standalone executable for your application simply run</p><pre><code class="bash">clj -Sforce -T:build all
@@ -186,15 +186,7 @@ git commit -m &quot;init&quot;
 </code></pre><p>Create your app on Heroku:</p><pre><code>heroku create
 </code></pre><p>Optionally, create a database for the application:</p><pre><code>heroku addons:create heroku-postgresql
 </code></pre><p>The connection settings can be found at your <a href='https://dashboard.heroku.com/apps/'>Heroku dashboard</a> under the add-ons for the app.</p><p>Deploy the application:</p><pre><code>git push heroku master
-</code></pre><p>Your application should now be deployed to Heroku!</p><p>To initialize or update your database, modify the <code>start-app</code> function in your project's <code>core.clj</code>:</p><pre><code>&#40;defn start-app &#91;&amp; &#91;params&#93;&#93;
-  &#40;&#40;or &#40;:start params&#41; &#40;:start defaults&#41; &#40;fn &#91;&#93;&#41;&#41;&#41;
-  &#40;-&gt;&gt; &#40;config/system-config &#40;or &#40;:opts params&#41; &#40;:opts defaults&#41; {}&#41;&#41;
-       &#40;ig/prep&#41;
-       &#40;ig/init&#41;
-       &#40;reset! system&#41;&#41;
-  &#40;migrations/migrate &#91;&quot;migrate&quot;&#93; &#40;select-keys env &#91;:database-url&#93;&#41;&#41;       
-  &#40;.addShutdownHook &#40;Runtime/getRuntime&#41; &#40;Thread. stop-app&#41;&#41;&#41;
-</code></pre><p>This will run migrations every time, keeping the schema up-to-date, while also consuming less resources because the app is already running.</p><p>For further instructions see the <a href='https://devcenter.heroku.com/articles/clojure'>official documentation</a>.</p><h2 id="enabling&#95;nrepl">Enabling nREPL</h2><p>Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To enable REPL support set the <code>REPL&#95;PORT</code> envrionment variable to the desired port.</p><pre><code>export REPL&#95;PORT=7001
+</code></pre><p>Your application should now be deployed to Heroku!</p><p>For further instructions see the <a href='https://devcenter.heroku.com/articles/clojure'>official documentation</a>.</p><h2 id="enabling&#95;socket&#95;repl">Enabling Socket REPL</h2><p>Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To configure the REPL port you can set the <code>REPL&#95;PORT</code> environment variable to the desired port. By default it is 7000.</p><pre><code>export REPL&#95;PORT=7001
 </code></pre><p>You can also connect your favorite IDE to a remote REPL just as you would connect to a local one.</p><p>When running on a remote server it is recommended to forward the REPL port to the local machine using SSH:</p><pre><code>ssh -L 7001:localhost:7001 remotehost
 </code></pre><h2 id="resources">Resources</h2><ul><li><a href='http://www.braveclojure.com/quests/deploy/'>Deploying Your First Clojure App ...From the Shadows</a> provides an indepth guide for Clojure web application deployment strategies.</li></ul>
       </div>
