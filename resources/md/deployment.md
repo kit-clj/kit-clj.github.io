@@ -3,7 +3,7 @@
 To create a standalone executable for your application simply run
 
 ```bash
-lein uberjar
+clj -Sforce -T:build all
 ```
 
 The resulting `jar` can be found in the `target/uberjar` folder. It can be run as follows:
@@ -12,117 +12,12 @@ The resulting `jar` can be found in the `target/uberjar` folder. It can be run a
 java -jar <app>.jar
 ```
 
-By default the standalone application uses an embedded Jetty server to run the application.
-However, if you used a profile such as `+immutant` then the alternate server will be used instead.
 To specify a custom port you need to set the `$PORT` environment variable, eg:
 
 ```
 export PORT=8080
 java -jar <app>.jar
 ```
-## Deploying to WildFly
-
-Without any modifications to your code whatsoever, Immutant-based
-applications can either run standalone or be deployed to a
-[WildFly](http://wildfly.org) app server. The latter requires your app
-to be packaged in a special war file created by the
-[lein-immutant](https://github.com/immutant/lein-immutant) plugin,
-e.g.
-
-```bash
-lein immutant war
-```
-
-**NOTE:** The `+war` Luminus profile is incompatible with Immutant apps intended to run on WildFly and should not be used.
-
-More details are available in the
-[official Immutant documentation](http://immutant.org/documentation/current/apidoc/guide-wildfly.html)
-for WildFly server deployment.
-
-Also, [Linode](http://linode.com) has a guide on
-[how to deploy Luminus application with Immutant and WildFly on Ubuntu 14.04](https://linode.com/docs/applications/development/clojure-deployment-with-immutant-and-wildfly-on-ubuntu-14-04)
-
-## Deploying to Tomcat
-
-A WAR archive needs to be generated in order to deploy the application to a container such as Apache Tomcat. This is only supported via the [lein-uberwar](https://github.com/luminus-framework/lein-uberwar) plugin that's included using the `+war` profile.
-
-To enable the `lein-uberwar` plugin manually add the following configuration in the `project.clj` file:
-
-```clojure
-:plugins [...
-          [lein-uberwar "0.1.0"]]
-
-  :uberwar {:handler <app>.handler/app
-            :init <app>.handler/init
-            :destroy <app>.handler/destroy
-            :name "<app>.war"}
-```
-
-In order to create a WAR you can package the application by running:
-```bash
-lein uberwar
-```
-
-Next, simply copy the resulting `<app>.war` to the `webapps` folder on Tomcat, eg:
-
-```bash
-cp target/uberjar/<app>.war ~/tomcat/webapps/
-```
-
-Your app will now be avaliable at the context `/<app>` when Tomcat starts. To deploy the app
-at root context, simply copy it to `webapp` as `ROOT.war`.
-
-### Configuring JNDI Connections
-
-Tomcat may have database configuration specified as a [JNDI resource](https://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html) (check JDBC Data Sources
-section). In this case you need to fetch this data from the Tomcat configuration and not from clojure profiles. Just change these lines in `src/clj/<app>/db/core.clj`:
-
-```clojure
-(defstate ^:dynamic *db*
-           :start (conman/connect!
-                   {:jdbc-url (env :database-url)})
-           :stop (conman/disconnect! *db*))
-```
-
-to:
-
-```clojure
-(def ^:dynamic *db* {:name "java:comp/env/jdbc/EmployeeDB"})
-```
-
-(in this example `jdbc/EmployeeDB` is the same name as specified in `context.xml` and `web.xml` in the [JNDI HowTo page](https://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html). Note that this name is case sensitive.)
-
-### Configuring JNDI Development Environment
-
-Add the following dependency under the `:project/dev` profile:
-
-```clojure
-[directory-naming/naming-java "0.8"]
-```
-
-Add the following code in the `user` namespace found in the `env/dev/clj/user.clj` file:
-
-```clojure
-(System/setProperty "java.naming.factory.initial"
-                    "org.apache.naming.java.javaURLContextFactory")
-(System/setProperty "java.naming.factory.url.pkgs"
-                    "org.apache.naming")
-
-(doto (new javax.naming.InitialContext)
-  (.createSubcontext "java:")
-  (.createSubcontext "java:comp")
-  (.createSubcontext "java:comp/env")
-  (.createSubcontext "java:comp/env/jdbc")
-  (.bind "java:comp/env/jdbc/testdb"
-         (doto (org.postgresql.ds.PGSimpleDataSource.)
-           (.setServerName "localhost")
-           (.setDatabaseName "EmployeeDB")
-           (.setUser "user")
-           (.setPassword "pass"))))
-```
-
-The above code will create a JNDI context for the application. Note that you'll have to modify the
-data source configuration for your particular database configuration.
 
 ## VPS Deployment
 
@@ -317,56 +212,6 @@ openssl dhparam -out dhparam.pem 4096
 
 There are two options for handling HTTPS connections. You can either configure the HTTP server in the app itself, or front it with Nginx. We'll look at both approaches below.
 
-##### App SSL config
-
-You will need to setup Java Keystore to use certificates from the app. This involves running the following commands:
-
-```
-openssl pkcs12 -export -in fullchain.pem -inkey privkey.pem -out pkcs.p12 -name <NAME>
-
-keytool -importkeystore -deststorepass <PASSWORD_STORE> -destkeypass <PASSWORD_KEYPASS> -destkeystore keystore.jks -srckeystore pkcs.p12 -srcstoretype PKCS12 -srcstorepass <STORE_PASS> -alias <NAME>
-```
-
-If you're using Immutant as your HTTP server (`+immutant`), then you have to update your `<app>.core` namespace as follows:
-
-```clojure
-(ns <app>.core
-  (:require ...)
-  (:import
-    (java.security KeyStore)
-    (java.util TimeZone)
-    (org.joda.time DateTimeZone)))
-
-(defn keystore [file pass]
-(doto (KeyStore/getInstance "JKS")
-  (.load (io/input-stream (io/file file)) (.toCharArray pass))))
-  
-(mount/defstate ^{:on-reload :noop} http-server
-  :start
-  (let [ssl-options (:ssl env)]
-    (http/start
-      (merge
-        env
-        {:handler (handler/app)}
-        (if ssl-options
-          {:port         nil ;disables access on HTTP port
-           :ssl-port     (:port ssl-options)
-           :keystore     (keystore (:keystore ssl-options) (:keystore-password ssl-options))
-           :key-password (:keystore-password ssl-options)}))))
-  :stop
-  (http/stop http-server))
-```
-
-The above code will expect the `:ssl` key to be present in the environment. The key should point to a map with the SSL configuration:
-
-```clojure
-{:port              443
- :keystore          "/path/to/keystore.jks"
- :keystore-password "changeit"}
-```
-
-The application will now be available over HTTPS.
-
 ##### Nginx SSL config
 
 To use Nginx as your SSL proxy you'll want to update the configuration in `/etc/nginx/sites-available/default` as follows:
@@ -478,22 +323,16 @@ git push heroku master
 
 Your application should now be deployed to Heroku!
 
-To initialize or update your database:
+To initialize or update your database, modify the `start-app` function in your project's `core.clj`:
 
 ```
-heroku run lein run migrate
-```
-
-If the above step uses too much memory for your instance, modify the `start-app` function in your project's `core.clj`:
-
-```
-(defn start-app [args]
-  (doseq [component (-> args
-                        (parse-opts cli-options)
-                        mount/start-with-args
-                        :started)]
-    (log/info component "started"))
-  (migrations/migrate ["migrate"] (select-keys env [:database-url]))
+(defn start-app [& [params]]
+  ((or (:start params) (:start defaults) (fn [])))
+  (->> (config/system-config (or (:opts params) (:opts defaults) {}))
+       (ig/prep)
+       (ig/init)
+       (reset! system))
+  (migrations/migrate ["migrate"] (select-keys env [:database-url]))       
   (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
 ```
 
@@ -509,12 +348,6 @@ application. To enable nREPL support set the `NREPL_PORT` envrionment variable t
 
 ```
 export NREPL_PORT=7001
-```
-
-To test the REPL connection simply run the following command:
-
-```
-lein repl :connect 7001
 ```
 
 You can also connect your favorite IDE to a remote REPL just as you would connect to a local one.
