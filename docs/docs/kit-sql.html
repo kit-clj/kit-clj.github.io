@@ -56,10 +56,35 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>kit-postgres</h1>
+      <h1>kit-sql</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:db.sql/connection">:db.sql/connection</a></li><li><a href="#:db.sql/migrations">:db.sql/migrations</a></li><li><a href="#:db.sql/query-fn">:db.sql/query-fn</a></li></ol>
       
       <div id="content">
-        <p>The <code>kit-postgres</code> library simply extends <a href='https://github.com/seancorfield/next-jdbc'>next-jdbc</a>'s <code>next.jdbc.result-set/ReadableColumn</code> and <code>next.jdbc.prepare/SettableParameter</code> to serialize <code>Instant</code>s, <code>LocalDate</code>s, <code>LocalDateTime</code>s, and <code>IPersistentMap</code>s, and deserialize <code>Array</code>s and <code>PGobject</code>s. It requires <a href='https://github.com/dakrone/cheshire'>cheshire</a> as a dependency for JSON serialization/deserialization. You can further extend these protocols as you desire. </p>
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.sql/connection">:db.sql/connection</h3><p>This component uses <a href='https://github.com/luminus-framework/conman'>conman</a> to create a pooled connection to your database. It resolves to the conman connection when referenced.</p><p>It might be useful if you need to create transactions to reference the connection directly when calling your <code>query-fn</code>.</p><p>Sample configuration </p><pre><code class="clojure">:db.sql/connection 
+#profile {:prod {:jdbc-url   #env JDBC&#95;URL
+                 :init-size  1
+                 :min-idle   1
+                 :max-idle   8
+                 :max-active 32}
+          :test {:jdbc-url &quot;jdbc:postgresql://localhost/myapp?user=myapp&amp;password=myapp&quot;}
+          :dev  {:jdbc-url &quot;jdbc:postgresql://localhost/myapp?user=myapp&amp;password=myapp&quot;}}
+</code></pre><h3 id=":db.sql/migrations">:db.sql/migrations</h3><p>This component uses <a href='https://github.com/yogthos/migratus'>migratus</a> to execute your migrations. It optionally takes a <code>migrate-on-init?</code> key that defaults to <code>true</code>. When <code>true</code> this key ensures your migrations run when the component is initialized. </p><p>The component resolves to the configuration options that are initially passed in.</p><pre><code class="clojure">:db.sql/migrations
+ {:store                :database
+  :migration-dir        &quot;custom-migrations&quot;
+  :init-script          &quot;init.sql&quot; ;script should be located in the :migration-dir path
+                                   ;defaults to true, some databases do not support
+                                   ;schema initialization in a transaction
+  :init-in-transaction?  false
+  :migration-table-name &quot;foo&#95;bar&quot;
+  :db                   {:datasource #ig/ref :db.sql/connection}
+  :migrate-on-init?     true}
+</code></pre><h3 id=":db.sql/query-fn">:db.sql/query-fn</h3><p>This component binds a connection map from the SQL scripts file you provide it.</p><p>It resolves to a multi-arity <code>conman/query</code> function. The two-arity function takes args <code>query params</code>, e.g. <code>&#40;&#40;:db.sql/query-fn&#41; :get-user {:id 123}&#41;</code>. The three+ arity function takes a DB connection as the first argument, and optionally vararg opts, i.e. <code>conn query params &amp; opts</code>. This could be useful for test transactions, transactional queries.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/query-fn
+ {:conn     #ig/ref :db.sql/connection
+  :options  {}
+  :filename &quot;queries.sql&quot;}
+</code></pre>
       </div>
     </div>
   </div>
@@ -228,7 +253,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/kit-postgres.html">
             kit-postgres
           </a>
@@ -252,7 +277,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/kit-sql.html">
             kit-sql
           </a>
