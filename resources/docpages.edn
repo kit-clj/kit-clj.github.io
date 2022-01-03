@@ -29,6 +29,7 @@
  ["kit-quartz.md"         "kit-quartz"                "lib"]
  ["kit-redis.md"          "kit-redis"                 "lib"]
  ["kit-repl.md"           "kit-repl"                  "lib"]
+ ["kit-sql.md"            "kit-sql"                   "lib"]
  ["kit-undertow.md"       "kit-undertow"              "lib"]
  ["kit-xtdb.md"           "kit-xtdb"                  "lib"]
  ]
