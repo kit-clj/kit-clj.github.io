@@ -323,26 +323,11 @@ git push heroku master
 
 Your application should now be deployed to Heroku!
 
-To initialize or update your database, modify the `start-app` function in your project's `core.clj`:
-
-```
-(defn start-app [& [params]]
-  ((or (:start params) (:start defaults) (fn [])))
-  (->> (config/system-config (or (:opts params) (:opts defaults) {}))
-       (ig/prep)
-       (ig/init)
-       (reset! system))
-  (migrations/migrate ["migrate"] (select-keys env [:database-url]))       
-  (.addShutdownHook (Runtime/getRuntime) (Thread. stop-app)))
-```
-
-This will run migrations every time, keeping the schema up-to-date, while also consuming less resources because the app is already running.
-
 For further instructions see the [official documentation](https://devcenter.heroku.com/articles/clojure).
 
-## Enabling nREPL
+## Enabling Socket REPL
 
-Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To enable REPL support set the `REPL_PORT` envrionment variable to the desired port.
+Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To configure the REPL port you can set the `REPL_PORT` environment variable to the desired port. By default it is 7000.
 
 ```
 export REPL_PORT=7001
