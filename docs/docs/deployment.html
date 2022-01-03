@@ -59,46 +59,14 @@
       <h1>Deployment</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#running_standalone">Running Standalone</a></li><li><a href="#deploying_to_wildfly">Deploying to WildFly</a></li><li><a href="#deploying_to_tomcat">Deploying to Tomcat</a></li><li><a href="#configuring_jndi_connections">Configuring JNDI Connections</a></li><li><a href="#configuring_jndi_development_environment">Configuring JNDI Development Environment</a></li><li><a href="#vps_deployment">VPS Deployment</a></li><li><a href="#application_deployment">Application deployment</a></li><li><a href="#systemd_start_configuration">systemd start configuration</a></li><li><a href="#fronting_with_nginx">Fronting with Nginx</a></li><li><a href="#setting_up_ssl">Setting up SSL</a></li><li><a href="#heroku_deployment">Heroku Deployment</a></li><li><a href="#enabling_nrepl">Enabling nREPL</a></li><li><a href="#resources">Resources</a></li></ol>
+      <ol class="contents"><li><a href="#running_standalone">Running Standalone</a></li><li><a href="#vps_deployment">VPS Deployment</a></li><li><a href="#application_deployment">Application deployment</a></li><li><a href="#systemd_start_configuration">systemd start configuration</a></li><li><a href="#fronting_with_nginx">Fronting with Nginx</a></li><li><a href="#setting_up_ssl">Setting up SSL</a></li><li><a href="#heroku_deployment">Heroku Deployment</a></li><li><a href="#enabling_nrepl">Enabling nREPL</a></li><li><a href="#resources">Resources</a></li></ol>
       
       <div id="content">
-        <h2 id="running&#95;standalone">Running Standalone</h2><p>To create a standalone executable for your application simply run</p><pre><code class="bash">lein uberjar
+        <h2 id="running&#95;standalone">Running Standalone</h2><p>To create a standalone executable for your application simply run</p><pre><code class="bash">clj -Sforce -T:build all
 </code></pre><p>The resulting <code>jar</code> can be found in the <code>target/uberjar</code> folder. It can be run as follows:</p><pre><code class="bash">java -jar &lt;app&gt;.jar
-</code></pre><p>By default the standalone application uses an embedded Jetty server to run the application. However, if you used a profile such as <code>+immutant</code> then the alternate server will be used instead. To specify a custom port you need to set the <code>$PORT</code> environment variable, eg:</p><pre><code>export PORT=8080
+</code></pre><p>To specify a custom port you need to set the <code>$PORT</code> environment variable, eg:</p><pre><code>export PORT=8080
 java -jar &lt;app&gt;.jar
-</code></pre><h2 id="deploying&#95;to&#95;wildfly">Deploying to WildFly</h2><p>Without any modifications to your code whatsoever, Immutant-based applications can either run standalone or be deployed to a <a href='http://wildfly.org'>WildFly</a> app server. The latter requires your app to be packaged in a special war file created by the <a href='https://github.com/immutant/lein-immutant'>lein-immutant</a> plugin, e.g.</p><pre><code class="bash">lein immutant war
-</code></pre><p><strong>NOTE:</strong> The <code>+war</code> Luminus profile is incompatible with Immutant apps intended to run on WildFly and should not be used.</p><p>More details are available in the <a href='http://immutant.org/documentation/current/apidoc/guide-wildfly.html'>official Immutant documentation</a> for WildFly server deployment.</p><p>Also, <a href='http://linode.com'>Linode</a> has a guide on <a href='https://linode.com/docs/applications/development/clojure-deployment-with-immutant-and-wildfly-on-ubuntu-14-04'>how to deploy Luminus application with Immutant and WildFly on Ubuntu 14.04</a></p><h2 id="deploying&#95;to&#95;tomcat">Deploying to Tomcat</h2><p>A WAR archive needs to be generated in order to deploy the application to a container such as Apache Tomcat. This is only supported via the <a href='https://github.com/luminus-framework/lein-uberwar'>lein-uberwar</a> plugin that's included using the <code>+war</code> profile.</p><p>To enable the <code>lein-uberwar</code> plugin manually add the following configuration in the <code>project.clj</code> file:</p><pre><code class="clojure">:plugins &#91;...
-          &#91;lein-uberwar &quot;0.1.0&quot;&#93;&#93;
-
-  :uberwar {:handler &lt;app&gt;.handler/app
-            :init &lt;app&gt;.handler/init
-            :destroy &lt;app&gt;.handler/destroy
-            :name &quot;&lt;app&gt;.war&quot;}
-</code></pre><p>In order to create a WAR you can package the application by running:<pre><code class="bash">lein uberwar
-</code></pre></p><p>Next, simply copy the resulting <code>&lt;app&gt;.war</code> to the <code>webapps</code> folder on Tomcat, eg:</p><pre><code class="bash">cp target/uberjar/&lt;app&gt;.war &#126;/tomcat/webapps/
-</code></pre><p>Your app will now be avaliable at the context <code>/&lt;app&gt;</code> when Tomcat starts. To deploy the app at root context, simply copy it to <code>webapp</code> as <code>ROOT.war</code>.</p><h3 id="configuring&#95;jndi&#95;connections">Configuring JNDI Connections</h3><p>Tomcat may have database configuration specified as a <a href='https://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html'>JNDI resource</a> (check JDBC Data Sources section). In this case you need to fetch this data from the Tomcat configuration and not from clojure profiles. Just change these lines in <code>src/clj/&lt;app&gt;/db/core.clj</code>:</p><pre><code class="clojure">&#40;defstate &#94;:dynamic &#42;db&#42;
-           :start &#40;conman/connect!
-                   {:jdbc-url &#40;env :database-url&#41;}&#41;
-           :stop &#40;conman/disconnect! &#42;db&#42;&#41;&#41;
-</code></pre><p>to:</p><pre><code class="clojure">&#40;def &#94;:dynamic &#42;db&#42; {:name &quot;java:comp/env/jdbc/EmployeeDB&quot;}&#41;
-</code></pre><p>(in this example <code>jdbc/EmployeeDB</code> is the same name as specified in <code>context.xml</code> and <code>web.xml</code> in the <a href='https://tomcat.apache.org/tomcat-7.0-doc/jndi-resources-howto.html'>JNDI HowTo page</a>. Note that this name is case sensitive.)</p><h3 id="configuring&#95;jndi&#95;development&#95;environment">Configuring JNDI Development Environment</h3><p>Add the following dependency under the <code>:project/dev</code> profile:</p><pre><code class="clojure">&#91;directory-naming/naming-java &quot;0.8&quot;&#93;
-</code></pre><p>Add the following code in the <code>user</code> namespace found in the <code>env/dev/clj/user.clj</code> file:</p><pre><code class="clojure">&#40;System/setProperty &quot;java.naming.factory.initial&quot;
-                    &quot;org.apache.naming.java.javaURLContextFactory&quot;&#41;
-&#40;System/setProperty &quot;java.naming.factory.url.pkgs&quot;
-                    &quot;org.apache.naming&quot;&#41;
-
-&#40;doto &#40;new javax.naming.InitialContext&#41;
-  &#40;.createSubcontext &quot;java:&quot;&#41;
-  &#40;.createSubcontext &quot;java:comp&quot;&#41;
-  &#40;.createSubcontext &quot;java:comp/env&quot;&#41;
-  &#40;.createSubcontext &quot;java:comp/env/jdbc&quot;&#41;
-  &#40;.bind &quot;java:comp/env/jdbc/testdb&quot;
-         &#40;doto &#40;org.postgresql.ds.PGSimpleDataSource.&#41;
-           &#40;.setServerName &quot;localhost&quot;&#41;
-           &#40;.setDatabaseName &quot;EmployeeDB&quot;&#41;
-           &#40;.setUser &quot;user&quot;&#41;
-           &#40;.setPassword &quot;pass&quot;&#41;&#41;&#41;&#41;
-</code></pre><p>The above code will create a JNDI context for the application. Note that you'll have to modify the data source configuration for your particular database configuration.</p><h2 id="vps&#95;deployment">VPS Deployment</h2><p>Virtual Private Servers (VPS) such as <a href='https://www.digitalocean.com/'>DigitalOcean</a> provide a cheap hosting option for Clojure applications. </p><p>Follow <a href='https://www.digitalocean.com/community/tutorials/how-to-create-your-first-digitalocean-droplet-virtual-server'>this guide</a> in order to setup your DigitalOcean server. Once the server is created you can install Ubuntu <a href='https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-12-04'>as described here</a>. Finally, install Java on your Ubuntu instance by following <a href='https://help.ubuntu.com/community/Java'>these instructions</a>. The instructions below apply for Ubuntu 15.04 and newer.</p><p>The most common approach is to run the <code>uberjar</code> and front it using <a href='http://wiki.nginx.org/Main'>Nginx</a>.</p><h3 id="application&#95;deployment">Application deployment</h3><p>In this step, we will deploy your application to the server, and make sure that it is started automatically on boot. We use <code>systemd</code> for this. Create a <code>deploy</code> user that will run your application:</p><pre><code>sudo adduser -m deploy
+</code></pre><h2 id="vps&#95;deployment">VPS Deployment</h2><p>Virtual Private Servers (VPS) such as <a href='https://www.digitalocean.com/'>DigitalOcean</a> provide a cheap hosting option for Clojure applications. </p><p>Follow <a href='https://www.digitalocean.com/community/tutorials/how-to-create-your-first-digitalocean-droplet-virtual-server'>this guide</a> in order to setup your DigitalOcean server. Once the server is created you can install Ubuntu <a href='https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-12-04'>as described here</a>. Finally, install Java on your Ubuntu instance by following <a href='https://help.ubuntu.com/community/Java'>these instructions</a>. The instructions below apply for Ubuntu 15.04 and newer.</p><p>The most common approach is to run the <code>uberjar</code> and front it using <a href='http://wiki.nginx.org/Main'>Nginx</a>.</p><h3 id="application&#95;deployment">Application deployment</h3><p>In this step, we will deploy your application to the server, and make sure that it is started automatically on boot. We use <code>systemd</code> for this. Create a <code>deploy</code> user that will run your application:</p><pre><code>sudo adduser -m deploy
 sudo passwd -l deploy
 </code></pre><p>Create a directory for your application on the server such as <code>/var/myapp</code> then upload your application to the server using <code>scp</code>:</p><pre><code>$ scp myapp.jar user@&lt;domain&gt;:/var/myapp/
 </code></pre><p>You should now test that you're able to run the application. Connect to the server using <code>ssh</code> and run the application:</p><pre><code>java -jar /var/myapp/myapp.jar
@@ -163,38 +131,7 @@ crontab -e
 </code></pre><p>Add the following line:</p><pre><code>0 0 1,15 &#42; &#42; /path-to-certbot/certbot-auto certonly --keep-until-expiring --email &lt;you@email.com&gt; -d &lt;yoursite.com&gt; -d &lt;www.yoursite.com&gt; --webroot --webroot-path /var/www/html
 </code></pre><p>Alternatively, you could use <a href='https://github.com/hlandau/acme'>Acmetool</a> as a comprehensive solution for keeping certificates up to date.</p><p>We'll generate a stronger DHE parameter instead of using OpenSSL's defaults, which include a 1024-bit key for the key-exchange:</p><pre><code>cd /etc/ssl/certs
 openssl dhparam -out dhparam.pem 4096
-</code></pre><p>There are two options for handling HTTPS connections. You can either configure the HTTP server in the app itself, or front it with Nginx. We'll look at both approaches below.</p><h5 id="app&#95;ssl&#95;config">App SSL config</h5><p>You will need to setup Java Keystore to use certificates from the app. This involves running the following commands:</p><pre><code>openssl pkcs12 -export -in fullchain.pem -inkey privkey.pem -out pkcs.p12 -name &lt;NAME&gt;
-
-keytool -importkeystore -deststorepass &lt;PASSWORD&#95;STORE&gt; -destkeypass &lt;PASSWORD&#95;KEYPASS&gt; -destkeystore keystore.jks -srckeystore pkcs.p12 -srcstoretype PKCS12 -srcstorepass &lt;STORE&#95;PASS&gt; -alias &lt;NAME&gt;
-</code></pre><p>If you're using Immutant as your HTTP server (<code>+immutant</code>), then you have to update your <code>&lt;app&gt;.core</code> namespace as follows:</p><pre><code class="clojure">&#40;ns &lt;app&gt;.core
-  &#40;:require ...&#41;
-  &#40;:import
-    &#40;java.security KeyStore&#41;
-    &#40;java.util TimeZone&#41;
-    &#40;org.joda.time DateTimeZone&#41;&#41;&#41;
-
-&#40;defn keystore &#91;file pass&#93;
-&#40;doto &#40;KeyStore/getInstance &quot;JKS&quot;&#41;
-  &#40;.load &#40;io/input-stream &#40;io/file file&#41;&#41; &#40;.toCharArray pass&#41;&#41;&#41;&#41;
-  
-&#40;mount/defstate &#94;{:on-reload :noop} http-server
-  :start
-  &#40;let &#91;ssl-options &#40;:ssl env&#41;&#93;
-    &#40;http/start
-      &#40;merge
-        env
-        {:handler &#40;handler/app&#41;}
-        &#40;if ssl-options
-          {:port         nil ;disables access on HTTP port
-           :ssl-port     &#40;:port ssl-options&#41;
-           :keystore     &#40;keystore &#40;:keystore ssl-options&#41; &#40;:keystore-password ssl-options&#41;&#41;
-           :key-password &#40;:keystore-password ssl-options&#41;}&#41;&#41;&#41;&#41;
-  :stop
-  &#40;http/stop http-server&#41;&#41;
-</code></pre><p>The above code will expect the <code>:ssl</code> key to be present in the environment. The key should point to a map with the SSL configuration:</p><pre><code class="clojure">{:port              443
- :keystore          &quot;/path/to/keystore.jks&quot;
- :keystore-password &quot;changeit&quot;}
-</code></pre><p>The application will now be available over HTTPS.</p><h5 id="nginx&#95;ssl&#95;config">Nginx SSL config</h5><p>To use Nginx as your SSL proxy you'll want to update the configuration in <code>/etc/nginx/sites-available/default</code> as follows:</p><pre><code>server {
+</code></pre><p>There are two options for handling HTTPS connections. You can either configure the HTTP server in the app itself, or front it with Nginx. We'll look at both approaches below.</p><h5 id="nginx&#95;ssl&#95;config">Nginx SSL config</h5><p>To use Nginx as your SSL proxy you'll want to update the configuration in <code>/etc/nginx/sites-available/default</code> as follows:</p><pre><code>server {
     listen 80;
     return 301 https://$host$request&#95;uri;
 }
@@ -249,17 +186,15 @@ git commit -m &quot;init&quot;
 </code></pre><p>Create your app on Heroku:</p><pre><code>heroku create
 </code></pre><p>Optionally, create a database for the application:</p><pre><code>heroku addons:create heroku-postgresql
 </code></pre><p>The connection settings can be found at your <a href='https://dashboard.heroku.com/apps/'>Heroku dashboard</a> under the add-ons for the app.</p><p>Deploy the application:</p><pre><code>git push heroku master
-</code></pre><p>Your application should now be deployed to Heroku!</p><p>To initialize or update your database:</p><pre><code>heroku run lein run migrate
-</code></pre><p>If the above step uses too much memory for your instance, modify the <code>start-app</code> function in your project's <code>core.clj</code>:</p><pre><code>&#40;defn start-app &#91;args&#93;
-  &#40;doseq &#91;component &#40;-&gt; args
-                        &#40;parse-opts cli-options&#41;
-                        mount/start-with-args
-                        :started&#41;&#93;
-    &#40;log/info component &quot;started&quot;&#41;&#41;
-  &#40;migrations/migrate &#91;&quot;migrate&quot;&#93; &#40;select-keys env &#91;:database-url&#93;&#41;&#41;
+</code></pre><p>Your application should now be deployed to Heroku!</p><p>To initialize or update your database, modify the <code>start-app</code> function in your project's <code>core.clj</code>:</p><pre><code>&#40;defn start-app &#91;&amp; &#91;params&#93;&#93;
+  &#40;&#40;or &#40;:start params&#41; &#40;:start defaults&#41; &#40;fn &#91;&#93;&#41;&#41;&#41;
+  &#40;-&gt;&gt; &#40;config/system-config &#40;or &#40;:opts params&#41; &#40;:opts defaults&#41; {}&#41;&#41;
+       &#40;ig/prep&#41;
+       &#40;ig/init&#41;
+       &#40;reset! system&#41;&#41;
+  &#40;migrations/migrate &#91;&quot;migrate&quot;&#93; &#40;select-keys env &#91;:database-url&#93;&#41;&#41;       
   &#40;.addShutdownHook &#40;Runtime/getRuntime&#41; &#40;Thread. stop-app&#41;&#41;&#41;
-</code></pre><p>This will run migrations every time, keeping the schema up-to-date, while also consuming less resources because the app is already running.</p><p>For further instructions see the <a href='https://devcenter.heroku.com/articles/clojure'>official documentation</a>.</p><h2 id="enabling&#95;nrepl">Enabling nREPL</h2><p>Luminus comes set up with <a href='https://github.com/clojure/tools.nrepl'>nREPL</a>, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To enable nREPL support set the <code>NREPL&#95;PORT</code> envrionment variable to the desired port.</p><pre><code>export NREPL&#95;PORT=7001
-</code></pre><p>To test the REPL connection simply run the following command:</p><pre><code>lein repl :connect 7001
+</code></pre><p>This will run migrations every time, keeping the schema up-to-date, while also consuming less resources because the app is already running.</p><p>For further instructions see the <a href='https://devcenter.heroku.com/articles/clojure'>official documentation</a>.</p><h2 id="enabling&#95;nrepl">Enabling nREPL</h2><p>Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To enable REPL support set the <code>REPL&#95;PORT</code> envrionment variable to the desired port.</p><pre><code>export REPL&#95;PORT=7001
 </code></pre><p>You can also connect your favorite IDE to a remote REPL just as you would connect to a local one.</p><p>When running on a remote server it is recommended to forward the REPL port to the local machine using SSH:</p><pre><code>ssh -L 7001:localhost:7001 remotehost
 </code></pre><h2 id="resources">Resources</h2><ul><li><a href='http://www.braveclojure.com/quests/deploy/'>Deploying Your First Clojure App ...From the Shadows</a> provides an indepth guide for Clojure web application deployment strategies.</li></ul>
       </div>
