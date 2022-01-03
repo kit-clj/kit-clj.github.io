@@ -342,12 +342,10 @@ For further instructions see the [official documentation](https://devcenter.hero
 
 ## Enabling nREPL
 
-Luminus comes set up with [nREPL](https://github.com/clojure/tools.nrepl), which allows connecting to a REPL
-on the server. This functionality can useful for debugging as well as hotfixing updates in the running
-application. To enable nREPL support set the `NREPL_PORT` envrionment variable to the desired port.
+Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To enable REPL support set the `REPL_PORT` envrionment variable to the desired port.
 
 ```
-export NREPL_PORT=7001
+export REPL_PORT=7001
 ```
 
 You can also connect your favorite IDE to a remote REPL just as you would connect to a local one.
