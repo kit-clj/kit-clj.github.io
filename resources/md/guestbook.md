@@ -419,8 +419,6 @@ Now that our model is all setup, let's start up the application.
 ;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
 ```
 
----
-
 ### Accessing The Database
 
 Let's create a new controller for our app.
@@ -775,6 +773,8 @@ When we reload the page in the browser we should be greeted by the guestbook pag
 We can test that everything is working as expected by adding a comment in our comment form.
 ## Adding some tests
 
+Tests are found under the `test` source path. 
+
 We can now run `clj -M:test` in the terminal to see that our database interaction works
 as expected.
 
@@ -787,8 +787,8 @@ clj -Sforce -T:build all
 This will create a runnable jar that can be run as seen below:
 
 ```
-export JDBC_URL="jdbc:h2:./guestbook_dev.db"
-java -jar target/uberjar/guestbook.jar
+export JDBC_URL="jdbc:sqlite:guestbook_dev.db"
+java -jar target/guestbook-standalone.jar
 ```
 
 Note that we have to supply the `JDBC_URL` environment variable when running as a jar, as

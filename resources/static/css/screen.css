@@ -99,7 +99,7 @@ header, footer {
     overflow: hidden;
 }
 header {
-    background-color: #3e51ff;
+    background-color: #666;
 }
 header, header a, header a:hover {
     color: white;
@@ -110,10 +110,6 @@ header h1 {
     font-size: 1.5em;
 }
 
-nav > ul > .selected a {
-    border-bottom: solid;
-}
-
 .column-25 .selected {
     color: black;
     font-weight: bold;
@@ -122,9 +118,7 @@ nav > ul > .selected a {
     font-size: 0.95em;
     white-space: nowrap;
 }
-.column-25 .selected {
-    list-style-type: disc;
-}
+
 .selected, .selected a {
     cursor: default;
 }
@@ -133,6 +127,11 @@ nav > ul > .selected a {
 }
 .column-25 .selected a:hover {
     border: none;
+}
+
+.nav > ul > .selected {
+    background-color: #eee;
+    border-bottom: 5px solid #888;    
 }
 
 #logo {
@@ -158,15 +157,15 @@ header nav li a {
 }
 
 .contents > li > a {
-  color: #3e51ff;
+  color: #666;
 }
 
 #content > ul > li > a {
-  color: #3e51ff;
+  color: #666;
 }
 
 .column-75 > a {
-  color: #3e51ff;
+  color: #666;
 }
 
 footer {
@@ -217,7 +216,7 @@ footer .wrapper {
     color: white;
 }
 .markdown .hljs-link_label {
-    color: #3e51ff;
+    color: #666;
 }
 
 #easy-start {

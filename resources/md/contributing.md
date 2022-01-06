@@ -24,6 +24,6 @@ The maintainers of Kit are:
 
 [Nik Peric](https://nikperic.com/). You can support Nik with a 'hi' on your communication channel of choice
 
-[Dmitri Sotnikov](https://yogthos.net/). You can support Dmitri on [Patreon](https://www.patreon.com/yogthos), your contribution will help cover development and maintenance costs for the project.
+[Dmitri Sotnikov](https://yogthos.net/). You can support Dmitri on [GitHub](https://github.com/sponsors/yogthos), your contribution will help cover development and maintenance costs for the project.
 
 
