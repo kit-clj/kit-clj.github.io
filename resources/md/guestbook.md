@@ -403,7 +403,7 @@ VALUES (:name, :message, :timestamp)
 SELECT * FROM guestbook
 ```
 
-Now that our model is all setup, let's start up the application.
+Now that our model is all setup, let's reload the application, and test our queries in the REPL:
 
 ```clojure
 (reset)
@@ -421,49 +421,7 @@ Now that our model is all setup, let's start up the application.
 
 ### Accessing The Database
 
-Let's create a new controller for our app.
-
-```
-(defmethod ig/init-key :db.sql/query-fn
-  [_ {:keys [conn options filename]
-      :or   {options {}}}]
-  (let [queries (conman/bind-connection-map conn options filename)]
-    (fn
-      ([query params]
-       (conman/query queries query params))
-      ([conn query params & opts]
-       (apply conman/query conn queries query params opts)))))
-```
-
-Next, we'll take a look at the `src/clj/guestbook/db/core.clj` file.
-Here, we can see that we already have the definition for our database connection.
-
-```clojure
-(ns guestbook.db.core
-  (:require
-    [conman.core :as conman]
-    [mount.core :refer [defstate]]
-    [guestbook.config :refer [env]]))
-
-(defstate ^^:dynamic *db*
-           :start (conman/connect! {:jdbc-url (env :database-url)})
-           :stop (conman/disconnect! *db*))
-
-(conman/bind-connection *db* "sql/queries.sql")
-```
-
-The database connection is read from the environment map at runtime. By default, the `:database-url` key points to
-a string with the connection URL for the database.
- This variable is populated from the `dev-config.edn` file during development and has to be set as an environment variable for production, e.g:
-
-```
-export DATABASE_URL="jdbc:h2:./guestbook.db"
-```
-
-Since we're using the embedded H2 database, the data is stored in a file specified in the URL that's found in the path relative to where the project is run.
-
-The functions that map to database queries are generated when `bind-connection` is called. As we can see it references the `sql/queries.sql` file.
-This location is found under the `resources` folder. Let's open up this file and take a look inside.
+Let's take a look at the `resources/sql/queries.sql` template file. It's contents should look as follows:
 
 ```sql
 -- :name create-user! :! :n
@@ -484,7 +442,7 @@ SELECT * FROM users
 WHERE id = :id
 ```
 
-As we can see each function is defined using the comment that starts with `-- :name` followed by the name of the function.
+As we can see each function is defined using a comment that starts with `-- :name` followed by the name of the function.
 The next comment provides the doc string for the function and finally we have the body that's plain SQL. The parameters are
 denoted using `:` notation. Let's replace the existing queries with some of our own:
 
@@ -528,43 +486,26 @@ Now that our model is all setup, let's start up the application.
 We can run our application in development mode as follows:
 
 ```
->clj -M:dev
-2019-03-17 09:01:03,709 [main] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
-2019-03-17 09:01:04,614 [main] INFO  guestbook.env -
--=[guestbook started successfully using the development profile]=-
-2019-03-17 09:01:04,709 [main] INFO  luminus.http-server - starting HTTP server on port 3000
-2019-03-17 09:01:05,047 [main] INFO  org.projectodd.wunderboss.web.Web - Registered web context /
-2019-03-17 09:01:05,048 [main] INFO  guestbook.nrepl - starting nREPL server on port 7000
-2019-03-17 09:01:05,075 [main] INFO  guestbook.core - #'guestbook.db.core/*db* started
-2019-03-17 09:01:05,076 [main] INFO  guestbook.core - #'guestbook.handler/init-app started
-2019-03-17 09:01:05,076 [main] INFO  guestbook.core - #'guestbook.handler/app started
-2019-03-17 09:01:05,076 [main] INFO  guestbook.core - #'guestbook.core/http-server started
-2019-03-17 09:01:05,076 [main] INFO  guestbook.core - #'guestbook.core/repl-server started
--=[guestbook started successfully using the development profile]=-
-```
-
-Once server starts, you should be able to navigate to [http://localhost:3000](http://localhost:3000) and see
-the app running. The server can be started on an alternate port by either passing it as a parameter as seen below,
-or setting the `PORT` environment variable.
-
-;;TODO test this
-```
-clj -M:dev -p 8000
-```
-
-Alternatively, you can start the application from the REPL using `start` function defined in the `user` namespace, e.g:
-
-```
 clj -M:dev -M:repl
 #object[clojure.lang.MultiFn 0x34594779 "clojure.lang.MultiFn@34594779"]
+```
+
+Once the REPL is ready, simply type `(go)` to start up the application:
+
+```
 user=> (go)
 2021-12-18 11:35:41,821 [main] INFO  kit.config - Reading config system.edn
 2021-12-18 11:35:41,951 [main] DEBUG org.jboss.logging - Logging Provider: org.jboss.logging.Slf4jLoggerProvider
 2021-12-18 11:35:41,969 [main] INFO  org.xnio - XNIO version 3.8.4.Final
 2021-12-18 11:35:42,113 [main] INFO  org.jboss.threads - JBoss Threads version 3.1.0.Final
-2021-12-18 11:35:42,183 [main] INFO  luminus.http-server - server started on port 3000
+2022-01-06 15:37:00,219 [main] INFO  kit.edge.server.undertow - server started on port 3000
+2022-01-06 15:37:00,226 [main] INFO  kit.edge.utils.repl - REPL server started on host: 0.0.0.0 port: 7000
+
 user=>
 ```
+
+Once server starts, you should be able to navigate to [http://localhost:3000](http://localhost:3000) and see
+the app running.
 
 ### Creating a controller for the guestbook
 
