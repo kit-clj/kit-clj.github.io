@@ -7,8 +7,8 @@
     <title>Kit Framework</title>
     <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
-    <link rel="icon" href="/img/favicon.ico" type="image/x-icon">
-    <link rel="shortcut icon" href="/img/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
     <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
     <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
     <link href="/css/screen.css" rel="stylesheet" type="text/css" />
@@ -59,7 +59,7 @@
       <h1>Your First Application</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#guestbook_application">Guestbook Application</a></li><li><a href="#installing_jdk">Installing JDK</a></li><li><a href="#installing_a_build_tool">Installing a Build Tool</a></li><li><a href="#creating_a_new_application">Creating a new application</a></li><li><a href="#anatomy_of_a_kit_application">Anatomy of a Kit application</a></li><li><a href="#the_source_directory">The Source Directory</a></li><li><a href="#the_env_directory">The Env Directory</a></li><li><a href="#the_test_directory">The Test Directory</a></li><li><a href="#the_resources_directory">The Resources Directory</a></li><li><a href="#starting_our_server">Starting Our Server</a></li><li><a href="#system">System</a></li><li><a href="#kit_modules">Kit Modules</a></li><li><a href="#"></a></li><li><a href="#accessing_the_database">Accessing The Database</a></li><li><a href="#exposing_database_queries_in_the_router_component">Exposing Database Queries in the Router Component</a></li><li><a href="#running_the_application">Running the Application</a></li><li><a href="#creating_a_controller_for_the_guestbook">Creating a controller for the guestbook</a></li><li><a href="#creating_pages_and_handling_form_input">Creating Pages and Handling Form Input</a></li><li><a href="#adding_some_tests">Adding some tests</a></li><li><a href="#packaging_the_application">Packaging the application</a></li></ol>
+      <ol class="contents"><li><a href="#guestbook_application">Guestbook Application</a></li><li><a href="#installing_jdk">Installing JDK</a></li><li><a href="#installing_a_build_tool">Installing a Build Tool</a></li><li><a href="#creating_a_new_application">Creating a new application</a></li><li><a href="#anatomy_of_a_kit_application">Anatomy of a Kit application</a></li><li><a href="#the_source_directory">The Source Directory</a></li><li><a href="#the_env_directory">The Env Directory</a></li><li><a href="#the_test_directory">The Test Directory</a></li><li><a href="#the_resources_directory">The Resources Directory</a></li><li><a href="#starting_our_server">Starting Our Server</a></li><li><a href="#system">System</a></li><li><a href="#kit_modules">Kit Modules</a></li><li><a href="#accessing_the_database">Accessing The Database</a></li><li><a href="#exposing_database_queries_in_the_router_component">Exposing Database Queries in the Router Component</a></li><li><a href="#running_the_application">Running the Application</a></li><li><a href="#creating_a_controller_for_the_guestbook">Creating a controller for the guestbook</a></li><li><a href="#creating_pages_and_handling_form_input">Creating Pages and Handling Form Input</a></li><li><a href="#adding_some_tests">Adding some tests</a></li><li><a href="#packaging_the_application">Packaging the application</a></li></ol>
       
       <div id="content">
         <h2 id="guestbook&#95;application">Guestbook Application</h2><p>This tutorial will guide you through building a simple guestbook application using Kit. The guestbook allows users to leave a message and to view a list of messages left by others. The application will demonstrate the basics of HTML templating, database access, and project architecture.</p><p>If you don't have a preferred Clojure editor already, then it's recommended that you use <a href='https://calva.io/getting-started/'>Calva</a> to follow along with this tutorial.</p><h3 id="installing&#95;jdk">Installing JDK</h3><p>Clojure runs on the JVM and requires a copy of JDK to be installed. If you don't have JDK already on your system then OpenJDK is recommended and can be downloaded <a href='http://www.azul.com/downloads/zulu/'>here</a>. Note that Kit requires JDK 11 or greater to work with the default settings. Alternatively, follow the instructions for installing packages on your system.</p><h3 id="installing&#95;a&#95;build&#95;tool">Installing a Build Tool</h3><p>For building and running a project, Kit supports <a href='https://clojure.org/guides/deps_and_cli'>Clojure Deps and CLI</a>.</p><p><div class="deps"> Installing Clojure CLI is accomplished by followings the step below, based on your operating system</p><p>MacOS</p><pre><code>brew install clojure/tools/clojure
@@ -227,7 +227,7 @@ SELECT &#42; FROM guestbook
 
 &#40;query-fn :get-messages {}&#41;
 ;; =&gt; &#91;{:id 1, :name &quot;m1&quot;, :message &quot;hello world&quot;, :timestamp 1636480432353}&#93;
-</code></pre><h2></h2><h3 id="accessing&#95;the&#95;database">Accessing The Database</h3><p>Let's create a new controller for our app.</p><pre><code>&#40;defmethod ig/init-key :db.sql/query-fn
+</code></pre><h3 id="accessing&#95;the&#95;database">Accessing The Database</h3><p>Let's create a new controller for our app.</p><pre><code>&#40;defmethod ig/init-key :db.sql/query-fn
   &#91;&#95; {:keys &#91;conn options filename&#93;
       :or   {options {}}}&#93;
   &#40;let &#91;queries &#40;conman/bind-connection-map conn options filename&#41;&#93;
@@ -449,14 +449,14 @@ form, .error {
 	margin-bottom: 50px;
 	position: relative;
 }
-</code></pre><p>When we reload the page in the browser we should be greeted by the guestbook page. We can test that everything is working as expected by adding a comment in our comment form.<h2 id="adding&#95;some&#95;tests">Adding some tests</h2></p><p>We can now run <code>clj -M:test</code> in the terminal to see that our database interaction works as expected.</p><h2 id="packaging&#95;the&#95;application">Packaging the application</h2><p>The application can be packaged for standalone deployment by running the following command:</p><p>clj -Sforce -T:build all</p><p>This will create a runnable jar that can be run as seen below:</p><pre><code>export JDBC&#95;URL=&quot;jdbc:h2:./guestbook&#95;dev.db&quot;
-java -jar target/uberjar/guestbook.jar
+</code></pre><p>When we reload the page in the browser we should be greeted by the guestbook page. We can test that everything is working as expected by adding a comment in our comment form.<h2 id="adding&#95;some&#95;tests">Adding some tests</h2></p><p>Tests are found under the <code>test</code> source path. </p><p>We can now run <code>clj -M:test</code> in the terminal to see that our database interaction works as expected.</p><h2 id="packaging&#95;the&#95;application">Packaging the application</h2><p>The application can be packaged for standalone deployment by running the following command:</p><p>clj -Sforce -T:build all</p><p>This will create a runnable jar that can be run as seen below:</p><pre><code>export JDBC&#95;URL=&quot;jdbc:sqlite:guestbook&#95;dev.db&quot;
+java -jar target/guestbook-standalone.jar
 </code></pre><p>Note that we have to supply the <code>JDBC&#95;URL</code> environment variable when running as a jar, as it's not packaged with the application.</p><hr/><p>Complete source listing for the tutorial is available <a href='https://github.com/kit-clj/examples/tree/master/guestbook'>here</a>.</p>
       </div>
     </div>
   </div>
   <div class="column column-25">
-    <div class="column-wrapper">      
+    <div class="column-wrapper nav">      
       <h2>Topics</h2>
       <ul>
         
