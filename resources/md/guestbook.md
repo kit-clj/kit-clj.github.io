@@ -306,10 +306,10 @@ The module also helped generate some routes for us under `yourname.guestbook.web
 
 #### Adding a database
 
-Similarly to the way we installed the HTML module, we can add a SQLite module called `:sqlite`.
+Similarly to the way we installed the HTML module, we can add a SQLite module called `:kit/sqlite`.
 
 ```clojure
-(kit/install-module :sqlite)
+(kit/install-module :kit/sqlite)
 ;; updating file: resources/system.edn
 ;; injecting
 ;;  path: [:db.sql/connection] 
