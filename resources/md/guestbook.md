@@ -55,7 +55,7 @@ Once you have the Clojure CLI installed, you can run the following commands in y
 initialize your application:
 
 ```
-clojure -X:new :template kit-clj :name yourname/guestbook
+clojure -X:new :template io.github.kit-clj :name yourname/guestbook
 cd guestbook
 ```
 
@@ -322,7 +322,7 @@ Similarly to the way we installed the HTML module, we can add a SQLite module ca
 ;;  value: {:store :database, :db {:datasource #ig/ref :db.sql/connection}, :migrate-on-init? true}
 ;; updating file: deps.edn
 ;; injecting
-;;  path: [:deps kit-clj/kit-sql] 
+;;  path: [:deps io.github.kit-clj/kit-sql] 
 ;;  value: #:mvn{:version "0.1.0"}
 ;; injecting
 ;;  path: [:deps org.xerial/sqlite-jdbc] 
