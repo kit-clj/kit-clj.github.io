@@ -70,7 +70,7 @@ sudo ./linux-install-1.10.3.986.sh
  {:new {:extra-deps {com.github.seancorfield/clj-new {:mvn/version &quot;1.2.362&quot;}}
         :exec-fn clj-new/create
         :exec-args {:template &quot;app&quot;}}}}
-</code></pre><p>Note: If you already have configuration in your <code>deps.edn</code> file, add the new key under aliases. Make sure the line with <code>{:aliases</code> is uncommented, i.e. without <code>;;</code>.</p><p>For more customization, such as your install location, see <a href='https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools'>the official docs here</a> </div></p><h3 id="creating&#95;a&#95;new&#95;application">Creating a new application</h3><p>Once you have the Clojure CLI installed, you can run the following commands in your terminal to initialize your application:</p><pre><code>clojure -X:new :template kit-clj :name yourname/guestbook
+</code></pre><p>Note: If you already have configuration in your <code>deps.edn</code> file, add the new key under aliases. Make sure the line with <code>{:aliases</code> is uncommented, i.e. without <code>;;</code>.</p><p>For more customization, such as your install location, see <a href='https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools'>the official docs here</a> </div></p><h3 id="creating&#95;a&#95;new&#95;application">Creating a new application</h3><p>Once you have the Clojure CLI installed, you can run the following commands in your terminal to initialize your application:</p><pre><code>clojure -X:new :template io.github.kit-clj :name yourname/guestbook
 cd guestbook
 </code></pre><p>The above will create a new template project.</p><h3 id="anatomy&#95;of&#95;a&#95;kit&#95;application">Anatomy of a Kit application</h3><p>The newly created application has the following structure:</p><pre><code>├── Dockerfile
 ├── README.md
@@ -182,7 +182,7 @@ cd guestbook
 ;;  value: {:store :database, :db {:datasource #ig/ref :db.sql/connection}, :migrate-on-init? true}
 ;; updating file: deps.edn
 ;; injecting
-;;  path: &#91;:deps kit-clj/kit-sql&#93; 
+;;  path: &#91;:deps io.github.kit-clj/kit-sql&#93; 
 ;;  value: #:mvn{:version &quot;0.1.0&quot;}
 ;; injecting
 ;;  path: &#91;:deps org.xerial/sqlite-jdbc&#93; 
