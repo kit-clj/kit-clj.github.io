@@ -378,50 +378,13 @@ Migrations will be run automatically using the configuration found in `system.ed
                      :db {:datasource #ig/ref :db.sql/connection},
                      :migrate-on-init? true}
 ```
-
-#### SQL Queries
+### Accessing The Database
 
 The SQL queries are found in the `resources/sql` folder.
 
 * `queries.sql` - defines the SQL queries and their associated function names
 
-The file initially contains some placeholder queries to help remind you of basic SQL syntax.
-As we can see each function is defined using the comment that starts with `-- :name` followed by the name of the function.
-The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the [HugSQL documentation](https://www.hugsql.org/). The parameters are
-denoted using `:` notation. Let's replace the existing queries with some of our own:
-
-
-```sql
--- :name save-message! :! :n
--- :doc creates a new message
-INSERT INTO guestbook
-(name, message, timestamp)
-VALUES (:name, :message, :timestamp)
-
--- :name get-messages :? :*
--- :doc selects all available messages
-SELECT * FROM guestbook
-```
-
-Now that our model is all setup, let's reload the application, and test our queries in the REPL:
-
-```clojure
-(reset)
-
-(def query-fn (:db.sql/query-fn state/system))
-
-(query-fn :save-message! {:name      "m1"
-                          :message   "hello world"
-                          :timestamp (java.util.Date.)})
-;; => 1
-
-(query-fn :get-messages {})
-;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
-```
-
-### Accessing The Database
-
-Let's take a look at the `resources/sql/queries.sql` template file. It's contents should look as follows:
+Let's take a look at the `queries.sql` template file. It's contents should look as follows:
 
 ```sql
 -- :name create-user! :! :n
@@ -442,8 +405,9 @@ SELECT * FROM users
 WHERE id = :id
 ```
 
-As we can see each function is defined using a comment that starts with `-- :name` followed by the name of the function.
-The next comment provides the doc string for the function and finally we have the body that's plain SQL. The parameters are
+The file initially contains some placeholder queries to help remind you of basic SQL syntax.
+As we can see each function is defined using the comment that starts with `-- :name` followed by the name of the function.
+The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the [HugSQL documentation](https://www.hugsql.org/). The parameters are
 denoted using `:` notation. Let's replace the existing queries with some of our own:
 
 
@@ -451,12 +415,28 @@ denoted using `:` notation. Let's replace the existing queries with some of our 
 -- :name save-message! :! :n
 -- :doc creates a new message
 INSERT INTO guestbook
-(name, message, timestamp)
-VALUES (:name, :message, :timestamp)
+(name, message)
+VALUES (:name, :message)
 
 -- :name get-messages :? :*
 -- :doc selects all available messages
 SELECT * FROM guestbook
+```
+
+Now that our model is all setup, let's reload the application, and test our queries in the REPL:
+
+```clojure
+(reset)
+
+(def query-fn (:db.sql/query-fn state/system))
+
+(query-fn :save-message! {:name      "m1"
+                          :message   "hello world"
+                          :timestamp (java.util.Date.)})
+;; => 1
+
+(query-fn :get-messages {})
+;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
 ```
 
 ### Exposing Database Queries in the Router Component
