@@ -133,7 +133,7 @@ is the root namespace for the project. Let's take a look at all the namespaces t
 
 #### guestbook
 
-* `config.clj` - this is the place where your `system.edn` is read in to create an immutant configuration map
+* `config.clj` - this is the place where your `system.edn` is read in to create an integrant configuration map
 * `core.clj` - this is the entry point for the application that contains the logic for starting and stopping the server
 
 #### guestbook.web
@@ -191,7 +191,7 @@ This directory is a counterpart of the `dev` directory, and contains versions of
 
 * `guestbook/env.clj` namespace with the production configuration
 
-Mwanwhile, `prod/resources` will contain logback configuration tuned for production use:
+Meanwhile, `prod/resources` will contain logback configuration tuned for production use:
 
 * `logback.xml` - default production logging configuration
 
@@ -384,7 +384,7 @@ The SQL queries are found in the `resources/sql` folder.
 
 * `queries.sql` - defines the SQL queries and their associated function names
 
-Let's take a look at the `queries.sql` template file. It's contents should look as follows:
+Let's take a look at the `queries.sql` template file. Its contents should look as follows:
 
 ```sql
 -- :name create-user! :! :n
