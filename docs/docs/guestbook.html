@@ -207,27 +207,7 @@ cd guestbook
 </code></pre><p>Migrations will be run automatically using the configuration found in <code>system.edn</code>:</p><pre><code class="clojure">:db.sql/migrations {:store :database,
                      :db {:datasource #ig/ref :db.sql/connection},
                      :migrate-on-init? true}
-</code></pre><h4 id="sql&#95;queries">SQL Queries</h4><p>The SQL queries are found in the <code>resources/sql</code> folder.</p><ul><li><code>queries.sql</code> - defines the SQL queries and their associated function names</li></ul><p>The file initially contains some placeholder queries to help remind you of basic SQL syntax. As we can see each function is defined using the comment that starts with <code>-- :name</code> followed by the name of the function. The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the <a href='https://www.hugsql.org/'>HugSQL documentation</a>. The parameters are denoted using <code>:</code> notation. Let's replace the existing queries with some of our own:</p><pre><code class="sql">-- :name save-message! :! :n
--- :doc creates a new message
-INSERT INTO guestbook
-&#40;name, message, timestamp&#41;
-VALUES &#40;:name, :message, :timestamp&#41;
-
--- :name get-messages :? :&#42;
--- :doc selects all available messages
-SELECT &#42; FROM guestbook
-</code></pre><p>Now that our model is all setup, let's reload the application, and test our queries in the REPL:</p><pre><code class="clojure">&#40;reset&#41;
-
-&#40;def query-fn &#40;:db.sql/query-fn state/system&#41;&#41;
-
-&#40;query-fn :save-message! {:name      &quot;m1&quot;
-                          :message   &quot;hello world&quot;
-                          :timestamp &#40;java.util.Date.&#41;}&#41;
-;; =&gt; 1
-
-&#40;query-fn :get-messages {}&#41;
-;; =&gt; &#91;{:id 1, :name &quot;m1&quot;, :message &quot;hello world&quot;, :timestamp 1636480432353}&#93;
-</code></pre><h3 id="accessing&#95;the&#95;database">Accessing The Database</h3><p>Let's take a look at the <code>resources/sql/queries.sql</code> template file. It's contents should look as follows:</p><pre><code class="sql">-- :name create-user! :! :n
+</code></pre><h3 id="accessing&#95;the&#95;database">Accessing The Database</h3><p>The SQL queries are found in the <code>resources/sql</code> folder.</p><ul><li><code>queries.sql</code> - defines the SQL queries and their associated function names</li></ul><p>Let's take a look at the <code>queries.sql</code> template file. It's contents should look as follows:</p><pre><code class="sql">-- :name create-user! :! :n
 -- :doc creates a new user record
 INSERT INTO users
 &#40;id, first&#95;name, last&#95;name, email, pass&#41;
@@ -243,15 +223,26 @@ WHERE id = :id
 -- :doc retrieve a user given the id.
 SELECT &#42; FROM users
 WHERE id = :id
-</code></pre><p>As we can see each function is defined using a comment that starts with <code>-- :name</code> followed by the name of the function. The next comment provides the doc string for the function and finally we have the body that's plain SQL. The parameters are denoted using <code>:</code> notation. Let's replace the existing queries with some of our own:</p><pre><code class="sql">-- :name save-message! :! :n
+</code></pre><p>The file initially contains some placeholder queries to help remind you of basic SQL syntax. As we can see each function is defined using the comment that starts with <code>-- :name</code> followed by the name of the function. The next comment provides the doc string for the function and finally we have the body that's plain SQL. For full documentation of this syntax you can view the <a href='https://www.hugsql.org/'>HugSQL documentation</a>. The parameters are denoted using <code>:</code> notation. Let's replace the existing queries with some of our own:</p><pre><code class="sql">-- :name save-message! :! :n
 -- :doc creates a new message
 INSERT INTO guestbook
-&#40;name, message, timestamp&#41;
-VALUES &#40;:name, :message, :timestamp&#41;
+&#40;name, message&#41;
+VALUES &#40;:name, :message&#41;
 
 -- :name get-messages :? :&#42;
 -- :doc selects all available messages
 SELECT &#42; FROM guestbook
+</code></pre><p>Now that our model is all setup, let's reload the application, and test our queries in the REPL:</p><pre><code class="clojure">&#40;reset&#41;
+
+&#40;def query-fn &#40;:db.sql/query-fn state/system&#41;&#41;
+
+&#40;query-fn :save-message! {:name      &quot;m1&quot;
+                          :message   &quot;hello world&quot;
+                          :timestamp &#40;java.util.Date.&#41;}&#41;
+;; =&gt; 1
+
+&#40;query-fn :get-messages {}&#41;
+;; =&gt; &#91;{:id 1, :name &quot;m1&quot;, :message &quot;hello world&quot;, :timestamp 1636480432353}&#93;
 </code></pre><h3 id="exposing&#95;database&#95;queries&#95;in&#95;the&#95;router&#95;component">Exposing Database Queries in the Router Component</h3><p>Now that we've added the queries, we'll need to update <code>resources/system.edn</code> in order to make these queries available in the page router component. This is achieved by adding a <code>:query-fn</code> key in the component definition as follows:</p><pre><code class="clojure">:reitit.routes/pages
 {:base-path &quot;&quot;,
  :query-fn #ig/ref :db.sql/query-fn
