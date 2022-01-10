@@ -1,6 +1,5 @@
 (ns kit.util
   (:require [markdown.core :as md]
-            [clojure.edn :as edn]
             [crouton.html :as html]
             [hiccup.core :as hiccup]
             [clojure.edn :as edn]
