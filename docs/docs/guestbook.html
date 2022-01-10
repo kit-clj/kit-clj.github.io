@@ -125,7 +125,7 @@ cd guestbook
 
 &#40;halt&#41; ;; To stop the system
 
-&#40;reload&#41; ;; To refresh the system after making code changes
+&#40;reset&#41; ;; To refresh the system after making code changes
 </code></pre><p>To confirm your server is running, visit <a href='http://localhost:3000/api/health'>http://localhost:3000/api/health</a>.</p><h3 id="system">System</h3><p>System resources such as HTTP server ports, database connections are defined in the <code>resources/system.edn</code> file. For example, this key defines HTTP server configuration such as the host, port, and HTTP handler:</p><pre><code class="clojure">:server/undertow
  {:port #long #or &#91;#env PORT 3000&#93;
   :host #or &#91;#env HTTP&#95;HOST &quot;0.0.0.0&quot;&#93;
