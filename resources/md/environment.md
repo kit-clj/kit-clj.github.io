@@ -13,7 +13,7 @@ Kit utilizes [aero](https://github.com/juxt/aero) to add reader macros for loadi
 
 ### Default Environment Variables
 
-Luminus projects use the following environment variables by default:
+Kit projects use the following environment variables by default:
 
 * `PORT` - HTTP port that the application will attempt to bind to, defaults to `3000`
 * `REPL_PORT` - when set the application will run the REPL socket server on the specified port, defaults to `7000`

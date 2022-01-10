@@ -1,4 +1,4 @@
-Luminus uses [Reitit](https://metosin.github.io/reitit/) to define application routes. The routes are the entry points to your application and are used to establish a communication protocol between the server and the client.
+Kit uses [Reitit](https://metosin.github.io/reitit/) to define application routes. The routes are the entry points to your application and are used to establish a communication protocol between the server and the client.
 
 ### Routes
 
