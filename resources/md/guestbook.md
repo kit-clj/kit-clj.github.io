@@ -18,8 +18,8 @@ on your system.
 ### Installing a Build Tool
 
 For building and running a project, Kit supports [Clojure Deps and CLI](https://clojure.org/guides/deps_and_cli).
+Note that Kit requires tools.build version `1.10.3.933` or later.
 
-<div class="deps">
 Installing Clojure CLI is accomplished by followings the step below, based on your operating system
 
 MacOS
@@ -47,7 +47,6 @@ For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfi
 Note: If you already have configuration in your `deps.edn` file, add the new key under aliases. Make sure the line with `{:aliases` is uncommented, i.e. without `;;`.
 
 For more customization, such as your install location, see [the official docs here](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools)
-</div>
 
 ### Creating a new application
 
