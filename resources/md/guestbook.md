@@ -217,7 +217,7 @@ Once we're in to our REPL, we can start our system up by running a command provi
 
 (halt) ;; To stop the system
 
-(reload) ;; To refresh the system after making code changes
+(reset) ;; To refresh the system after making code changes
 ```
 
 To confirm your server is running, visit [http://localhost:3000/api/health](http://localhost:3000/api/health).
