@@ -8,13 +8,13 @@ The project is [hosted on GitHub](https://github.com/kit-clj/kit). If you have f
 
 ## Help Improve Documentation
 
-The source for this site along with the associated documentation is hosted on [GitHub](https://github.com/kit-clj/kit-docs).
+The source for this site along with the associated documentation is hosted on [GitHub](https://github.com/kit-clj/kit-clj.github.io).
 
 If you wish to update an existing documentation page, simply edit the Markdown
-file for the page [here](https://github.com/kit-clj/kit-docs/tree/master/resources/md).
+file for the page [here](https://github.com/kit-clj/kit-clj.github.io/tree/master/resources/md).
 
-To add a new topic simply create a new Markdown file under [resources/md](https://github.com/kit-clj/kit-docs/tree/master/resources/md)
-directory, and update the list of topics [here](https://github.com/kit-clj/kit-docs/blob/master/resources/docpages.edn).
+To add a new topic simply create a new Markdown file under [resources/md](https://github.com/kit-clj/kit-clj.github.io/tree/master/resources/md)
+directory, and update the list of topics [here](https://github.com/kit-clj/kit-clj.github.io/blob/master/resources/docpages.edn).
 
 ## Support the Maintainers
 
