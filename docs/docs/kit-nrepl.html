@@ -56,15 +56,17 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>kit-xtdb</h1>
+      <h1>kit-nrepl</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:db.xtdb/node">:db.xtdb/node</a></li></ol>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:nrepl/server">:nrepl/server</a></li></ol>
       
       <div id="content">
-        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.xtdb/node">:db.xtdb/node</h3><p>Implements a <a href='https://xtdb.com/'>XTDB</a> server node.</p><pre><code class="clojure">:db.xtdb/node
-{}
-</code></pre><p>Please review the <a href='https://docs.xtdb.com/guides/quickstart/'>XTDB quickstart</a> for more usage information.</p>
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":nrepl/server">:nrepl/server</h3><p>Implements an <a href='https://github.com/nrepl/nrepl'>nREPL</a> server.</p><p>Full configuration options look like:</p><pre><code class="clojure">:nrepl/server
+{:bind &quot;127.0.0.1&quot;
+ :port 7000
+ :ack  8000}
+</code></pre>
       </div>
     </div>
   </div>
@@ -239,7 +241,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/kit-nrepl.html">
             kit-nrepl
           </a>
@@ -281,7 +283,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/kit-xtdb.html">
             kit-xtdb
           </a>
