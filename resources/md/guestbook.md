@@ -547,9 +547,8 @@ The function now renders the `home.html` template passing it currently stored me
 Finally, we'll add the `/save-message` route in the `page-routes` function. This route will pass the request to the `guestbook/save-message!` function we defined above when the form post happens:
 
 ```clojure
-(defn page-routes [base-path]
-  [base-path
-   ["/" {:get home}]
+(defn page-routes [_opts]
+  [["/" {:get home}]   
    ["/save-message" {:post guestbook/save-message!}]])
 ```
 
