@@ -57,7 +57,7 @@ Next, the module specifies the actions that will be performed. The first action 
 
 The other configuration action is called `:injections` and specifies code that will be injected into existing files within the project. In order to provide support for rendering HTML templates, the module must update Integrant system configuration by adding a reference for new routes to `system.edn`, add new dependencies to `deps.edn`, and finally require the namespace that contains the routes for the pages in the core namespace of the project. The `:action` values in injections depend on the types of assets being manipulated.
 
-### `:edn` injections
+`:edn` injections
 
 * `:append` - appends the value at the specified path, the value at the path is assumed to be a collection
 
@@ -80,7 +80,7 @@ The other configuration action is called `:injections` and specifies code that w
          luminus/ring-ttl-session {:mvn/version "0.3.3"}}}
 ```
 
-### `:clj` injections
+`:clj` injections
 
 * `:append-requires` - appends a require in the specified namespace
 
@@ -114,7 +114,7 @@ The other configuration action is called `:injections` and specifies code that w
  :value  (build-cljs)}
 ```
 
-### `:html` injections
+html injections
 
 * `:append` - appends a Hiccup form to the target identified by enlive selectors in the specified HTML resource
 ```clojure
