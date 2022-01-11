@@ -25,6 +25,7 @@
  ["kit-core.md"           "kit-core"                  "lib"]
  ["kit-hato.md"           "kit-hato"                  "lib"]
  ["kit-metrics.md"        "kit-metrics"               "lib"]
+ ["kit-nrepl.md"          "kit-nrepl"                 "lib"]
  ["kit-postgres.md"       "kit-postgres"              "lib"]
  ["kit-quartz.md"         "kit-quartz"                "lib"]
  ["kit-redis.md"          "kit-redis"                 "lib"]
