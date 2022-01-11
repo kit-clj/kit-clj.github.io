@@ -54,7 +54,7 @@ Once you have the Clojure CLI installed, you can run the following commands in y
 initialize your application:
 
 ```
-clojure -X:new :template io.github.kit-clj :name yourname/guestbook
+clojure -X:new :template io.github.kit-clj :name kit/guestbook
 cd guestbook
 ```
 
@@ -74,7 +74,7 @@ The newly created application has the following structure:
 │   ├── dev
 │   │   ├── clj
 │   │   │   ├── user.clj
-│   │   │   └── yourname
+│   │   │   └── kit
 │   │   │       └── guestbook
 │   │   │           ├── dev_middleware.clj
 │   │   │           └── env.clj
@@ -82,7 +82,7 @@ The newly created application has the following structure:
 │   │       └── logback.xml
 │   └── prod
 │       ├── clj
-│       │   └── yourname
+│       │   └── kit
 │       │       └── guestbook
 │       │           └── env.clj
 │       └── resources
@@ -94,7 +94,7 @@ The newly created application has the following structure:
 │   └── system.edn
 ├── src
 │   └── clj
-│       └── yourname
+│       └── kit
 │           └── guestbook
 │               ├── config.clj
 │               ├── core.clj
@@ -111,7 +111,7 @@ The newly created application has the following structure:
 │                       └── utils.clj
 └── test
     └── clj
-        └── yourname
+        └── kit
             └── guestbook
                 └── test_utils.clj
 ```
@@ -127,7 +127,7 @@ Let's take a look at what the files in the root folder of the application do:
 
 ### The Source Directory
 
-All our code lives under the `src/clj` folder. Since our application is called yourname/guestbook, this
+All our code lives under the `src/clj` folder. Since our application is called kit/guestbook, this
 is the root namespace for the project. Let's take a look at all the namespaces that have been created for us.
 
 #### guestbook
@@ -277,10 +277,10 @@ Since our application needs to serve some HTML content, let's add the official H
 ;; injecting
 ;; path: [:deps luminus/ring-ttl-session]
 ;; value: #:mvn{:version "0.3.3"}
-;; updating file: src/clj/yourname/guestbook/core.clj
+;; updating file: src/clj/kit/guestbook/core.clj
 ;; applying
 ;; action: :append-requires
-;; value: [[yourname.guestbook.web.routes.pages]]
+;; value: [[kit.guestbook.web.routes.pages]]
 ;; html installed successfully!
 ;; restart required!
 ;; nil
@@ -297,11 +297,11 @@ The module generated the following files under the `resources/html` directory:
 
 This directory is reserved for HTML templates that represent the application pages.
 
-The module also generated the namespace `yourname.guestbook.web.pages.layout` which helps you render HTML pages using [Selmer templating engine](https://github.com/yogthos/Selmer)
+The module also generated the namespace `kit.guestbook.web.pages.layout` which helps you render HTML pages using [Selmer templating engine](https://github.com/yogthos/Selmer)
 
 #### Routing
 
-The module also helped generate some routes for us under `yourname.guestbook.web.routes.pages`. See [routing](/docs/routes.html) documentation for more details.
+The module also helped generate some routes for us under `kit.guestbook.web.routes.pages`. See [routing](/docs/routes.html) documentation for more details.
 
 #### Adding a database
 
@@ -326,7 +326,7 @@ Similarly to the way we installed the HTML module, we can add a SQLite module ca
 ;; injecting
 ;;  path: [:deps org.xerial/sqlite-jdbc] 
 ;;  value: #:mvn{:version "3.34.0"}
-;; updating file: src/clj/yourname/guestbook/core.clj
+;; updating file: src/clj/kit/guestbook/core.clj
 ;; applying
 ;;  action: :append-requires 
 ;;  value: [[kit.edge.db.sql]]
@@ -547,9 +547,8 @@ The function now renders the `home.html` template passing it currently stored me
 Finally, we'll add the `/save-message` route in the `page-routes` function. This route will pass the request to the `guestbook/save-message!` function we defined above when the form post happens:
 
 ```clojure
-(defn page-routes [base-path]
-  [base-path
-   ["/" {:get home}]
+(defn page-routes [_opts]
+  [["/" {:get home}]   
    ["/save-message" {:post guestbook/save-message!}]])
 ```
 

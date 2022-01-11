@@ -1,6 +1,7 @@
 [["guestbook.md"          "Your First Application"  "topic"]
  ["repl.md"               "REPL Driven Development" "topic"]
  ["profiles.md"           "Application Profiles"    "topic"]
+ ["modules.md"            "Application Modules"     "topic"]
  ["integrant.md"          "Integrant"               "topic"]
  ["html_templating.md"    "HTML Templating"         "topic"]
  ["assets.md"             "Static Assets"           "topic"]

@@ -56,29 +56,83 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>Server Tuning</h1>
+      <h1>Application Modules</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#undertow_configuration">Undertow Configuration</a></li></ol>
+      <ol class="contents"><li><a href="#kit_modules">Kit Modules</a></li></ol>
       
       <div id="content">
-        <p>Out of the box Kit supports the <a href='https://undertow.io/'>Undertow</a> web server via the <a href='https://github.com/luminus-framework/ring-undertow-adapter'>ring-undertow-adapter</a></p><h3 id="undertow&#95;configuration">Undertow Configuration</h3><p>Undertow allows setting the number of worker and IO threads using the <code>:worker-threads</code> and the <code>:io-threads</code> keys respectively. For example, we could update the default configuration in the <code>system.edn</code> as follows:</p><pre><code class="clojure">:server/undertow
-{:port #long #or &#91;#env PORT 3000&#93;
- :handler #ig/ref :handler/ring
- :worker-threads 200
- :io-threads 4}
-</code></pre><p>If you want to do a custom configuration that includes calculating the <code>io-threads</code> at runtime, you can override the default <code>ig/init-key</code> for <code>server/undertow</code>. This is the definition in <code>kit.edge.server.undertow</code></p><pre><code class="clojure">&#40;defmethod ig/prep-key :server/undertow
-  &#91;&#95; config&#93;
-  &#40;merge {:port 3000
-          :host &quot;0.0.0.0&quot;}
-         config&#41;&#41;
-</code></pre><p>For example,</p><pre><code class="clojure">&#40;defmethod ig/prep-key :server/undertow
-  &#91;&#95; config&#93;
-  &#40;merge {:port 3000
-          :host &quot;0.0.0.0&quot;
-          :io-threads &#40;&#42; 2 &#40;.availableProcessors &#40;Runtime/getRuntime&#41;&#41;&#41;}
-         config&#41;&#41;
-</code></pre><p>For a full listing of all configuration options, review the <a href='https://github.com/luminus-framework/ring-undertow-adapter'>ring-undertow-adapter documentation</a>.</p><p>Undertow uses separate thread pools for managing the IO and the worker threads. The <code>:dispatch?</code> flag is used to decide whether the request should be dispatched by the IO thread to a separate worker thread. Since dispatching the request to a worker carries overhead, it may be more performant to handle some requests, such as hardcoded text responses, directly in the IO thread.</p>
+        <h2 id="kit&#95;modules">Kit Modules</h2><p>Kit modules are templates that can be applied to an existing project using <a href='https://github.com/kit-clj/kit/tree/master/libs/kit-generator'>kit-generator</a> library. Modules are managed using git repositories, and official modules can be found <a href='https://github.com/kit-clj/modules'>here</a>. Let's take a brief look at what a module repository looks like.</p><p>A module repository must contain a <code>modules.edn</code> file describing the modules that are provided. For example, here are the official modules provided by Kit:</p><pre><code class="clojure">{:name &quot;kit-modules&quot;
+ :modules
+ {:kit/html
+  {:path &quot;html&quot;
+   :doc &quot;adds support for HTML templating using Selmer&quot;}
+  :kit/sqlite
+  {:path &quot;sqlite&quot;
+   :doc &quot;adds support for SQLite embedded database&quot;}
+  :kit/cljs
+  {:path &quot;cljs&quot;
+   :doc &quot;adds support for cljs using shadow-cljs&quot;}}}
+</code></pre><p>As we can see above, the official repository contains three modules. Let's take a look at the <a href='https://github.com/kit-clj/modules/tree/master/html'><code>:kit/html</code></a> module to see how it works. This module contains a <code>config.edn</code> file and a folder called <code>assets</code>. Let's take a look at the configuration for the module:</p><pre><code class="clojure">{:default
+ {:require-restart? true
+  :actions
+  {:assets           &#91;&#91;&quot;assets/home.html&quot;    &quot;resources/html/home.html&quot;&#93;
+                      &#91;&quot;assets/error.html&quot;    &quot;resources/html/error.html&quot;&#93;
+                      &#91;&quot;assets/css/screen.css&quot;    &quot;resources/public/css/screen.css&quot;&#93;
+                      &#91;&quot;assets/img/kit.png&quot; &quot;resources/public/img/kit.png&quot;&#93;
+                      &#91;&quot;assets/src/pages.clj&quot;    &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/web/routes/pages.clj&quot;&#93;
+                      &#91;&quot;assets/src/layout.clj&quot;   &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/web/pages/layout.clj&quot;&#93;&#93;
+   :injections       &#91;{:type   :edn
+                       :path   &quot;resources/system.edn&quot;
+                       :target &#91;&#93;
+                       :action :merge
+                       :value  {:reitit.routes/pages
+                          {:base-path &quot;&quot;
+                             :env       #ig/ref :system/env}}}
+                      {:type   :edn
+                       :path   &quot;deps.edn&quot;
+                       :target &#91;:deps&#93;
+                       :action :merge
+                       :value  {selmer/selmer {:mvn/version &quot;1.12.49&quot;}
+                                luminus/ring-ttl-session {:mvn/version &quot;0.3.3&quot;}}}
+                      {:type   :clj
+                       :path   &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/core.clj&quot;
+                       :action :append-requires
+                       :value  &#91;&quot;&#91;&lt;&lt;ns-name&gt;&gt;.web.routes.pages&#93;&quot;&#93;}&#93;}}}
+</code></pre><p>We can see that the module has a <code>:default</code> profile. Kit module profiles allow providing variations of a module with different configurations. For example, a database module could have different profiles for different types of databases. In case of HTML, we only need a single profile.</p><p>The<code>:require-restart?</code> key specifies that the runtime needs to be restarted for changes to take effect. This is necessary for modules that add Maven dependencies necessitating JVM restarts to be loaded.</p><p>Next, the module specifies the actions that will be performed. The first action called <code>:assets</code> specifies new assets that will be added to the project. These are template files that will be read from the <code>assets</code> folder and injected in the project.</p><p>The other configuration action is called <code>:injections</code> and specifies code that will be injected into existing files within the project. In order to provide support for rendering HTML templates, the module must update Integrant system configuration by adding a reference for new routes to <code>system.edn</code>, add new dependencies to <code>deps.edn</code>, and finally require the namespace that contains the routes for the pages in the core namespace of the project. The <code>:action</code> values in injections depend on the types of assets being manipulated.</p><p><code>:edn</code> injections</p><ul><li><code>:append</code> - appends the value at the specified path, the value at the path is assumed to be a collection<pre><code class="clojure">{:type :edn
+ :path &quot;deps.edn&quot;
+ :target &#91;:paths&#93;
+ :action :append
+ :value &quot;target/classes/cljsbuild&quot;}
+</code></pre></li><li><code>:merge</code> - merges value with the value found at the path, the value at the path is assumed to be a map<pre><code class="clojure">{:type   :edn
+ :path   &quot;deps.edn&quot;
+ :target &#91;:deps&#93; ; use &#91;&#93; to merge with the top level map
+ :action :merge
+ :value  {selmer/selmer {:mvn/version &quot;1.12.49&quot;}
+         luminus/ring-ttl-session {:mvn/version &quot;0.3.3&quot;}}}
+</code></pre></li></ul><p><code>:clj</code> injections</p><ul><li><code>:append-requires</code> - appends a require in the specified namespace<pre><code class="clojure">{:type   :clj
+ :path   &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/core.clj&quot;
+ :action :append-requires
+ :value  &#91;&quot;&#91;&lt;&lt;ns-name&gt;&gt;.web.routes.pages&#93;&quot;&#93;}
+</code></pre></li><li><code>:append-build-task</code> - appends a build task in <code>build.clj</code><pre><code class="clojure">{:type   :clj
+ :path   &quot;build.clj&quot;
+ :action :append-build-task
+ :value  &#40;defn build-cljs &#91;&#93;
+          &#40;println &quot;npx shadow-cljs release app...&quot;&#41;
+          &#40;let &#91;{:keys &#91;exit&#93;
+                 :as   s} &#40;sh &quot;npx&quot; &quot;shadow-cljs&quot; &quot;release&quot; &quot;app&quot;&#41;&#93;
+            &#40;when-not &#40;zero? exit&#41;
+            &#40;throw &#40;ex-info &quot;could not compile cljs&quot; s&#41;&#41;&#41;&#41;&#41;}
+</code></pre></li><li><code>:append-build-task-call</code> - appends a function call to the <code>uber</code> function in <code>build.clj</code><pre><code class="clojure">{:type   :clj
+ :path   &quot;build.clj&quot;
+ :action :append-build-task-call
+ :value  &#40;build-cljs&#41;}
+</code></pre></li></ul><p>html injections</p><ul><li><code>:append</code> - appends a Hiccup form to the target identified by enlive selectors in the specified HTML resource<pre><code class="clojure">{:type   :html
+ :path   &quot;resources/html/home.html&quot;
+ :action :append
+ :target &#91;:body&#93;
+ :value  &#91;:div {:id &quot;app&quot;}&#93;}
+</code></pre></li></ul>
       </div>
     </div>
   </div>
@@ -105,7 +159,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/modules.html">
             Application Modules
           </a>
@@ -189,7 +243,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/servers.html">
             Server Tuning
           </a>

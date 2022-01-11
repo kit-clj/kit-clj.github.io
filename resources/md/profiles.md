@@ -1,8 +1,7 @@
 ## Profiles
 
 Running `clojure -X:new :template io.github.kit-clj :name yourname/app` will create an application using the default profile template.
-However, if you would like to attach further functionality to your template you can append
-profile hints for the extended functionality.
+However, if you would like to attach further functionality to your template you can append profile hints for the extended functionality.
 
 Default libs included with no profile specified:
 
