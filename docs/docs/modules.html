@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Application Modules</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#kit_modules">Kit Modules</a></li><li><a href="#&lt;code&gt;:edn&lt;/code&gt;_injections">{:tag :code, :attrs nil, :content [":edn"]}</a></li><li><a href="#&lt;code&gt;:clj&lt;/code&gt;_injections">{:tag :code, :attrs nil, :content [":clj"]}</a></li><li><a href="#&lt;code&gt;:html&lt;/code&gt;_injections">{:tag :code, :attrs nil, :content [":html"]}</a></li></ol>
+      
+      <div id="content">
+        <h2 id="kit&#95;modules">Kit Modules</h2><p>Kit modules are templates that can be applied to an existing project using <a href='https://github.com/kit-clj/kit/tree/master/libs/kit-generator'>kit-generator</a> library. Modules are managed using git repositories, and official modules can be found <a href='https://github.com/kit-clj/modules'>here</a>. Let's take a brief look at what a module repository looks like.</p><p>A module repository must contain a <code>modules.edn</code> file describing the modules that are provided. For example, here are the official modules provided by Kit:</p><pre><code class="clojure">{:name &quot;kit-modules&quot;
+ :modules
+ {:kit/html
+  {:path &quot;html&quot;
+   :doc &quot;adds support for HTML templating using Selmer&quot;}
+  :kit/sqlite
+  {:path &quot;sqlite&quot;
+   :doc &quot;adds support for SQLite embedded database&quot;}
+  :kit/cljs
+  {:path &quot;cljs&quot;
+   :doc &quot;adds support for cljs using shadow-cljs&quot;}}}
+</code></pre><p>As we can see above, the official repository contains three modules. Let's take a look at the <a href='https://github.com/kit-clj/modules/tree/master/html'><code>:kit/html</code></a> module to see how it works. This module contains a <code>config.edn</code> file and a folder called <code>assets</code>. Let's take a look at the configuration for the module:</p><pre><code class="clojure">{:default
+ {:require-restart? true
+  :actions
+  {:assets           &#91;&#91;&quot;assets/home.html&quot;    &quot;resources/html/home.html&quot;&#93;
+                      &#91;&quot;assets/error.html&quot;    &quot;resources/html/error.html&quot;&#93;
+                      &#91;&quot;assets/css/screen.css&quot;    &quot;resources/public/css/screen.css&quot;&#93;
+                      &#91;&quot;assets/img/kit.png&quot; &quot;resources/public/img/kit.png&quot;&#93;
+                      &#91;&quot;assets/src/pages.clj&quot;    &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/web/routes/pages.clj&quot;&#93;
+                      &#91;&quot;assets/src/layout.clj&quot;   &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/web/pages/layout.clj&quot;&#93;&#93;
+   :injections       &#91;{:type   :edn
+                       :path   &quot;resources/system.edn&quot;
+                       :target &#91;&#93;
+                       :action :merge
+                       :value  {:reitit.routes/pages
+                          {:base-path &quot;&quot;
+                             :env       #ig/ref :system/env}}}
+                      {:type   :edn
+                       :path   &quot;deps.edn&quot;
+                       :target &#91;:deps&#93;
+                       :action :merge
+                       :value  {selmer/selmer {:mvn/version &quot;1.12.49&quot;}
+                                luminus/ring-ttl-session {:mvn/version &quot;0.3.3&quot;}}}
+                      {:type   :clj
+                       :path   &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/core.clj&quot;
+                       :action :append-requires
+                       :value  &#91;&quot;&#91;&lt;&lt;ns-name&gt;&gt;.web.routes.pages&#93;&quot;&#93;}&#93;}}}
+</code></pre><p>We can see that the module has a <code>:default</code> profile. Kit module profiles allow providing variations of a module with different configurations. For example, a database module could have different profiles for different types of databases. In case of HTML, we only need a single profile.</p><p>The<code>:require-restart?</code> key specifies that the runtime needs to be restarted for changes to take effect. This is necessary for modules that add Maven dependencies necessitating JVM restarts to be loaded.</p><p>Next, the module specifies the actions that will be performed. The first action called <code>:assets</code> specifies new assets that will be added to the project. These are template files that will be read from the <code>assets</code> folder and injected in the project.</p><p>The other configuration action is called <code>:injections</code> and specifies code that will be injected into existing files within the project. In order to provide support for rendering HTML templates, the module must update Integrant system configuration by adding a reference for new routes to <code>system.edn</code>, add new dependencies to <code>deps.edn</code>, and finally require the namespace that contains the routes for the pages in the core namespace of the project. The <code>:action</code> values in injections depend on the types of assets being manipulated.</p><h3 id="<code>:edn</code>&#95;injections"><code>:edn</code> injections</h3><ul><li><code>:append</code> - appends the value at the specified path, the value at the path is assumed to be a collection<pre><code class="clojure">{:type :edn
+ :path &quot;deps.edn&quot;
+ :target &#91;:paths&#93;
+ :action :append
+ :value &quot;target/classes/cljsbuild&quot;}
+</code></pre></li><li><code>:merge</code> - merges value with the value found at the path, the value at the path is assumed to be a map<pre><code class="clojure">{:type   :edn
+ :path   &quot;deps.edn&quot;
+ :target &#91;:deps&#93; ; use &#91;&#93; to merge with the top level map
+ :action :merge
+ :value  {selmer/selmer {:mvn/version &quot;1.12.49&quot;}
+         luminus/ring-ttl-session {:mvn/version &quot;0.3.3&quot;}}}
+</code></pre></li></ul><h3 id="<code>:clj</code>&#95;injections"><code>:clj</code> injections</h3><ul><li><code>:append-requires</code> - appends a require in the specified namespace<pre><code class="clojure">{:type   :clj
+ :path   &quot;src/clj/&lt;&lt;sanitized&gt;&gt;/core.clj&quot;
+ :action :append-requires
+ :value  &#91;&quot;&#91;&lt;&lt;ns-name&gt;&gt;.web.routes.pages&#93;&quot;&#93;}
+</code></pre></li><li><code>:append-build-task</code> - appends a build task in <code>build.clj</code><pre><code class="clojure">{:type   :clj
+ :path   &quot;build.clj&quot;
+ :action :append-build-task
+ :value  &#40;defn build-cljs &#91;&#93;
+          &#40;println &quot;npx shadow-cljs release app...&quot;&#41;
+          &#40;let &#91;{:keys &#91;exit&#93;
+                 :as   s} &#40;sh &quot;npx&quot; &quot;shadow-cljs&quot; &quot;release&quot; &quot;app&quot;&#41;&#93;
+            &#40;when-not &#40;zero? exit&#41;
+            &#40;throw &#40;ex-info &quot;could not compile cljs&quot; s&#41;&#41;&#41;&#41;&#41;}
+</code></pre></li><li><code>:append-build-task-call</code> - appends a function call to the <code>uber</code> function in <code>build.clj</code><pre><code class="clojure">{:type   :clj
+ :path   &quot;build.clj&quot;
+ :action :append-build-task-call
+ :value  &#40;build-cljs&#41;}
+</code></pre></li></ul><h3 id="<code>:html</code>&#95;injections"><code>:html</code> injections</h3><ul><li><code>:append</code> - appends a Hiccup form to the target identified by enlive selectors in the specified HTML resource<pre><code class="clojure">{:type   :html
+ :path   &quot;resources/html/home.html&quot;
+ :action :append
+ :target &#91;:body&#93;
+ :value  &#91;:div {:id &quot;app&quot;}&#93;}
+</code></pre></li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>
