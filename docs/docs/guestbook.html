@@ -295,9 +295,8 @@ user=&gt;
   &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data request&#41;&#93;
     &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
                                         :errors &#40;:errors flash&#41;}&#41;&#41;&#41;
-</code></pre><p>The function now renders the <code>home.html</code> template passing it currently stored messages queried from the database using the <code>:messages</code> key and with any errors using the <code>:errors</code> key.</p><p>Finally, we'll add the <code>/save-message</code> route in the <code>page-routes</code> function. This route will pass the request to the <code>guestbook/save-message!</code> function we defined above when the form post happens:</p><pre><code class="clojure">&#40;defn page-routes &#91;base-path&#93;
-  &#91;base-path
-   &#91;&quot;/&quot; {:get home}&#93;
+</code></pre><p>The function now renders the <code>home.html</code> template passing it currently stored messages queried from the database using the <code>:messages</code> key and with any errors using the <code>:errors</code> key.</p><p>Finally, we'll add the <code>/save-message</code> route in the <code>page-routes</code> function. This route will pass the request to the <code>guestbook/save-message!</code> function we defined above when the form post happens:</p><pre><code class="clojure">&#40;defn page-routes &#91;&#95;opts&#93;
+  &#91;&#91;&quot;/&quot; {:get home}&#93;   
    &#91;&quot;/save-message&quot; {:post guestbook/save-message!}&#93;&#93;&#41;
 </code></pre><p>Now that we have our controllers setup, let's open <code>home.html</code> template located under the <code>resources/html</code> directory. Currently, it simply renders a static page. We'll update our <code>content</code> div to iterate over the messages and print each one in a list:</p><pre><code class="xml">&lt;div class=&quot;content container&quot;&gt;
   &lt;div class=&quot;columns&quot;&gt;
