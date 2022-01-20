@@ -444,6 +444,8 @@ In this example, the newly defined `query-fn` function allows you to execute the
 
 As you can see, `query-fn` takes two arguments: name of the SQL query function to call, and a map of parameters required by that function.
 
+For more information on how components like `:db.sql/query-fn` work, see [Accessing Components](/docs/integrant.html#accessing_components).
+
 ### Exposing Database Queries in the Router Component
 
 Now that we've added the queries, we'll need to update `resources/system.edn` to make these queries available in the page router component. To do this, add a `:query-fn` key in the component definition as follows:
@@ -468,6 +470,8 @@ Like in the REPL example towards the end of the [Accessing the Database](accessi
 
 - we pass a specific database connection because this function will be called as part of a regular request-response cycle
 - we only make available the query functions from one specific file.
+
+For more information on how components like `:db.sql/query-fn` work, see [Accessing Components](/docs/integrant.html#accessing_components).
 
 ### Creating a controller for the guestbook
 
