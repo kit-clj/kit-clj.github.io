@@ -59,7 +59,7 @@
       <h1>Integrant</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#integrant_overview">Integrant Overview</a></li><li><a href="#repl_workflow">REPL workflow</a></li></ol>
+      <ol class="contents"><li><a href="#integrant_overview">Integrant Overview</a></li><li><a href="#repl_workflow">REPL workflow</a></li><li><a href="#accessing_components">Accessing Components</a></li></ol>
       
       <div id="content">
         <p>Kit encourages using the <a href='https://blog.8thlight.com/uncle-bob/2012/08/13/the-clean-architecture.html'>Clean Architecture</a> style for writing web applications.</p><p>The workflows in web applications are typically driven by the client requests. Since requests will often require interaction with a resource, such as a database, we will generally have to access that resource from the route handling the request. In order to isolate the stateful code, we should have our top level functions deal with managing the side effects.</p><p>Consider a route that facilitates user authentication. The client will supply the username and the password in the request. The route will have to pull the user credentials from the database and compare these to the ones supplied by the client. Then a decision is made whether the user logged in successfully or not, and its outcome communicated back to the client.</p><p>In this workflow, the code that deals with the external resources should be localized to the namespace that provides the route and the namespace that handles the database access.</p><p>The route handler function will be responsible for calling the function that fetches the credentials from the database. The code that determines whether the password and username match represents the core business logic. This code should be pure and accept the supplied credentials along with those found in the database explicitly. This structure can be seen in the diagram below.</p><pre><code>            pure code
@@ -99,7 +99,27 @@
   &#40;integrant.repl/set-prep! &#40;fn &#91;&#93;
                               &#40;-&gt; &#40;&lt;project-ns&gt;.config/system-config {:profile :test}&#41;
                                   &#40;ig/prep&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>This function uses the test profile regardless of your environment, allowing you to execute tests as if you were in that environment. This is particularly useful if you have a transient set of data sinks (databases, caches, etc.) for your test environment, and a permanent set for development.</p>
+</code></pre><p>This function uses the test profile regardless of your environment, allowing you to execute tests as if you were in that environment. This is particularly useful if you have a transient set of data sinks (databases, caches, etc.) for your test environment, and a permanent set for development.</p><h3 id="accessing&#95;components">Accessing Components</h3><p>Now that we've discussed at how Integrant works, let's see how components managed by Integrant can be accessed by the controllers. Let's say wee have some SQL queries defined, and added the following entry in <code>resources/system.edn</code>:</p><pre><code class="clojure">:db.sql/query-fn
+{:conn #ig/ref :db.sql/connection,
+ :options {},
+ :filename &quot;sql/queries.sql&quot;}
+</code></pre><p>Above configuraiton defines a component called <code>:db.sql/query-fn</code> responsible for instantiating query functions using the template found in the <code>resources/sql/queries.sql</code> file. The component must be explicitly referenced by the components that use it. For example, if we wanted to access SQL queries from the <code>:reitit.routes/pages</code> component then we'd have to reference it as follows:</p><pre><code class="clojure">:reitit.routes/pages
+{:query-fn #ig/ref :db.sql/query-fn ;; queries reference
+ :base-path &quot;&quot;,
+ :env      #ig/ref :system/env}
+</code></pre><p>With the above wiring in place, the <code>:query-fn</code> key referencing <code>:db.sql/query-fn</code> will be injected in the <code>opts</code> passed to the multimethod that instantiates the <code>:reitit.routes/pages</code> controller:</p><pre><code class="clojure">
+&#40;defmethod ig/init-key :reitit.routes/pages
+  &#91;&#95; {:keys &#91;base-path &#93;
+      :or   {base-path &quot;&quot;}
+      :as   opts}&#93;
+  &#40;layout/init-selmer!&#41;
+  &#91;base-path &#40;route-data opts&#41; &#40;page-routes opts&#41;&#93;&#41;
+</code></pre><p>The multimethod attaches the <code>opts</code> to the reeuest map by calling <code>&#40;route-data opts&#41;</code>, and the request handle function can now access the <code>:query-fn</code> key from the request map by calling <code>&#40;utils/route-data request&#41;</code> as follows:</p><pre><code class="clojure">
+&#40;defn home &#91;{:keys &#91;flash&#93; :as request}&#93;
+  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data request&#41;&#93;
+    &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
+                                        :errors &#40;:errors flash&#41;}&#41;&#41;&#41;
+</code></pre>
       </div>
     </div>
   </div>
