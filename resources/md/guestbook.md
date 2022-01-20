@@ -440,9 +440,9 @@ Now that our model is all set up, let's reload the application, and test our que
 ;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
 ```
 
-In this example, the newly defined `query-fn` function allows you to execute the SQL functions you defined in `queries.sql`. It achieves this using the `:db.sql/query-fn` method that comes with kit-sql (a dependency of kit/sqlite you installed). 
+In this example, the newly defined `query-fn` function allows you to execute the SQL functions you defined in `queries.sql`. It achieves this using the `:db.sql/query-fn` component that comes with kit-sql (a dependency of kit/sqlite you installed). 
 
-As you can see, `query-fn` takes two arguments - name of the SQL query function to call, and a map of parameters required by that function.
+As you can see, `query-fn` takes two arguments: name of the SQL query function to call, and a map of parameters required by that function.
 
 ### Exposing Database Queries in the Router Component
 
@@ -464,7 +464,10 @@ The key references the `:db.sql/query-fn` component which is responsible for ins
  :filename "sql/queries.sql"}
 ```
 
-Now that our model is all set up, let's start the application.
+Like in the REPL example towards the end of the [Accessing the Database](accessing_the_database) section, the `:db.sql/query-fn` component comes from kit-sql. Unlike in that example:
+
+- we pass a specific database connection because this function will be called as part of a regular request-response cycle
+- we only make available the query functions from one specific file.
 
 ### Creating a controller for the guestbook
 
@@ -532,7 +535,7 @@ Finally, we'll add the `/save-message` route in the `page-routes` function. This
    ["/save-message" {:post guestbook/save-message!}]])
 ```
 
-Now that we have our controllers setup, let's open `home.html` template located under the `resources/html` directory. Currently, it simply renders a static page. We'll update our `content` div to iterate over the messages and print each one in a list:
+Now that we have our controllers set up, let's open `home.html` template located in the `resources/html` directory. Currently, it simply renders a static page. We'll update our `content` div to iterate over the messages and print each one in a list:
 
 ```xml
 <div class="content container">
@@ -553,7 +556,7 @@ Now that we have our controllers setup, let's open `home.html` template located 
 </div>
 ```
 
-As you can see above, we use a `for` iterator to walk the messages.
+As you can see above, we use a `for` iterator to walk through the messages.
 Since each message is a map with the message, name, and timestamp keys, we can access them by name.
 
 Finally, we'll create a form to allow users to submit their messages. We'll populate the name and message values if they're supplied and render any errors associated with them. Note that the forms also uses the `csrf-field` tag that's required for cross-site request forgery protection.
@@ -670,6 +673,9 @@ form, .error {
 
 When we reload the page in the browser we should be greeted by the guestbook page.
 We can test that everything is working as expected by adding a comment in our comment form.
+
+To learn more about HTML templating options you can use with Kit, see [HTML Templating](/docs/html_templating.html).
+
 ## Adding some tests
 
 Tests are found under the `test` source path. 
@@ -679,11 +685,11 @@ as expected.
 
 ## Packaging the application
 
-The application can be packaged for standalone deployment by running the following command:
+You can package your application for standalone deployment by running the following command:
 
 clj -Sforce -T:build all
 
-This will create a runnable jar that can be run as seen below:
+This will create a runnable jar that you can run using the following commands:
 
 ```
 export JDBC_URL="jdbc:sqlite:guestbook_dev.db"
