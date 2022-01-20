@@ -440,6 +440,10 @@ Now that our model is all set up, let's reload the application, and test our que
 ;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
 ```
 
+In this example, the newly defined `query-fn` function allows you to execute the SQL functions you defined in `queries.sql`. It achieves this using the `:db.sql/query-fn` method that comes with kit-sql (a dependency of kit/sqlite you installed). 
+
+As you can see, `query-fn` takes two arguments - name of the SQL query function to call, and a map of parameters required by that function.
+
 ### Exposing Database Queries in the Router Component
 
 Now that we've added the queries, we'll need to update `resources/system.edn` to make these queries available in the page router component. To do this, add a `:query-fn` key in the component definition as follows:
