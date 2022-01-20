@@ -88,3 +88,45 @@ If you would like to run your tests from the REPL, a helper function is generate
 ```
 
 This function uses the test profile regardless of your environment, allowing you to execute tests as if you were in that environment. This is particularly useful if you have a transient set of data sinks (databases, caches, etc.) for your test environment, and a permanent set for development.
+
+### Accessing Components
+
+Now that we've discussed at how Integrant works, let's see how components managed by Integrant can be accessed by the controllers. Let's say wee have some SQL queries defined, and added the following entry in `resources/system.edn`:
+
+```clojure
+:db.sql/query-fn
+{:conn #ig/ref :db.sql/connection,
+ :options {},
+ :filename "sql/queries.sql"}
+```
+
+Above configuraiton defines a component called `:db.sql/query-fn` responsible for instantiating query functions using the template found in the `resources/sql/queries.sql` file. The component must be explicitly referenced by the components that use it. For example, if we wanted to access SQL queries from the `:reitit.routes/pages` component then we'd have to reference it as follows:
+
+```clojure
+:reitit.routes/pages
+{:query-fn #ig/ref :db.sql/query-fn ;; queries reference
+ :base-path "",
+ :env      #ig/ref :system/env}
+```
+
+With the above wiring in place, the `:query-fn` key referencing `:db.sql/query-fn` will be injected in the `opts` passed to the multimethod that instantiates the `:reitit.routes/pages` controller:
+
+```clojure
+
+(defmethod ig/init-key :reitit.routes/pages
+  [_ {:keys [base-path ]
+      :or   {base-path ""}
+      :as   opts}]
+  (layout/init-selmer!)
+  [base-path (route-data opts) (page-routes opts)])
+```
+
+The multimethod attaches the `opts` to the reeuest map by calling `(route-data opts)`, and the request handle function can now access the `:query-fn` key from the request map by calling `(utils/route-data request)` as follows:
+
+```clojure
+
+(defn home [{:keys [flash] :as request}]
+  (let [{:keys [query-fn]} (utils/route-data request)]
+    (layout/render request "home.html" {:messages (query-fn :get-messages {})
+                                        :errors (:errors flash)})))
+```
