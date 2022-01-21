@@ -7,11 +7,11 @@ Kit has two database paradigms supported as libraries: XTDB (formerly known as C
 Kit defaults to using [Migratus](https://github.com/yogthos/migratus) for SQL database migrations and
 [HugSQL](http://www.hugsql.org/) for database interaction.
 
-The migrations and a default connection will be setup when using a database profile such as `+sql`. The default SQL implementation used with this profile is [PostgreSQL](https://www.postgresql.org/), however any SQL solution will work.
+The migrations and a default connection will be set up when using a database profile such as `+sql`. The default SQL implementation used with this profile is [PostgreSQL](https://www.postgresql.org/), however any SQL solution will work.
 
 #### Configuring Migrations
 
-We first have to set the connection configuration for our database in `system.edn`. This is by default in the `+sql` profile for development `jdbc:postgresql://localhost/<app-name>?user=<app-name>&password=<app-name>`, however, you can change it whatever you like
+To start running migrations, you first have to configure the database connection in `system.edn`. In the `+sql` profile, for a development database, this is done through a connection string, like `jdbc:postgresql://localhost/<app-name>?user=<app-name>&password=<app-name>`. You can adjust it as necessary.
 
 ```clojure
  :db.sql/connection
@@ -24,14 +24,14 @@ We first have to set the connection configuration for our database in `system.ed
                   :max-active 32}}
 ```
 
-Then we can create SQL scripts to migrate the database schema, and to roll it back. These are applied using the numeric order of the ids. Conventionally the current date is used to prefix the filename. The files are expected to be present under the `resources/migrations` folder. The template will generate sample migration files for the users table.
+You can then create SQL scripts to migrate the database schema, and to roll the migration back. Migrations are applied using the numeric order of ids. Conventionally, the current date is used to prefix the filename. The files are expected to be present under `resources/migrations`. The template will generate sample migration files for the users table.
 
 ```
 resources/migrations/20210720004935-add-users-table.down.sql
 resources/migrations/20210720004935-add-users-table.up.sql
 ```
 
-The default configuration runs any new migrations on startup, but this can be changed by updating the value for `migrate-on-init?`.
+The default configuration runs any new migrations on startup. You can change this by modifying the value for `migrate-on-init?` to `false`.
 
 ```clojure
  :db.sql/migrations
@@ -40,10 +40,10 @@ The default configuration runs any new migrations on startup, but this can be ch
   :migrate-on-init? true}
 ```
 
-Migrations can also be run via the REPL. The `migratus.core` namespace provides the following
+You can also run the migrations via the REPL. The `migratus.core` namespace provides the following
 helper functions:
 
-* `(migratus.core/reset (:db.sql/migrations state/system))` - resets the state of the database
+* `(migratus.core/reset (:db.sql/migrations state/system))` - resets the state of the database by rolling back all the applied migrations (by using the appropriate down-scripts), and running all migrations (up-scripts)
 * `(migratus.core/migrate (:db.sql/migrations state/system))` - runs the pending migrations
 * `(migratus.core/rollback (:db.sql/migrations state/system))` - rolls back the last set of migrations
 * `(migratus.core/create-migration (:db.sql/migrations state/system) "add-guestbook-table")` - creates the up/down migration files with the given name
@@ -61,7 +61,7 @@ SQL queries are parsed by HugSQL as defined in your `system.edn` and `resources/
  :filename "queries.sql"}
 ```
 
-This integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say we had the following SQL:
+This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have the following SQL:
 
 ```sql
 -- :name get-user-by-id :? :1
@@ -71,7 +71,7 @@ FROM users
 WHERE id = :id
 ```
 
-We could simply query this bit with the following `query-fn` call:
+You can run this SQL query using the following `query-fn` call:
 
 ```clojure
 (query-fn :get-user-by-id {:id 1})
@@ -91,7 +91,7 @@ For reference, here is the full definition from the Kit SQL edge:
        (apply conman/query conn queries query params opts)))))
 ```
 
-As you can see from this, the two-arity `query-fn` uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.
+As you can see, the two-arity `query-fn` uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.
 
 
 ### Working with HugSQL
@@ -99,9 +99,9 @@ As you can see from this, the two-arity `query-fn` uses the database that you pa
 HugSQL takes the approach similar to HTML templating for writing SQL queries. The queries are written using plain SQL, and the
 dynamic parameters are specified using Clojure keyword syntax. HugSQL will use the SQL templates to automatically generate the functions for interacting with the database.
 
-Conventionally the queries are placed in the `resources/sql/queries.sql` file. However, once your application grows you may consider splitting the queries into multiple files.
+Conventionally, the queries are placed in the `resources/sql/queries.sql` file. However, once your application grows you may consider splitting the queries into multiple files.
 
-The format for the file can be seen below:
+You can see the format of an example SQL function below:
 
 ```sql
 -- :name create-user! :! :n
@@ -111,7 +111,7 @@ INSERT INTO users
 VALUES (:id, :first_name, :last_name, :email, :pass)
 ```
 
-The name of the generated function is specified using `-- :name` comment. The name is followed by the command and the result flags.
+You specify the name of the generated function using the `-- :name` comment. The name is followed by the command and the result flags.
 
 The following command flags are available:
 
@@ -125,8 +125,8 @@ The result flags are:
 * `:1` - one row as a hash-map
 * `:*` - many rows as a vector of hash-maps
 * `:n` - number of rows affected (inserted/updated/deleted)
-* `:raw` - passthrough an untouched result (default)
+* `:raw` - pass through an untouched result (default)
 
 The query itself is written using plain SQL and the dynamic parameters are denoted by prefixing the parameter name with a colon.
 
-See the [official documentation](http://www.hugsql.org/) for more details.
+See the [official documentation of HugSQL](http://www.hugsql.org/) for more details.

@@ -361,7 +361,7 @@ CREATE TABLE guestbook
 (id INTEGER PRIMARY KEY AUTOINCREMENT,
  name VARCHAR(30),
  message VARCHAR(200),
- timestamp TIMESTAMP(7));
+ timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP);
 ```
 
 The guestbook table will store all the fields describing the message, such as the name of the
@@ -432,8 +432,7 @@ Now that our model is all set up, let's reload the application, and test our que
 (def query-fn (:db.sql/query-fn state/system))
 
 (query-fn :save-message! {:name      "m1"
-                          :message   "hello world"
-                          :timestamp (java.util.Date.)})
+                          :message   "hello world"})
 ;; => 1
 
 (query-fn :get-messages {})

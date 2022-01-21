@@ -1,4 +1,4 @@
-This section provides links to online resources, books, and development environments for getting started Clojure.
+This section provides links to online resources, books, and development environments for getting started with Clojure.
 
 ### Online Clojure Guides
 
@@ -30,9 +30,10 @@ This section provides links to online resources, books, and development environm
 
 ### IDE Support
 
-There are a number of IDEs to choose from for Clojure development.
+There is a number of IDEs to choose from for Clojure development.
 
-* [Emacs](http://clojure-doc.org/articles/tutorials/emacs.html) - currently the most popular IDE choice for Clojure.
+* [Emacs](http://clojure-doc.org/articles/tutorials/emacs.html) - currently the most popular IDE for Clojure.
 * [IntelliJ](http://www.jetbrains.com/idea/download/) - IntelliJ provides an excellent Clojure development environment via the [Cursive plugin](http://cursiveclojure.com/).
-* [Visual Studio Code](https://code.visualstudio.com/) - Extensible editor featuring [Calva](https://github.com/BetterThanTomorrow/calva) plugin available from the editor Plugin Marketplace.
-* [Vim Iced](https://github.com/liquidz/vim-iced) - Full featured Clojure editing for Vim
+* [Visual Studio Code](https://code.visualstudio.com/) - Extensible editor featuring the [Calva](https://github.com/BetterThanTomorrow/calva) plugin available from the editor Plugin Marketplace.
+* [Vim Iced](https://github.com/liquidz/vim-iced) - Full-featured Clojure editing for Vim.
+* [Clojure Sublimed](https://github.com/tonsky/Clojure-Sublimed) - a Clojure support package for [Sublime Text](https://www.sublimetext.com/).
