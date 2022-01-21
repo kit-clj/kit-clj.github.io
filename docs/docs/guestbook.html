@@ -202,7 +202,7 @@ cd guestbook
 &#40;id INTEGER PRIMARY KEY AUTOINCREMENT,
  name VARCHAR&#40;30&#41;,
  message VARCHAR&#40;200&#41;,
- timestamp TIMESTAMP&#40;7&#41;&#41;;
+ timestamp TIMESTAMP DEFAULT CURRENT&#95;TIMESTAMP&#41;;
 </code></pre><p>The guestbook table will store all the fields describing the message, such as the name of the commenter, the content of the message, and a timestamp. Next, let's replace the contents of the <code>&lt;date&gt;-add-guestbook-table.down.sql</code> file accordingly:</p><pre><code class="sql">DROP TABLE IF EXISTS guestbook;
 </code></pre><p>Migrations will be run automatically using the configuration found in <code>system.edn</code>:</p><pre><code class="clojure">:db.sql/migrations {:store :database,
                      :db {:datasource #ig/ref :db.sql/connection},
@@ -237,8 +237,7 @@ SELECT &#42; FROM guestbook
 &#40;def query-fn &#40;:db.sql/query-fn state/system&#41;&#41;
 
 &#40;query-fn :save-message! {:name      &quot;m1&quot;
-                          :message   &quot;hello world&quot;
-                          :timestamp &#40;java.util.Date.&#41;}&#41;
+                          :message   &quot;hello world&quot;}&#41;
 ;; =&gt; 1
 
 &#40;query-fn :get-messages {}&#41;
