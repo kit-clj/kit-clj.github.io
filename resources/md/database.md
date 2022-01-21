@@ -43,14 +43,12 @@ The default configuration runs any new migrations on startup, but this can be ch
 Migrations can also be run via the REPL. The `migratus.core` namespace provides the following
 helper functions:
 
-* `(migratus.core/reset-db)` - resets the state of the database
-* `(migratus.core/migrate)` - runs the pending migrations
-* `(migratus.core/rollback)` - rolls back the last set of migrations
-* `(migratus.core/create-migration "add-guestbook-table")` - creates the up/down migration files with the given name
+* `(migratus.core/reset (:db.sql/migrations state/system))` - resets the state of the database
+* `(migratus.core/migrate (:db.sql/migrations state/system))` - runs the pending migrations
+* `(migratus.core/rollback (:db.sql/migrations state/system))` - rolls back the last set of migrations
+* `(migratus.core/create-migration (:db.sql/migrations state/system) "add-guestbook-table")` - creates the up/down migration files with the given name
 
-**important**: the database connection must be initialized before migrations can be run in the REPL
-
-Please refer to the [Database Migrations](/docs/migrations.html) section for more details.
+**Important**: the database connection must be initialized before migrations can be run in the REPL
 
 ### SQL Queries
 
