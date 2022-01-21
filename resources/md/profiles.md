@@ -15,7 +15,7 @@ Additional profiles:
 - `+xtdb` - Adds the `kit-xtdb` lib
 - `+hato` - Adds the `kit-hato` lib
 - `+metrics` - Adds the `kit-metrics` lib
-- `+nrepl` - Adds the `kit-nrepl` lib, removes the `kit-repl` lib
+- `+nrepl` - Adds the `kit-nrepl` lib, removes the `kit-repl` lib. Note that you do not need this profile to use nREPL during development.
 - `+quartz` - Adds the `kit-quartz` lib
 - `+redis` - Adds the `kit-redis` lib
 - `+selmer` - Adds the `kit-selmer` lib
@@ -40,7 +40,7 @@ clojure -X:new :template io.github.kit-clj :name yourname/app :args '[+selmer +x
 - `kit-xtdb` - Simple binding to connect to a [XTDB](https://xtdb.com/) database node
 - `kit-hato` - HTTP client using [hato](https://github.com/gnarroway/hato)
 - `kit-metrics` - Configurable metrics using [iapetos](https://github.com/clj-commons/iapetos)
-- `kit-nrepl` - [nREPL](https://github.com/nrepl/nrepl) component
+- `kit-nrepl` - [nREPL](https://github.com/nrepl/nrepl) component. Note that you do not need this library to use nREPL during development.
 - `kit-quartz` - Scheduler using [cronut](https://github.com/troy-west/cronut) as an integrant binding for [quartz](http://www.quartz-scheduler.org/). Exposes the `cronut` API, simply some extensions for `aero` and utilities
 - `kit-redis` - An extension of [core.cache](https://github.com/clojure/core.cache) for Redis via [carmine](https://github.com/ptaoussanis/carmine)
 - `kit-repl` - Socket REPL integrant binding

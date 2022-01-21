@@ -29,11 +29,11 @@ Keeping the business logic pure ensures that we can reason about it and test it 
 
 ### Integrant Overview
 
-At the core of Kit is [Integrant](https://github.com/weavejester/integrant). It is used to manage component lifecycle In theory, each edge (element that performs input/output operations) of your library should be defined as an integrant component. If you are familiar with [component](https://github.com/stuartsierra/component) or [mount](https://github.com/tolitius/mount) the concepts introduced by integrant will sound similar.
+At the core of Kit is [Integrant](https://github.com/weavejester/integrant). It is used to manage component lifecycle. In theory, each edge (element that performs input/output operations) of your library should be defined as an Integrant component. If you are familiar with [component](https://github.com/stuartsierra/component) or [mount](https://github.com/tolitius/mount), the concepts introduced by Integrant will sound similar.
 
-In kit, your integrant components are defined in the `system.edn` file. This file is read in and parsed through [aero](https://github.com/juxt/aero) allowing for some additional reader macros. This configuration tells integrant the parameters to pass each component on initialization. Each key is a separate component and must have an initialize method defined in your code for the system to start properly.
+In Kit, your Integrant components are defined in the `system.edn` file. This file is read and parsed through [aero](https://github.com/juxt/aero) allowing for some additional reader macros. This configuration tells Integrant the parameters to pass each component on initialization. Each key is a separate component and must have an initialize method defined in your code for the system to start properly.
 
-The full lifecycle of an integrant component is:
+The full lifecycle of an Integrant component is:
 
 1) `prep`
 2) `init`
@@ -41,7 +41,7 @@ The full lifecycle of an integrant component is:
 4) `resume`
 5) `halt` (stop and discard state)
 
-Each of these have associated multimethod functions in integrant, e.g. from the kit redis cache
+Each of these have associated multimethod functions in Integrant, e.g. from the kit redis cache
 
 ```clojure
 ;; On initialize we create the cache with the initial configuration
@@ -65,7 +65,7 @@ For more detail, the [Integrant readme](https://github.com/weavejester/integrant
 
 For convenience, the generated `user.clj` file requires in a few helper functions from `integrant.repl`.
 
-The most useful ones are
+The most useful ones are:
 
 ```clojure
 (go) ;; used to start your application from an uninitialized state
@@ -91,7 +91,7 @@ This function uses the test profile regardless of your environment, allowing you
 
 ### Accessing Components
 
-Now that we've discussed at how Integrant works, let's see how components managed by Integrant can be accessed by the controllers. Let's say wee have some SQL queries defined, and added the following entry in `resources/system.edn`:
+Now that we've discussed how Integrant works, let's see how components managed by Integrant can be accessed by the controllers. Let's say we have some SQL queries defined, and added the following entry in `resources/system.edn`:
 
 ```clojure
 :db.sql/query-fn
@@ -100,7 +100,7 @@ Now that we've discussed at how Integrant works, let's see how components manage
  :filename "sql/queries.sql"}
 ```
 
-Above configuraiton defines a component called `:db.sql/query-fn` responsible for instantiating query functions using the template found in the `resources/sql/queries.sql` file. The component must be explicitly referenced by the components that use it. For example, if we wanted to access SQL queries from the `:reitit.routes/pages` component then we'd have to reference it as follows:
+The above configuration defines a component called `:db.sql/query-fn` responsible for instantiating query functions using the template found in the `resources/sql/queries.sql` file. The component must be explicitly referenced by the components that use it. For example, if we wanted to access SQL queries from the `:reitit.routes/pages` component then we'd have to reference it as follows:
 
 ```clojure
 :reitit.routes/pages
@@ -121,7 +121,7 @@ With the above wiring in place, the `:query-fn` key referencing `:db.sql/query-f
   [base-path (route-data opts) (page-routes opts)])
 ```
 
-The multimethod attaches the `opts` to the reeuest map by calling `(route-data opts)`, and the request handle function can now access the `:query-fn` key from the request map by calling `(utils/route-data request)` as follows:
+The multimethod attaches the `opts` to the request map by calling `(route-data opts)`, and the request handle function can now access the `:query-fn` key from the request map by calling `(utils/route-data request)` as follows:
 
 ```clojure
 
