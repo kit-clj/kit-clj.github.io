@@ -416,8 +416,8 @@ denoted using `:` notation. Let's replace the existing queries with some of our 
 -- :name save-message! :! :n
 -- :doc creates a new message
 INSERT INTO guestbook
-(name, message, timestamp)
-VALUES (:name, :message, :timestamp)
+(name, message)
+VALUES (:name, :message)
 
 -- :name get-messages :? :*
 -- :doc selects all available messages
