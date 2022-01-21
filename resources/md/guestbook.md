@@ -416,8 +416,8 @@ denoted using `:` notation. Let's replace the existing queries with some of our 
 -- :name save-message! :! :n
 -- :doc creates a new message
 INSERT INTO guestbook
-(name, message)
-VALUES (:name, :message)
+(name, message, timestamp)
+VALUES (:name, :message, :timestamp)
 
 -- :name get-messages :? :*
 -- :doc selects all available messages
@@ -496,7 +496,7 @@ We'll create a new controller that will be responsible for saving new messages i
           (empty? message)
           (assoc-in [:flash :errors :message] "message is required"))
         (do
-          (query-fn :save-message! {:name name :message message})
+          (query-fn :save-message! {:name name :message message :timestamp (java.util.Date.)})
           (http-response/found "/")))
       (catch Exception e
         (log/error e "failed to save message!")
