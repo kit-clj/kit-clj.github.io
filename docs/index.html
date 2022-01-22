@@ -104,7 +104,8 @@
 
 <div class="column-wrapper" id="easy-start">
   <p>Using <a href="https://clojure.org/guides/getting_started">Clojure tools</a>, getting started is as easy as:</p>
-<pre class="bash hljs"><span class="prompt">$ </span><span class="cmd">clojure -X:new :template io.github.kit-clj :name yourname/guestbook</span>
+  <pre class="bash hljs"><span class="prompt">$ </span><span class="cmd">clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag "v1.2.381"}' :as new</span>
+  <pre class="bash hljs"><span class="prompt">$ </span><span class="cmd">clojure -Tnew create :template io.github.kit-clj :name yourname/guestbook</span>
 </div>
 
     </div>
