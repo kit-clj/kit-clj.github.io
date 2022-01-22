@@ -1,6 +1,6 @@
 ## Profiles
 
-Running `clojure -X:new :template io.github.kit-clj :name yourname/app` will create an application using the default profile template.
+Running `clojure -Tnew create :template io.github.kit-clj :name yourname/app` will create an application using the default profile template.
 However, if you would like to attach further functionality to your template you can append profile hints for the extended functionality.
 
 Default libs included with no profile specified:
@@ -25,13 +25,13 @@ Additional profiles:
 To add a profile simply pass it as an argument after your application name, eg:
 
 ```
-clojure -X:new :template io.github.kit-clj :name yourname/app :args '[+selmer]'
+clojure -Tnew create :template io.github.kit-clj :name yourname/app :args '[+selmer]'
 ```
 
 You can also mix multiple profiles when creating the application, eg:
 
 ```
-clojure -X:new :template io.github.kit-clj :name yourname/app :args '[+selmer +xtdb]'
+clojure -Tnew create :template io.github.kit-clj :name yourname/app :args '[+selmer +xtdb]'
 ```
 
 ### Libraries
