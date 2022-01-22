@@ -36,13 +36,10 @@ chmod +x linux-install-1.10.3.986.sh
 sudo ./linux-install-1.10.3.986.sh
 ```
 
-For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfield/clj-new) configured either in `~/.clojure/deps.edn` or `~/.config/clojure/deps.edn` as follows:
+For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfield/clj-new) installed as follows:
 
 ```
-{:aliases
- {:new {:extra-deps {com.github.seancorfield/clj-new {:mvn/version "1.2.362"}}
-        :exec-fn clj-new/create
-        :exec-args {:template "app"}}}}
+clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag "v1.2.381"}' :as new
 ```
 
 Note: If you already have configuration in your `deps.edn` file, add the new key under aliases. Make sure the line with `{:aliases` is uncommented, i.e. without `;;`.
@@ -55,7 +52,7 @@ Once you have the Clojure CLI installed, you can run the following commands in y
 initialize your application:
 
 ```
-clojure -X:new :template io.github.kit-clj :name kit/guestbook
+clojure -Tnew create :template io.github.kit-clj :name kit/guestbook
 cd guestbook
 ```
 
