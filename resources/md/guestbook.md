@@ -42,8 +42,6 @@ For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfi
 clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag "v1.2.381"}' :as new
 ```
 
-Note: If you already have configuration in your `deps.edn` file, add the new key under aliases. Make sure the line with `{:aliases` is uncommented, i.e. without `;;`.
-
 For information on customization options, for example on how to change your install location, see [the official docs here](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools).
 
 ### Creating a new application
