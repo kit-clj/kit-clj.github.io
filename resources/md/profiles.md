@@ -7,11 +7,9 @@ Default libs included with no profile specified:
 
 - `kit-core`
 - `kit-undertow`
-- `kit-repl`
 
 Additional profiles:
 
-- `+bare` - Only includes the `kit-core` and `kit-undertow` libraries as the foundation
 - `+xtdb` - Adds the `kit-xtdb` lib
 - `+hato` - Adds the `kit-hato` lib
 - `+metrics` - Adds the `kit-metrics` lib
@@ -19,16 +17,17 @@ Additional profiles:
 - `+quartz` - Adds the `kit-quartz` lib
 - `+redis` - Adds the `kit-redis` lib
 - `+selmer` - Adds the `kit-selmer` lib
+- `+socket-repl` - Adds the `kit-repl` lib
 - `+sql` - Adds the `kit-sql` and `kit-postgres` libs
-- `+full` - Adds the libs `kit-xtdb`, `kit-hato`, `kit-metrics`, `kit-quartz`, `kit-redis`, `kit-selmer`, and `kit-sql`
+- `+full` - Adds the libs `kit-xtdb`, `kit-hato`, `kit-metrics`, `kit-quartz`, `kit-redis`, `kit-repl`, `kit-selmer`, and `kit-sql`
 
-To add a profile simply pass it as an argument after your application name, eg:
+To add a profile, pass it as an argument after your application name, e.g.:
 
 ```
 clojure -Tnew create :template io.github.kit-clj :name yourname/app :args '[+selmer]'
 ```
 
-You can also mix multiple profiles when creating the application, eg:
+You can also mix multiple profiles when creating the application, e.g.:
 
 ```
 clojure -Tnew create :template io.github.kit-clj :name yourname/app :args '[+selmer +xtdb]'
