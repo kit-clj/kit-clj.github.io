@@ -8,7 +8,7 @@ Full configuration options look like:
 
 ```clojure
 :repl/server
-{:address "0.0.0.0"
+{:address "127.0.0.1"
  :port    7000
  :name    "main"}
 ```
