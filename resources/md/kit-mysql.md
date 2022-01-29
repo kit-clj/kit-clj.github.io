@@ -1,0 +1,1 @@
+This library provides the JDBC driver for working with MySQL.
