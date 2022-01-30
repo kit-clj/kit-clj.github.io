@@ -18,6 +18,7 @@ This section provides a short list of steps that you need to complete to start C
 6. Open your project's root page ([http://localhost:3000](http://localhost:3000) by default) in your preferred browser.
 7. In the `shadow-cjls` REPL, run `(shadow.cljs.devtools.api/repl :app)`.
 8. Verify that everything is wired correctly by running `(js/alert "Hi")` in your `shadow-cljs` REPL. This should display an alert in your browser window.
+9. You can now write your ClojureScript code by editing the `core.cljs` file inside the `src/cljs` directory.
 
 ### Adding ClojureScript Support
 
