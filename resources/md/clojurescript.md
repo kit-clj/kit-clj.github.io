@@ -1,4 +1,4 @@
-ClojureScript is an excellent alternative to JavaScript for client side application logic. Some of the advantages of using ClojureScript include:
+ClojureScript is an excellent alternative to JavaScript for client-side application logic. Some of the advantages of using ClojureScript include:
 
 * use the same language on both the client and the server
 * share common code between the front-end and back-end
@@ -6,16 +6,28 @@ ClojureScript is an excellent alternative to JavaScript for client side applicat
 * immutable data structures
 * powerful standard library
 
+### Quick Start
+
+This section provides a short list of steps that you need to complete to start ClojureScript development with Kit. See the sections below for details.
+
+1. Add the `:kit/cljs` module by running `(kit/install-module :kit/cljs)`.
+2. Restart your application.
+3. Install JavaScript dependencies by running `npm install` in your project's root directory.
+4. Run the `shadow-cljs` compiler in *watch* mode by executing `npx shadow-cljs watch app`.
+5. Connect to you `shadow-cjls` nREPL on port 7002 using your preferred editor.
+6. Open your project's root page ([http://localhost:3000](http://localhost:3000) by default) in your preferred browser.
+7. In the `shadow-cjls` REPL, run `(shadow.cljs.devtools.api/repl :app)`.
+8. Verify that everything is wired correctly by running `(js/alert "Hi")` in your `shadow-cljs` REPL. This should display an alert in your browser window.
+
 ### Adding ClojureScript Support
 
-ClojureScript support can be added via the official `:kit/cljs` module. Simply run `(kit/install-module :kit/cljs)` in order to add the assets. this will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html).
+ClojureScript support can be added via the official `:kit/cljs` module. Run `(kit/install-module :kit/cljs)` to add the assets. This will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html). Be sure to restart the application afterwards.
 
 ### Managing JavaScript and ClojureScript dependencies
 
 #### NPM modules
 
-NPM is used to manage JavaScript modules used in the project. Make sure that you have NPM tools installed for doing that. When the module is added, a `package.json` file
-will be created with the following content:
+NPM is used to manage JavaScript modules in the project. Make sure that you have NPM installed. Adding the `:kit/cljs` module will create a `package.json` file with the following content:
 
 ```
 {
@@ -29,7 +41,7 @@ will be created with the following content:
 }
 ```
 
-Make sure to run `npm install` in order to install the modules above before starting shadow-cljs compiler.
+Make sure to run `npm install` to install the modules above before starting the shadow-cljs compiler.
 
 #### ClojureScript libraries
 
@@ -50,17 +62,19 @@ ClojureScript libraries are managed using the `:dependencies` key in the `shadow
 ```
 ### Running the Compiler
 
-The easiest way to develop ClojureScript applications is to run the compiler in `watch` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. To start the compiler in this mode simply run:
+The easiest way to develop ClojureScript applications is to run the compiler in `watch` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. 
+
+To start the compiler in this mode, run:
 
 ```
 npx shadow-cljs watch app
 ```
 
-This will start shadow-cljs compiler and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically reloaded on the page.
+This will start shadow-cljs and connect a browser REPL. Any changes you make in ClojureScript source will now be automatically recompiled.
 
-ClojureScript will be compiled with production settings when the `uberjar` task is run. This task will run the following function to compile ClojureScript for release:
+When you run the `uberjar` task, ClojureScript will be compiled with production settings according to the following function from your `build.clj`:
 
-```
+```clojure
  (defn build-cljs []
    (println "npx shadow-cljs release app...")
    (let [{:keys [exit], :as s} (sh "npx" "shadow-cljs" "release" "app")]
@@ -69,11 +83,22 @@ ClojureScript will be compiled with production settings when the `uberjar` task 
 
 ### shadow-cljs with nREPL
 
-To connect your editor to a ClojureScript REPL make sure that you have the `:nrepl` key in `shadow-cljs.edn`. This key defaults to port `7002`. When the compiler starts, it will open nREPL on the specified port.
+By default, running the `npx shadow-cljs watch app` command will also enable nREPL on port 7002. This is governed by the `:nrepl {:port 7002}` key present in your `shadow-cljs.edn`. 
 
-Once you run `npx shadow watch app`, then you'll be able to connect to its nREPL at `localhost:7002`. Once connected, you simply have to run `(shadow.cljs.devtools.api/repl :app)` and the ClojureScript nREPL will become available. You can test that everything is working correctly by running `(js/alert "Hi")` in the REPL. This should pop up an alert in the browser.
+After running shadow-cljs, connect to nREPL using your preferred editor and run `(shadow.cljs.devtools.api/repl :app)`. You can now test that everything is running correctly by executing `(js/alert "Hi")` in the REPL. This should display an alert in the browser. To exit the ClojureScript nREPL run `:cljs/quit`.
 
-To exit the ClojureScript nREPL you have to run `:cljs/quit` in the nREPL.
+Note that for the JavaScript alert to work, you must have the homepage of your project open in a browser window. Otherwise your REPL will display the following error: `No available JS runtime`. This is because of the code needed in the browser to wire JavaScript runtime with shadow-cljs as explained below. 
+
+Installing the `:kit/cljs` module adds that code to your `home.html`:
+
+```html
+  <div id="app"></div>
+  <script src="/js/app.js"></script> 
+```
+
+The first line indicates the mount point of your [Reagent](#reagent) application, defined in `core.cljs` by default.
+
+The second line ensures the `app.js` file, which contains your ClojureScript code compiled to JavaScript, is loaded when you open this page in your browser. This code is required for your REPL to have the direct connection to your browser window, allowing for interactive coding like with regular Clojure code.
 
 ### Interacting with JavaScript
 
@@ -109,7 +134,7 @@ For more examples of ClojureScript synonyms of common JavaScript operations see 
 
 [Reagent](http://reagent-project.github.io/) is the recommended approach for building ClojureScript applications with Kit.
 
-Reagent is backed by [React](http://facebook.github.io/react/) and provides an extremely efficient way to manipulate the DOM using [Hiccup](https://github.com/weavejester/hiccup) style syntax. In Reagent, each UI component is simply a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.
+Reagent is backed by [React](http://facebook.github.io/react/) and provides an extremely efficient way to manipulate the DOM using [Hiccup](https://github.com/weavejester/hiccup) style syntax. In Reagent, each UI component is a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.
 
 A simple Reagent component looks as follows:
 
@@ -124,9 +149,9 @@ Components can also be functions:
   [:label text])
 ```
 
-The values of the components are stored in Reagent atoms. These atoms behave just like regular Clojure atoms, except for one important property. When an atom is updated it causes any components that dereference it to be repainted. Let's take a look at an example.
+The values of the components are stored in Reagent atoms. These atoms behave just like regular Clojure atoms, except for one important property. When an atom is updated, it causes any components that dereference it to be rerendered. Let's take a look at an example.
 
-**Important:** Make sure that you require Reagent atom in the namespace, otherwise regular Clojure atoms will be used and components will not be repainted on change.
+**Important:** Make sure that you require Reagent atom in the namespace, otherwise regular Clojure atoms will be used and components will not be rerendered on change.
 
 ```clojure
 (ns myapp
@@ -245,14 +270,14 @@ Finally, we'll add functions to match routes and hook into browser navigation:
     (.setEnabled true)))
 ```
 
-When the `hook-browser-navigation!` is called it will hook into page events and call the `match-route` function
+When the `hook-browser-navigation!` is called, it will hook into page events and call the `match-route` function
 when the page navigation event is dispatched.
 
-Please refer to the [official documentation](https://metosin.github.io/reitit/) for further details.
+See [Reitit documentation](https://metosin.github.io/reitit/) for further details.
 
 ### Ajax
 
-ClojureScript module uses [cljs-ajax](https://github.com/JulianBirch/cljs-ajax) for handling Ajax operations.
+ClojureScript module uses [cljs-ajax](https://github.com/JulianBirch/cljs-ajax) to handle Ajax operations.
 
 #### ajax-request
 
@@ -260,7 +285,7 @@ The `ajax-request` is the base request function that accepts the following param
 
 * uri - the URI for the request
 * method - a string representing the HTTP request type, eg: "PUT", "DELETE", etc.
-* format - a keyword indicating the response format, can be either `:raw`, `:json`, `:edn`, or `:transit` and defaults to `:transit`
+* format - a keyword indicating the response format. Can be either `:raw`, `:json`, `:edn`, or `:transit` and defaults to `:transit`
 * handler - success handler, a function that accepts the response as a single argument
 * error-handler - error handler, a function that accepts a map representing the error with keys `:status` and `:status-text`
 * params - a map of params to be sent to the server
@@ -271,7 +296,7 @@ The `GET` and `POST` helpers accept a URI followed by a map of options:
 
 * `:handler` - the handler function for successful operation should accept a single parameter which is the deserialized response
 * `:error-handler` - the handler function for errors, should accept a map with keys `:status` and `:status-text`
-* `:format` - the format for the request can be either `:raw`, `:json`, `:edn`, or `:transit` and defaults to `:transit`
+* `:format` - the format for the request can be either `:raw`, `:json`, `:edn`, or `:transit`, and defaults to `:transit`
 * `:response-format` - the response format. If you leave this blank, it will detect the format from the Content-Type header
 * `:params` - a map of parameters that will be sent with the request
 * `:timeout` - the ajax call's timeout. 30 seconds if left blank
@@ -308,7 +333,7 @@ In the example above, the `handler` will be invoked when the server responds wit
 
 The library attempts to automatically discover the encoding based on the response headers, however the response format can be specified explicitly using the `:response-format` key.
 
-The `error-handler` function is expected to to accept a single parameter that contains the error response. The function will receive the entire response map that contains the status and the description of the error along with any data returned by the server.
+The `error-handler` function is expected to accept a single parameter that contains the error response. The function will receive the entire response map that contains the status and the description of the error along with any data returned by the server.
 
 * `:status` - contains the HTTP status code
 * `:status-text` - contains the textual description of the status

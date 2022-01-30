@@ -2,7 +2,7 @@
 
 ### :db.sql/hikari-connection
 
-This component uses [hikari-cp](https://github.com/tomekw/hikari-cp) and [next-jdbc](https://github.com/seancorfield/next-jdbc)to create a pooled connection to your database.
+This component uses [hikari-cp](https://github.com/tomekw/hikari-cp) and [next-jdbc](https://github.com/seancorfield/next-jdbc) to create a pooled connection to your database.
 
 Sample configuration:
 
