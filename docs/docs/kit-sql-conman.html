@@ -56,27 +56,25 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>Testing</h1>
+      <h1>kit-sql-conman</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#clojure">Clojure</a></li></ol>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:db.sql/connection">:db.sql/connection</a></li><li><a href="#:db.sql/query-fn">:db.sql/query-fn</a></li></ol>
       
       <div id="content">
-        <h3 id="clojure">Clojure</h3><p>Kit sets up a default test harness found in the <code>test</code> directory of the project. It comes supplied with a <code>test-utils</code> namespace that has some handy utilities for testing</p><pre><code>&#40;ns &lt;app-ns&gt;.test-utils
-  &#40;:require
-    &#91;&lt;app-ns&gt;.core :as core&#93;&#41;&#41;
-
-&#40;defn system-state &#91;&#93;
-  &#40;or @core/system state/system&#41;&#41;
-
-&#40;defn system-fixture
-  &#91;&#93;
-  &#40;fn &#91;f&#93;
-    &#40;when &#40;nil? &#40;system-state&#41;&#41;
-      &#40;core/start-app {:opts {:profile :test}}&#41;&#41;
-    &#40;f&#41;&#41;&#41;
-
-</code></pre><p>The <code>system-fixture</code> can be used as a fixture before any tests that require your system to be started. It ensures that the system boots with the test environment.</p><p>You can use <code>system-state</code> to get the current running state of your system. This is handy if you need to reference, access, or override components for individual tests.</p>
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.sql/connection">:db.sql/connection</h3><p>This component uses <a href='https://github.com/luminus-framework/conman'>conman</a> to create a pooled connection to your database. It resolves to the conman connection when referenced.</p><p>It might be useful if you need to create transactions to reference the connection directly when calling your <code>query-fn</code>.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/connection 
+#profile {:prod {:jdbc-url   #env JDBC&#95;URL
+                 :init-size  1
+                 :min-idle   1
+                 :max-idle   8
+                 :max-active 32}
+          :test {:jdbc-url &quot;jdbc:postgresql://localhost/myapp?user=myapp&amp;password=myapp&quot;}
+          :dev  {:jdbc-url &quot;jdbc:postgresql://localhost/myapp?user=myapp&amp;password=myapp&quot;}}
+</code></pre><h3 id=":db.sql/query-fn">:db.sql/query-fn</h3><p>This component binds a connection map from the SQL scripts file you provide it.</p><p>It resolves to a multi-arity <code>conman/query</code> function. The two-arity function takes args <code>query params</code>, e.g. <code>&#40;&#40;:db.sql/query-fn&#41; :get-user {:id 123}&#41;</code>. The three+ arity function takes a DB connection as the first argument, and optionally vararg opts, i.e. <code>conn query params &amp; opts</code>. This could be useful for test transactions, transactional queries.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/query-fn
+ {:conn     #ig/ref :db.sql/connection
+  :options  {}
+  :filename &quot;queries.sql&quot;}
+</code></pre>
       </div>
     </div>
   </div>
@@ -181,7 +179,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/testing.html">
             Testing
           </a>
@@ -293,7 +291,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/kit-sql-conman.html">
             kit-sql-conman
           </a>

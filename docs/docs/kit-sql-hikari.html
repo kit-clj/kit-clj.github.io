@@ -56,27 +56,27 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>Testing</h1>
+      <h1>kit-sql-hikari</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#clojure">Clojure</a></li></ol>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:db.sql/hikari-connection">:db.sql/hikari-connection</a></li></ol>
       
       <div id="content">
-        <h3 id="clojure">Clojure</h3><p>Kit sets up a default test harness found in the <code>test</code> directory of the project. It comes supplied with a <code>test-utils</code> namespace that has some handy utilities for testing</p><pre><code>&#40;ns &lt;app-ns&gt;.test-utils
-  &#40;:require
-    &#91;&lt;app-ns&gt;.core :as core&#93;&#41;&#41;
-
-&#40;defn system-state &#91;&#93;
-  &#40;or @core/system state/system&#41;&#41;
-
-&#40;defn system-fixture
-  &#91;&#93;
-  &#40;fn &#91;f&#93;
-    &#40;when &#40;nil? &#40;system-state&#41;&#41;
-      &#40;core/start-app {:opts {:profile :test}}&#41;&#41;
-    &#40;f&#41;&#41;&#41;
-
-</code></pre><p>The <code>system-fixture</code> can be used as a fixture before any tests that require your system to be started. It ensures that the system boots with the test environment.</p><p>You can use <code>system-state</code> to get the current running state of your system. This is handy if you need to reference, access, or override components for individual tests.</p>
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.sql/hikari-connection">:db.sql/hikari-connection</h3><p>This component uses <a href='https://github.com/tomekw/hikari-cp'>hikari-cp</a> and <a href='https://github.com/seancorfield/next-jdbc'>next-jdbc</a>to create a pooled connection to your database.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/connection 
+#profile {:prod {:jdbc-url      #env JDBC&#95;URL
+                 :auto-commit        true
+                 :read-only          false
+                 :connection-timeout 30000
+                 :validation-timeout 5000
+                 :idle-timeout       600000
+                 :max-lifetime       1800000
+                 :minimum-idle       10
+                 :maximum-pool-size  10
+                 :pool-name          &quot;pool-name&quot;
+                 :username           &quot;username&quot;
+                 :password           &quot;password&quot;
+                 :driver-class-name  &quot;com.mysql.jdbc.Driver&quot;}}
+</code></pre>
       </div>
     </div>
   </div>
@@ -181,7 +181,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/testing.html">
             Testing
           </a>
@@ -299,7 +299,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/kit-sql-hikari.html">
             kit-sql-hikari
           </a>
