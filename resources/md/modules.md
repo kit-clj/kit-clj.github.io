@@ -65,8 +65,6 @@ Next, the module specifies the actions that will be performed. The first action,
 
 The other configuration action is called `:injections` and specifies code that will be injected into existing files within the project. In order to provide support for rendering HTML templates, the module must update Integrant system configuration by adding a reference for new routes to `system.edn`, add new dependencies to `deps.edn`, and finally require the namespace that contains the routes for the pages in the core namespace of the project. The `:action` values in injections depend on the types of assets being manipulated.
 
----
-
 `:edn` injections
 
 * `:append` - appends the value at the specified path, the value at the path is assumed to be a collection
@@ -89,8 +87,6 @@ The other configuration action is called `:injections` and specifies code that w
  :value  {selmer/selmer {:mvn/version "1.12.49"}
          luminus/ring-ttl-session {:mvn/version "0.3.3"}}}
 ```
-
----
 
 `:clj` injections
 
@@ -125,8 +121,6 @@ The other configuration action is called `:injections` and specifies code that w
  :action :append-build-task-call
  :value  (build-cljs)}
 ```
-
----
 
 HTML injections
 
