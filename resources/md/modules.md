@@ -1,6 +1,8 @@
 ## Kit Modules
 
-Kit modules are templates that can be applied to an existing project using [kit-generator](https://github.com/kit-clj/kit/tree/master/libs/kit-generator) library. Modules are managed using git repositories, and official modules can be found [here](https://github.com/kit-clj/modules). Let's take a brief look at what a module repository looks like.
+Kit modules are templates that can be applied to an existing project using the [kit-generator](https://github.com/kit-clj/kit/tree/master/libs/kit-generator). In that, they are different from profiles, which you can apply only when creating a new project. 
+
+Modules are managed using git repositories. You can find the official modules [here](https://github.com/kit-clj/modules). Let's take a brief look at what a module repository looks like.
 
 A module repository must contain a `modules.edn` file describing the modules that are provided. For example, here are the official modules provided by Kit:
 
@@ -10,15 +12,21 @@ A module repository must contain a `modules.edn` file describing the modules tha
  {:kit/html
   {:path "html"
    :doc "adds support for HTML templating using Selmer"}
+  :kit/metrics
+  {:path "metrics"
+   :doc "adds support for metrics using prometheus through iapetos"}
   :kit/sqlite
   {:path "sqlite"
    :doc "adds support for SQLite embedded database"}
   :kit/cljs
   {:path "cljs"
-   :doc "adds support for cljs using shadow-cljs"}}}
+   :doc "adds support for cljs using shadow-cljs"}
+  :kit/nrepl
+  {:path "nrepl"
+   :doc "adds support for nREPL"}}}
 ```
 
-As we can see above, the official repository contains three modules. Let's take a look at the [`:kit/html`](https://github.com/kit-clj/modules/tree/master/html) module to see how it works. This module contains a `config.edn` file and a folder called `assets`. Let's take a look at the configuration for the module:
+As you can see above, the official repository contains five modules. Let's take a look at the [`:kit/html`](https://github.com/kit-clj/modules/tree/master/html) module to see how it works. This module contains a `config.edn` file and a folder called `assets`. It has the following configuration:
 
 ```clojure
 {:default
@@ -49,13 +57,15 @@ As we can see above, the official repository contains three modules. Let's take 
                        :value  ["[<<ns-name>>.web.routes.pages]"]}]}}}
 ```
 
-We can see that the module has a `:default` profile. Kit module profiles allow providing variations of a module with different configurations. For example, a database module could have different profiles for different types of databases. In case of HTML, we only need a single profile.
+We can see that the module has a `:default` profile. Kit module profiles allow us to provide variations of a module with different configurations. For example, a database module could have different profiles for different types of databases. In case of HTML, we only need a single profile.
 
 The`:require-restart?` key specifies that the runtime needs to be restarted for changes to take effect. This is necessary for modules that add Maven dependencies necessitating JVM restarts to be loaded.
 
-Next, the module specifies the actions that will be performed. The first action called `:assets` specifies new assets that will be added to the project. These are template files that will be read from the `assets` folder and injected in the project.
+Next, the module specifies the actions that will be performed. The first action, called `:assets`, specifies new assets that will be added to the project. These are template files that will be read from the `assets` folder and injected in the project.
 
 The other configuration action is called `:injections` and specifies code that will be injected into existing files within the project. In order to provide support for rendering HTML templates, the module must update Integrant system configuration by adding a reference for new routes to `system.edn`, add new dependencies to `deps.edn`, and finally require the namespace that contains the routes for the pages in the core namespace of the project. The `:action` values in injections depend on the types of assets being manipulated.
+
+---
 
 `:edn` injections
 
@@ -79,6 +89,8 @@ The other configuration action is called `:injections` and specifies code that w
  :value  {selmer/selmer {:mvn/version "1.12.49"}
          luminus/ring-ttl-session {:mvn/version "0.3.3"}}}
 ```
+
+---
 
 `:clj` injections
 
@@ -114,9 +126,12 @@ The other configuration action is called `:injections` and specifies code that w
  :value  (build-cljs)}
 ```
 
-html injections
+---
+
+HTML injections
 
 * `:append` - appends a Hiccup form to the target identified by enlive selectors in the specified HTML resource
+
 ```clojure
 {:type   :html
  :path   "resources/html/home.html"
