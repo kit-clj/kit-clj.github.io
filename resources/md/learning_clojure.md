@@ -37,3 +37,7 @@ There is a number of IDEs to choose from for Clojure development.
 * [Visual Studio Code](https://code.visualstudio.com/) - Extensible editor featuring the [Calva](https://github.com/BetterThanTomorrow/calva) plugin available from the editor Plugin Marketplace.
 * [Vim Iced](https://github.com/liquidz/vim-iced) - Full-featured Clojure editing for Vim.
 * [Clojure Sublimed](https://github.com/tonsky/Clojure-Sublimed) - a Clojure support package for [Sublime Text](https://www.sublimetext.com/).
+
+* [Clojure LSP](https://clojure-lsp.io/) - Clojure LSP server. Allows you to add IDE-like capabilities (finding references, autocompletion) to many text editors. Use it in combination with an editor-specific client, like the ones listed below. Note that Calva for Visual Studio Code already includes LSP.
+* [LSP mode for Emacs](https://emacs-lsp.github.io/lsp-mode/tutorials/clojure-guide/)
+* [LSP client for Sublime Text](https://github.com/sublimelsp/LSP)
