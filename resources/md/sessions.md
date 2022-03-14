@@ -72,3 +72,25 @@ Cookies can contain the following additional attributes in addition to the `:val
 * :http-only - restrict the cookie to HTTP if true (not accessible via e.g. JavaScript)
 * :max-age - the number of seconds until the cookie expires
 * :expires - a specific date and time the cookie expires
+
+### Cookie encoding
+
+Java objects such as dates must be explicitly encoded when stored in cookie sessions.
+The following example illustrates how to use [tick](https://github.com/juxt/tick) library
+to add a reader for a zoned date-time:
+
+```clojure
+(defn wrap-base
+  [{:keys [cookie-opts]}]
+  (let [{:keys [cookie-secret cookie-name cookie-default-max-age]} cookie-opts
+        cookie-store (session.cookie/cookie-store {:key     (.getBytes ^String cookie-secret)
+                                                   :readers {'inst                 (fn [x]
+                                                                                     (some-> x (tick/parse) (tick/inst)))
+                                                             'time/zoned-date-time #'tick/zoned-date-time}})]
+    (fn [handler]
+      (cond-> handler
+              true (session/wrap-session {:store        cookie-store
+                                          :cookie-name  cookie-name
+                                          :cookie-attrs {:max-age cookie-default-max-age}})
+              true (cookies/wrap-cookies)))))
+```
