@@ -56,17 +56,14 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>kit-redis</h1>
+      <h1>Editor Configuration</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:cache/redis">:cache/redis</a></li></ol>
+      <ol class="contents"><li><a href="#configuring_emacs_and_cider_for_kit">Configuring Emacs and CIDER for Kit</a></li></ol>
       
       <div id="content">
-        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":cache/redis">:cache/redis</h3><p>This component connects to a Redis cache cluster using <a href='https://github.com/ptaoussanis/carmine'>carmine</a> and provides a <a href='https://github.com/clojure/core.cache'>clojure.core.cache</a> interface over it.</p><p>Sample configuration:</p><pre><code class="clojure">{:ttl  3600
- :conn {:pool {}
-        :spec #profile {:dev  {:host &quot;localhost&quot; :port 6379}
-                        :test {:host &quot;localhost&quot; :port 6379}
-                        :prod {:uri #env REDIS&#95;URI}}}}
+        <h3 id="configuring&#95;emacs&#95;and&#95;cider&#95;for&#95;kit">Configuring Emacs and CIDER for Kit</h3><p>In order to pick up correct source paths during development, CIDER needs a <code>.dir-locals.el</code> file in the root directory containing the following:</p><pre><code>&#40;&#40;clojure-mode . &#40;&#40;cider-preferred-build-tool . clojure-cli&#41;
+&#40;cider-clojure-cli-aliases . &quot;:dev:test&quot;&#41;&#41;&#41;&#41;
 </code></pre>
       </div>
     </div>
@@ -214,7 +211,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/editors.html">
             Editor Configuration
           </a>
@@ -272,7 +269,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/kit-redis.html">
             kit-redis
           </a>
