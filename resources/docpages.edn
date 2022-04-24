@@ -21,6 +21,7 @@
  ["useful_libraries.md"   "Useful Libraries"        "topic"]
  ["apps.md"               "Sample Applications"     "topic"]
  ["upgrading.md"          "Upgrading"               "topic"]
+ ["editors.md"            "Editor Configuration"    "topic"]
  ["learning_clojure.md"   "Clojure Resources"       "topic"]
 
  ["kit-core.md"           "kit-core"                  "lib"]
