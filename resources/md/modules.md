@@ -15,9 +15,9 @@ A module repository must contain a `modules.edn` file describing the modules tha
   :kit/metrics
   {:path "metrics"
    :doc "adds support for metrics using prometheus through iapetos"}
-  :kit/sqlite
-  {:path "sqlite"
-   :doc "adds support for SQLite embedded database"}
+  :kit/sql
+  {:path "sql"
+   :doc "adds support for SQL. Available profiles [ :postgres :sqlite ]. Default profile :sqlite"}
   :kit/cljs
   {:path "cljs"
    :doc "adds support for cljs using shadow-cljs"}

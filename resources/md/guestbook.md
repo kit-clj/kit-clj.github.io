@@ -253,7 +253,7 @@ Since our application needs to serve some HTML content, let's add the official H
 (kit/list-modules)
 ;; =>
 ;; :kit/html - adds support for HTML templating using Selmer
-;; :kit/sqlite - adds support for the SQLite embedded database
+;; :kit/sql - adds support for SQL. Available profiles [ :postgres :sqlite ]. Default profile :sqlite
 ;; :kit/cljs - adds support for cljs using shadow-cljs
 ;; nil
 
@@ -302,10 +302,10 @@ The module also helped generate some routes for us under `kit.guestbook.web.rout
 
 #### Adding a database
 
-Similarly to the way we installed the HTML module, we can add a SQLite module called `:kit/sqlite`.
+Similarly to the way we installed the HTML module, we can add a SQL module with SQLite called `:kit/sql`. The default profile includes SQLite out of the box, but if we wanted to be explicit we could also write `(kit/install-module :kit/sql {:profile :sqlite})`
 
 ```clojure
-(kit/install-module :kit/sqlite)
+(kit/install-module :kit/sql)
 ;; updating file: resources/system.edn
 ;; injecting
 ;;  path: [:db.sql/connection] 
@@ -327,7 +327,7 @@ Similarly to the way we installed the HTML module, we can add a SQLite module ca
 ;; applying
 ;;  action: :append-requires 
 ;;  value: [[kit.edge.db.sql]]
-;; sqlite installed successfully!
+;; sql installed successfully!
 ;; restart required!
 ```
 
