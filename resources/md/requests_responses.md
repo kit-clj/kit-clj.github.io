@@ -87,7 +87,7 @@ The middleware is found in the `<project-ns>.web.middleware.formats` namespace o
 Muuntaja will use the `Content-Type` header to infer the content of the request, and the
 `Accept` header to infer the response format.
 
-By default we can see we already have some time serialization and deserialization handlers provided by [luminus-transit.time](https://github.com/luminus-framework/luminus-transit) to help us with reader and writing Java time objects.
+By default we can see we already have some time serialization and deserialization handlers provided by [luminus-transit.time](https://github.com/luminus-framework/luminus-transit) to help us with reading and writing Java time objects.
 
 ### Setting headers
 
