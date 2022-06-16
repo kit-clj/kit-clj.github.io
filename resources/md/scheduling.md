@@ -17,6 +17,7 @@ There is a reference to a `:myapp.core/daily-job` which will should be defined a
 First in our `system.edn` we will define the component.
 
 ```clojure
+:myapp.core/daily-job
 {:identity          "myapp.core/daily-job"
  :description       "Runs once a day and prints hi"
  :recover?          true
