@@ -46,7 +46,7 @@ helper functions:
 * `(migratus.core/reset (:db.sql/migrations state/system))` - resets the state of the database by rolling back all the applied migrations (by using the appropriate down-scripts), and running all migrations (up-scripts)
 * `(migratus.core/migrate (:db.sql/migrations state/system))` - runs the pending migrations
 * `(migratus.core/rollback (:db.sql/migrations state/system))` - rolls back the last set of migrations
-* `(migratus.core/create-migration (:db.sql/migrations state/system) "add-guestbook-table")` - creates the up/down migration files with the given name
+* `(migratus.core/create (:db.sql/migrations state/system) "add-guestbook-table")` - creates the up/down migration files with the given name
 
 **Important**: the database connection must be initialized before migrations can be run in the REPL
 
