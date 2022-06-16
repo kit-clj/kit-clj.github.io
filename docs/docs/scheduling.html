@@ -67,7 +67,8 @@
                                           :default &#91;{:job     #ig/ref :myapp/daily-job
                                                      :trigger #cronut/cron &quot;0 0 1 1/1 &#42; ?&quot;}&#93;}
   :disallowConcurrentExecution? true}
-</code></pre><p>There is a reference to a <code>:myapp.core/daily-job</code> which will should be defined as a new integrant component. There is also a <code>#cronut/cron</code> string which is simply a cron string, and we will not worry about for now. </p><p>First in our <code>system.edn</code> we will define the component.</p><pre><code class="clojure">{:identity          &quot;myapp.core/daily-job&quot;
+</code></pre><p>There is a reference to a <code>:myapp.core/daily-job</code> which will should be defined as a new integrant component. There is also a <code>#cronut/cron</code> string which is simply a cron string, and we will not worry about for now. </p><p>First in our <code>system.edn</code> we will define the component.</p><pre><code class="clojure">:myapp.core/daily-job
+{:identity          &quot;myapp.core/daily-job&quot;
  :description       &quot;Runs once a day and prints hi&quot;
  :recover?          true
  :durable?          false}
