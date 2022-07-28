@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Deployment</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#running_standalone">Running Standalone</a></li><li><a href="#vps_deployment">VPS Deployment</a></li><li><a href="#application_deployment">Application deployment</a></li><li><a href="#systemd_start_configuration">systemd start configuration</a></li><li><a href="#fronting_with_nginx">Fronting with Nginx</a></li><li><a href="#setting_up_ssl">Setting up SSL</a></li><li><a href="#heroku_deployment">Heroku Deployment</a></li><li><a href="#enabling_socket_repl">Enabling Socket REPL</a></li><li><a href="#resources">Resources</a></li></ol>
+      
+      <div id="content">
+        <h2 id="running&#95;standalone">Running Standalone</h2><p>To create a standalone executable for your application simply run</p><pre><code class="bash">clj -Sforce -T:build all
+</code></pre><p>The resulting <code>jar</code> can be found in the <code>target/uberjar</code> folder. It can be run as follows:</p><pre><code class="bash">java -jar &lt;app&gt;.jar
+</code></pre><p>To specify a custom port you need to set the <code>$PORT</code> environment variable, eg:</p><pre><code>export PORT=8080
+java -jar &lt;app&gt;.jar
+</code></pre><h2 id="vps&#95;deployment">VPS Deployment</h2><p>Virtual Private Servers (VPS) such as <a href='https://www.digitalocean.com/'>DigitalOcean</a> provide a cheap hosting option for Clojure applications. </p><p>Follow <a href='https://www.digitalocean.com/community/tutorials/how-to-create-your-first-digitalocean-droplet-virtual-server'>this guide</a> in order to setup your DigitalOcean server. Once the server is created you can install Ubuntu <a href='https://www.digitalocean.com/community/tutorials/initial-server-setup-with-ubuntu-12-04'>as described here</a>. Finally, install Java on your Ubuntu instance by following <a href='https://help.ubuntu.com/community/Java'>these instructions</a>. The instructions below apply for Ubuntu 15.04 and newer.</p><p>The most common approach is to run the <code>uberjar</code> and front it using <a href='http://wiki.nginx.org/Main'>Nginx</a>.</p><h3 id="application&#95;deployment">Application deployment</h3><p>In this step, we will deploy your application to the server, and make sure that it is started automatically on boot. We use <code>systemd</code> for this. Create a <code>deploy</code> user that will run your application:</p><pre><code>sudo adduser -m deploy
+sudo passwd -l deploy
+</code></pre><p>Create a directory for your application on the server such as <code>/var/myapp</code> then upload your application to the server using <code>scp</code>:</p><pre><code>$ scp myapp.jar user@&lt;domain&gt;:/var/myapp/
+</code></pre><p>You should now test that you're able to run the application. Connect to the server using <code>ssh</code> and run the application:</p><pre><code>java -jar /var/myapp/myapp.jar
+</code></pre><p>If everything went well, your application now runs locally. The following command will confirm that the applications runs as expected:</p><pre><code>curl http://127.0.0.1:3000/
+</code></pre><p>Your application should also now be accessible on the server at <code>http://&lt;domain&gt;:3000</code>. If your application is not accessible make sure that the firewall is configured to allow access to the port. Depending on your VPS provider, you may need to create an access point for the port 3000.</p><ul><li><a href='https://azure.microsoft.com/en-us/documentation/articles/virtual-machines-set-up-endpoints/'>Creating access point on Azure</a></li><li><a href='http://docs.aws.amazon.com/AWSEC2/latest/UserGuide/using-network-security.html#adding-security-group-rule'>Creating access point on Amazon EC2</a></li></ul><h3 id="systemd&#95;start&#95;configuration">systemd start configuration</h3><p>Now, let's stop the application instance and create a <code>systemd</code> configuration to manage its lifecycle, especially taking care that the application will be launched on server boot. Create the file <code>/lib/systemd/system/myapp.service</code> with the following content:</p><pre><code>&#91;Unit&#93;
+Description=My Application
+After=network.target
+
+&#91;Service&#93;
+WorkingDirectory=/var/myapp
+EnvironmentFile=-/var/myapp/env
+Environment=&quot;DATABASE&#95;URL=jdbc:postgresql://localhost/app?user=app&#95;user&amp;password=secret&quot;
+ExecStart=/usr/bin/java -jar /var/myapp/myapp.jar
+User=deploy
+
+&#91;Install&#93;
+WantedBy=multi-user.target
+</code></pre><p>The <code>WantedBy=</code> is the target level that this unit is a part of. To find the default run level for your system run:</p><pre><code>systemctl get-default</code></pre><p>Note that by default JVM is fairly aggressive about memory usage. If you'd like to reduce the amount of memory used then you can add the following line under the <code>&#91;Service&#93;</code> configuration:</p><pre><code>&#91;Service&#93;
+...
+&#95;JAVA&#95;OPTIONS=&quot;-Xmx256m&quot;
+ExecStart=/usr/bin/java -jar /var/myapp/myapp.jar
+</code></pre><p>This will limit the maximum amount of memory that the JVM is allowed to use.  Now we can tell <code>systemd</code> to start the application everytime the system reboots with the following commands:</p><pre><code>sudo systemctl daemon-reload
+sudo systemctl enable myapp.service
+</code></pre><p>When the system reboots your application will now start and will be ready to process requests. You may want to test that. Simply reboot your machine, and check the running processes:</p><pre><code> ps -ef | grep java
+</code></pre><p>This should return something like the line below. Pay attention to the <code>UID</code> - it should be <code>deploy</code>, since running it as <code>root</code> would present a significant security risk.</p><pre><code>deploy     730     1  1 06:45 ?        00:00:42 /usr/bin/java -jar /var/mysite/mysite.jar
+</code></pre><h3 id="fronting&#95;with&#95;nginx">Fronting with Nginx</h3><p>Install Nginx using the following command:</p><pre><code>$ sudo apt-get install nginx
+</code></pre><p>Next, make a backup of the default configuration in <code>/etc/nginx/sites-available/default</code> and replace it with a custom configuration file for the application such as:</p><pre><code>server{
+  listen 80 default&#95;server;
+  listen &#91;::&#93;:80 default&#95;server ipv6only=on;
+  server&#95;name localhost mydomain.com www.mydomain.com;
+
+  access&#95;log /var/log/myapp&#95;access.log;
+  error&#95;log /var/log/myapp&#95;error.log;
+  
+  location / {
+    proxy&#95;pass http://localhost:3000/;
+    proxy&#95;set&#95;header Host $http&#95;host;
+    proxy&#95;set&#95;header X-Forwarded-For $proxy&#95;add&#95;x&#95;forwarded&#95;for;
+    proxy&#95;set&#95;header X-Forwarded-Proto $scheme;
+    proxy&#95;redirect  off;
+  }
+}
+</code></pre><p>Restart Nginx by running:</p><pre><code>sudo service nginx restart
+</code></pre><p>Then test that the application is available at <code>http://&lt;domain&gt;</code>.</p><p>Optionally, you can configure Nginx to serve static resources for the application. In order to do that you will need to ensure that all static resources are served using a common prefix such as <code>static</code>. Next, upload the <code>resources/public/static</code> folder from your application to the server to a location such as <code>/var/myapp/static</code> by running the following command from the project folder:</p><pre><code>scp -r resources/public/static user@&lt;domain&gt;:/var/myapp/static
+</code></pre><p>Now add the following additional configuration option under the <code>server</code> section of the Ngnix configuration above:</p><pre><code>location /static/ {
+    alias /var/myapp/static/;
+  }
+</code></pre><p>This will cause Nginx to bypass your application for any requests to <code>http://&lt;domain&gt;/static</code> and serve them directly instead.</p><p>To enable compression make sure the following settings are present in your <code>/etc/nginx/nginx.conf</code>:</p><pre><code>gzip on;
+gzip&#95;disable &quot;msie6&quot;;
+
+gzip&#95;vary on;
+gzip&#95;proxied any;
+gzip&#95;comp&#95;level 6;
+gzip&#95;buffers 16 8k;
+gzip&#95;http&#95;version 1.1;
+gzip&#95;types text/plain text/css application/json application/x-javascript text/xml application/xml application/xml+rss text/javascript;&quot;&gt;
+</code></pre><h3 id="setting&#95;up&#95;ssl">Setting up SSL</h3><p>If your site has any user authentication then you will also want to use HTTPS. You will first need to provide a SSL certificate and its key. We'll call these <code>cert.crt</code> and <code>cert.key</code> respectively.</p><h4 id="setting&#95;up&#95;ssl&#95;certificate&#95;using&#95;let's&#95;encrypt">Setting up SSL Certificate using Let's Encrypt</h4><p>The easiest way to setup SSL is to use <a href='https://certbot.eff.org/'>Certbot</a> and to follow the instructions on the site.</p><p>Download the installation tool and generate the certificate using the following commands:</p><pre><code>git clone https://github.com/certbot/certbot
+cd certbot
+./certbot-auto certonly --email &lt;you@email.com&gt; -d &lt;yoursite.com&gt; -d &lt;www.yoursite.com&gt; --webroot --webroot-path /var/www/html
+</code></pre><p>Optionally, setup a Cron job to automatically update the certificate by updating crontab by running as <code>root</code>:</p><pre><code>su
+crontab -e
+</code></pre><p>Add the following line:</p><pre><code>0 0 1,15 &#42; &#42; /path-to-certbot/certbot-auto certonly --keep-until-expiring --email &lt;you@email.com&gt; -d &lt;yoursite.com&gt; -d &lt;www.yoursite.com&gt; --webroot --webroot-path /var/www/html
+</code></pre><p>Alternatively, you could use <a href='https://github.com/hlandau/acme'>Acmetool</a> as a comprehensive solution for keeping certificates up to date.</p><p>We'll generate a stronger DHE parameter instead of using OpenSSL's defaults, which include a 1024-bit key for the key-exchange:</p><pre><code>cd /etc/ssl/certs
+openssl dhparam -out dhparam.pem 4096
+</code></pre><p>There are two options for handling HTTPS connections. You can either configure the HTTP server in the app itself, or front it with Nginx. We'll look at both approaches below.</p><h5 id="nginx&#95;ssl&#95;config">Nginx SSL config</h5><p>To use Nginx as your SSL proxy you'll want to update the configuration in <code>/etc/nginx/sites-available/default</code> as follows:</p><pre><code>server {
+    listen 80;
+    return 301 https://$host$request&#95;uri;
+}
+
+server {
+
+    listen 443;
+    server&#95;name localhost mydomain.com www.mydomain.com;
+
+    ssl&#95;certificate           /etc/letsencrypt/live/&lt;yoursite.com&gt;/fullchain.pem;
+    ssl&#95;certificate&#95;key       /etc/letsencrypt/live/&lt;yoursite.com&gt;/privkey.pem;
+
+    ssl on;
+    ssl&#95;prefer&#95;server&#95;ciphers  on;
+    ssl&#95;session&#95;timeout        180m;
+    ssl&#95;session&#95;cache  builtin:1000  shared:SSL:10m;
+    ssl&#95;protocols  TLSv1 TLSv1.1 TLSv1.2;
+    ssl&#95;ciphers 'AES256+EECDH:AES256+EDH';
+    ssl&#95;dhparam /etc/ssl/certs/dhparam.pem;
+    add&#95;header Strict-Transport-Security 'max-age=31536000';
+
+    access&#95;log /var/log/myapp&#95;access.log;
+    error&#95;log /var/log/myapp&#95;error.log;
+
+     # If you use websocket over https, add below two lines.
+    proxy&#95;set&#95;header Upgrade $http&#95;upgrade; ###
+    proxy&#95;set&#95;header Connection &quot;Upgrade&quot;;   ###
+
+    location / {
+
+      proxy&#95;set&#95;header        Host $host;
+      proxy&#95;set&#95;header        X-Real-IP $remote&#95;addr;
+      proxy&#95;set&#95;header        X-Forwarded-For $proxy&#95;add&#95;x&#95;forwarded&#95;for;
+      proxy&#95;set&#95;header        X-Forwarded-Proto $scheme;
+
+      # Fix the “It appears that your reverse proxy set up is broken&quot; error.
+      proxy&#95;pass          http://localhost:3000;
+      proxy&#95;read&#95;timeout  90;
+
+      proxy&#95;redirect      http://localhost:3000 https://mydomain.com;
+    }
+}
+</code></pre><p>The above will cause Nginx to redirect HTTP requests to HTTPS and use the provided certificate to serve them.</p><p>Finally, configure your firewall to only allow access to specified ports by running the following commands:</p><pre><code>$ sudo ufw allow ssh
+$ sudo ufw allow http
+$ sudo ufw allow https
+$ sudo ufw enable
+</code></pre><p>You can test the SSL configuration using the <a href='https://www.ssllabs.com/ssltest/'>SSL Server Test</a>.</p><h2 id="heroku&#95;deployment">Heroku Deployment</h2><p>First, make sure you have <a href='http://git-scm.com/downloads'>Git</a> and <a href='https://toolbelt.heroku.com/'>Heroku toolbelt</a> installed, then simply follow the steps below.</p><p>Create a production configuration file in <code>env/prod/resources/config.edn</code>. This file will provide base configuration in Heroku environment.</p><pre><code class="clojure">{:prod true}
+</code></pre><p>Optionally, test that your application runs locally:</p><pre><code>heroku local
+</code></pre><p>Now, you can initialize your git repo and commit your application:</p><pre><code>git init
+git add .
+git commit -m &quot;init&quot;
+</code></pre><p>Create your app on Heroku:</p><pre><code>heroku create
+</code></pre><p>Optionally, create a database for the application:</p><pre><code>heroku addons:create heroku-postgresql
+</code></pre><p>The connection settings can be found at your <a href='https://dashboard.heroku.com/apps/'>Heroku dashboard</a> under the add-ons for the app.</p><p>Deploy the application:</p><pre><code>git push heroku master
+</code></pre><p>Your application should now be deployed to Heroku!</p><p>For further instructions see the <a href='https://devcenter.heroku.com/articles/clojure'>official documentation</a>.</p><h2 id="enabling&#95;socket&#95;repl">Enabling Socket REPL</h2><p>Kit comes set up with a socket REPL, which allows connecting to a REPL on the server. This functionality can useful for debugging as well as hotfixing updates in the running application. To configure the REPL port you can set the <code>REPL&#95;PORT</code> environment variable to the desired port. By default it is 7000.</p><pre><code>export REPL&#95;PORT=7001
+</code></pre><p>You can also connect your favorite IDE to a remote REPL just as you would connect to a local one.</p><p>When running on a remote server it is recommended to forward the REPL port to the local machine using SSH:</p><pre><code>ssh -L 7001:localhost:7001 remotehost
+</code></pre><h2 id="resources">Resources</h2><ul><li><a href='http://www.braveclojure.com/quests/deploy/'>Deploying Your First Clojure App ...From the Shadows</a> provides an indepth guide for Clojure web application deployment strategies.</li></ul>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/editors.html">
+            Editor Configuration
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-mysql.html">
+            kit-mysql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-nrepl.html">
+            kit-nrepl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-conman.html">
+            kit-sql-conman
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-hikari.html">
+            kit-sql-hikari
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-migratus.html">
+            kit-sql-migratus
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

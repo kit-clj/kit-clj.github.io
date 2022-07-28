@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>kit-sql-conman</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:db.sql/connection">:db.sql/connection</a></li><li><a href="#:db.sql/query-fn">:db.sql/query-fn</a></li></ol>
+      
+      <div id="content">
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.sql/connection">:db.sql/connection</h3><p>This component uses <a href='https://github.com/luminus-framework/conman'>conman</a> to create a pooled connection to your database. It resolves to the conman connection when referenced.</p><p>It might be useful if you need to create transactions to reference the connection directly when calling your <code>query-fn</code>.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/connection 
+#profile {:prod {:jdbc-url   #env JDBC&#95;URL
+                 :init-size  1
+                 :min-idle   1
+                 :max-idle   8
+                 :max-active 32}
+          :test {:jdbc-url &quot;jdbc:postgresql://localhost/myapp?user=myapp&amp;password=myapp&quot;}
+          :dev  {:jdbc-url &quot;jdbc:postgresql://localhost/myapp?user=myapp&amp;password=myapp&quot;}}
+</code></pre><h3 id=":db.sql/query-fn">:db.sql/query-fn</h3><p>This component binds a connection map from the SQL scripts file you provide it.</p><p>It resolves to a multi-arity <code>conman/query</code> function. The two-arity function takes args <code>query params</code>, e.g. <code>&#40;&#40;:db.sql/query-fn&#41; :get-user {:id 123}&#41;</code>. The three+ arity function takes a DB connection as the first argument, and optionally vararg opts, i.e. <code>conn query params &amp; opts</code>. This could be useful for test transactions, transactional queries.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/query-fn
+ {:conn     #ig/ref :db.sql/connection
+  :options  {}
+  :filename &quot;queries.sql&quot;}
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/editors.html">
+            Editor Configuration
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-mysql.html">
+            kit-mysql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-nrepl.html">
+            kit-nrepl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/kit-sql-conman.html">
+            kit-sql-conman
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-hikari.html">
+            kit-sql-hikari
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-migratus.html">
+            kit-sql-migratus
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

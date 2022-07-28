@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Requests &amp; Responses</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#requests_and_responses">Requests and Responses</a></li><li><a href="#overview">Overview</a></li><li><a href="#requests">Requests</a></li><li><a href="#responses">Responses</a></li><li><a href="#response_encoding">Response encoding</a></li><li><a href="#setting_headers">Setting headers</a></li><li><a href="#setting_content_type">Setting content type</a></li><li><a href="#setting_custom_status">Setting custom status</a></li><li><a href="#redirects">Redirects</a></li></ol>
+      
+      <div id="content">
+        <h2 id="requests&#95;and&#95;responses">Requests and Responses</h2><h3 id="overview">Overview</h3><p>The base reitit ring handler uses the <a href='environment.md'>environmental middleware</a> and the <code>ring.middleware.defaults</code> default middleware as configured in your <code>system.edn</code>.</p><p>On top of this, the default generated <code>api</code> routes in Kit use the following middleware configuration. They are found in your <code>&lt;&lt;project-ns&gt;&gt;.web.routes.api</code></p><pre><code class="clojure">&#91;;; query-params &amp; form-params
+parameters/parameters-middleware
+;; content-negotiation
+muuntaja/format-negotiate-middleware
+;; encoding response body
+muuntaja/format-response-middleware
+;; exception handling
+coercion/coerce-exceptions-middleware
+;; decoding request body
+muuntaja/format-request-middleware
+;; coercing response bodys
+coercion/coerce-response-middleware
+;; coercing request parameters
+coercion/coerce-request-middleware
+;; exception handling
+exception/wrap-exception&#93;
+</code></pre><p>This configuration handles request and response parameter coercion, exception handling.</p><h3 id="requests">Requests</h3><p>By default the request parameters, such as those from a form POST, will be automatically parsed and set as a <code>:params</code> key on the request.</p><p>The request parameters will be available under the <code>:params</code> key of the request. Note that the middleware will also handle encoding the response bodies when you set the appropriate MIME type on the response.</p><h3 id="responses">Responses</h3><p>Ring responses are generated using the <a href='https://github.com/metosin/ring-http-response'>ring-http-response</a> library. The library provides a number of helpers for producing responses with their respective HTTP Status codes.</p><p>For example, the <code>ring.util.http-response/ok</code> helper is used to generate a response with the status <code>200</code>. The following code will produce a valid response map with the content set as its <code>:body</code> key.</p><pre><code class="clojure">&#40;ok {:foo &quot;bar&quot;}&#41;
+
+;;result of calling response
+{:status  200
+ :headers {}
+ :body    {:foo &quot;bar&quot;}}
+</code></pre><p>The response body can be one of a string, a sequence, a file, or an input stream. The body must correspond appropriately with the response's status code.</p><p>A string, it will be sent back to the client as is. For a sequence, a string representing each element is sent to the client. Finally, if the response is a file or an input stream, then the server sends its contents to the client.</p><h3 id="response&#95;encoding">Response encoding</h3><p>By default, the <a href='https://github.com/metosin/muuntaja'>muuntaja</a> middleware library is used to infer the response type when a route returns a map containing the <code>:body</code> key:</p><pre><code class="clojure">{:body {:foo &quot;bar&quot;}}
+</code></pre><p>The middleware is found in the <code>&lt;project-ns&gt;.web.middleware.formats</code> namespace of your application:</p><pre><code class="clojure">&#40;ns &lt;project-ns&gt;.web.middleware.formats
+  &#40;:require
+    &#91;luminus-transit.time :as time&#93;
+    &#91;muuntaja.core :as m&#93;&#41;&#41;
+
+&#40;def instance
+  &#40;m/create
+    &#40;-&gt; m/default-options
+        &#40;update-in
+          &#91;:formats &quot;application/transit+json&quot; :decoder-opts&#93;
+          &#40;partial merge time/time-deserialization-handlers&#41;&#41;
+        &#40;update-in
+          &#91;:formats &quot;application/transit+json&quot; :encoder-opts&#93;
+          &#40;partial merge time/time-serialization-handlers&#41;&#41;&#41;&#41;&#41;
+
+</code></pre><p>Muuntaja will use the <code>Content-Type</code> header to infer the content of the request, and the <code>Accept</code> header to infer the response format.</p><p>By default we can see we already have some time serialization and deserialization handlers provided by <a href='https://github.com/luminus-framework/luminus-transit'>luminus-transit.time</a> to help us with reader and writing Java time objects.</p><h3 id="setting&#95;headers">Setting headers</h3><p>Setting additional response headers is done by calling <code>ring.util.http-response/header</code>, and passing it a map of HTTP headers. Note that the keys <strong>must</strong> be strings.</p><pre><code class="clojure">&#40;-&gt; &quot;hello world&quot; response &#40;header &quot;x-csrf&quot; &quot;csrf&quot;&#41;&#41;
+</code></pre><h3 id="setting&#95;content&#95;type">Setting content type</h3><p>You can set a custom response type by using the <code>ring.util.http-response/content-type</code> function, eg:</p><pre><code class="clojure">&#40;defn project-handler &#91;req&#93;
+  &#40;-&gt; &#40;clojure.java.io/input-stream &quot;report.pdf&quot;&#41;
+      &#40;ok&#41;
+      &#40;content-type &quot;application/pdf&quot;&#41;&#41;&#41;
+</code></pre><h3 id="setting&#95;custom&#95;status">Setting custom status</h3><p>Setting a custom status is accomplished by passing the content to the <code>ring.util.http-response/status</code> function:</p><pre><code class="clojure">&#40;defn missing-page &#91;req&#93;
+  &#40;-&gt; &quot;your page could not be found&quot;
+      &#40;ok&#41;
+      &#40;status 404&#41;&#41;&#41;
+</code></pre><h3 id="redirects">Redirects</h3><p>Redirects are handled by the <code>ring.util.http-response/found</code> function. The function will set a <code>302</code> redirect status on the response.</p><pre><code class="clojure">&#40;defn old-location &#91;&#93;
+  &#40;found &quot;/new-location&quot;&#41;&#41;
+</code></pre><p>Please refer to the <a href='https://github.com/metosin/ring-http-response/blob/master/src/ring/util/http_response.clj'>ring-http-response</a> to see other available helpers.</p>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/editors.html">
+            Editor Configuration
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-mysql.html">
+            kit-mysql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-nrepl.html">
+            kit-nrepl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-conman.html">
+            kit-sql-conman
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-hikari.html">
+            kit-sql-hikari
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-migratus.html">
+            kit-sql-migratus
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

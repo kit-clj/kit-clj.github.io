@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>HTML Templating</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#templating_options">Templating Options</a></li><li><a href="#html_templating_using_selmer">HTML Templating Using Selmer</a></li><li><a href="#creating_templates">Creating Templates</a></li><li><a href="#filters">Filters</a></li><li><a href="#defining_custom_filters">Defining Custom Filters</a></li><li><a href="#tags">Tags</a></li><li><a href="#defining_custom_tags">Defining Custom Tags</a></li><li><a href="#template_inheritance">Template inheritance</a></li><li><a href="#html_templating_using_hiccup">HTML Templating Using Hiccup</a></li><li><a href="#forms_and_input">Forms and Input</a></li></ol>
+      
+      <div id="content">
+        <h2 id="templating&#95;options">Templating Options</h2><p>Kit supports <a href='https://github.com/yogthos/Selmer'>Selmer</a> both as a library, and in the HTML module for traditional style templating using plain text files as templates.</p><p>Alternatively, you can choose to use a different templating engine altogether. A couple of popular options are <a href='https://github.com/cgrand/enlive'>Enlive</a> and <a href='https://github.com/davidsantiago/stencil'>Stencil</a>.</p><h2 id="html&#95;templating&#95;using&#95;selmer">HTML Templating Using Selmer</h2><p>Selmer is a templating language similar to Django and Rails templates. If you're familiar with Django or similar templating languages you should feel right at home.</p><h3 id="creating&#95;templates">Creating Templates</h3><p>By design, Selmer separates the presentation logic from the program logic. The templates are simply HTML files with additional template tags for dynamic elements. The dynamc elements in the template are resolved during the rendering step. Let's take a look at an example template below:</p><pre><code class="xml">&lt;html&gt;
+    &lt;head&gt;
+        &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        &lt;title&gt;My First Template&lt;/title&gt;
+    &lt;/head&gt;
+    &lt;body&gt;
+        &lt;h2&gt;Hello {{name}}&lt;/h2&gt;
+    &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>The templates are rendered using a context represented by a map of key/value pairs. The context contains the variables that we'd like to render in our template at runtime. Above, we have a template representing a page that renders a single variable called <code>name</code>.</p><p>There are two functions for rendering templates called <code>render</code> and <code>render-file</code>. The <code>render</code> function accepts a string representing the template, while the <code>render-file</code> function accepts a string representing the path to the file containing the template.</p><p>If we saved the template defined above in a file called <code>index.html</code> then we could render it as follows:</p><pre><code class="clojure">&#40;ns example.routes.home
+  &#40;:require &#91;selmer.parser :refer &#91;render-file&#93;&#93;&#41;&#41;
+
+&#40;render-file &quot;html/index.html&quot; {:name &quot;John&quot;}&#41;
+</code></pre><p>The <code>render-file</code> function expects the templates to be found at a path relative to the <code>resources</code> folder of the application.</p><p>Above, we passed in a string as the value for the variable <code>name</code>. However, we're not restricted to strings and can pass in any type we like. For example, if we pass in a collection we can iterate it using the <code>for</code> tag:</p><pre><code class="xml">&lt;ul&gt;
+{% for item in items %}
+&lt;li&gt; {{item}} &lt;/li&gt;
+{% endfor %}
+&lt;/ul&gt;
+</code></pre><pre><code class="clojure">&#40;render-file &quot;html/items.html&quot; {:items &#40;range 10&#41;}&#41;
+</code></pre><p>If an item happens to be a map, we can access the keys by their name as follows:</p><pre><code class="clojure">&#40;render &quot;&lt;p&gt;Hello {{user.first}} {{user.last}}&lt;/p&gt;&quot;
+        {:user {:first &quot;John&quot; :last &quot;Doe&quot;}}&#41;
+</code></pre><p>When no special processing is specified in the template then the <code>.toString</code> value of the parameter will be used.</p><p>By default Selmer caches the compiled template. A recompile will be triggered if the last modified timestamp of the files changes.  Alternatively you can turn caching on and off calling <code>&#40;selmer.parser/cache-on!&#41;</code> and <code>&#40;selmer.parser/cache-off!&#41;</code> respectively.</p><h3 id="filters">Filters</h3><p>Filters allow post-processing of the variables before they are rendered. For example, you can use a filter to convert the variable to upper case, compute a hash, or count the length. Filters are specified by using a <code>|</code> after the variable name, as can be seen below:</p><pre><code class="clojure">{{name|upper}}
+</code></pre><p>The following built-in filters are available:</p><p><strong>add</strong></p><p><code>&#40;render &quot;{{add&#95;me|add:2:3:4}}&quot; {:add&#95;me 2}&#41;</code> => <code>11</code></p><p><strong>addslashes</strong></p><p>Nota bene, the slashes aren't actually in the input string, but they <em>are</em> going to be in the input. Just trying to write valid Clojure code.</p><p><code>&#40;render &quot;{{name|addslashes}}&quot; {:name &quot;\&quot;Russian tea is best tea\&quot;&quot;}&#41;</code> => <code>&quot;\&quot;Russian tea is best tea\&quot;&quot;</code></p><p><strong>block.super</strong></p><p>Can be used inside a block to insert the content from the parent block in its place</p><p><code>{% block foo %} {{block.super}} some content{% endblock %}</code></p><p><strong>capitalize</strong></p><p><code>&#40;render &quot;{{name|capitalize}}&quot; {:name &quot;russian tea is best tea&quot;}&#41;</code> => <code>&quot;Russian tea is best tea&quot;</code></p><p><strong>center</strong></p><p><code>&#40;render &quot;{{name|center:20}}&quot; {:name &quot;bitemyapp&quot;}&#41;</code> => <code>&quot;      bitemyapp     &quot;</code></p><p><strong>count</strong></p><p><code>&#40;render &quot;{{name|count}}&quot; {:name &quot;Yogthos&quot;}&#41;</code> => <code>&quot;7&quot;</code></p><p><code>&#40;render &quot;{{items|count}}&quot; {:items &#91;1 2 3 4&#93;}&#41;</code> => <code>&quot;4&quot;</code></p><p><strong>date</strong></p><p><code>&#40;render &quot;{{creation-time|date:\&quot;yyyy-MM-dd&#95;HH:mm:ss\&quot;}}&quot; {:created-at &#40;java.util.Date.&#41;}&#41;</code> => <code>&quot;2013-07-28&#95;20:51:48&quot;</code></p><p><strong>default</strong></p><p><code>&#40;render &quot;{{name|default:&quot;I &lt;3 ponies&quot;}}&quot; {:name &quot;bitemyapp&quot;}&#41;</code> => <code>&quot;bitemyapp&quot;</code></p><p><code>&#40;render &quot;{{name|default:&quot;I &lt;3 ponies&quot;}}&quot; {:name nil}&#41;</code> => <code>&quot;I &lt;3 ponies&quot;</code></p><p><code>&#40;render &quot;{{name|default:&quot;I &lt;3 ponies&quot;}}&quot; {:name &#91;&#93;}&#41;</code> => <code>&quot;&#91;&#93;&quot;</code></p><p><code>&#40;render &quot;{{name|default:&quot;I &lt;3 ponies&quot;}}&quot; {}&#41;</code> => <code>&quot;I &lt;3 ponies&quot;</code></p><p><strong>default-if-empty</strong></p><p><code>&#40;render &quot;{{name|default-if-empty:&quot;I &lt;3 ponies&quot;}}&quot; {:name &quot;bitemyapp&quot;}&#41;</code> => <code>&quot;bitemyapp&quot;</code></p><p><code>&#40;render &quot;{{name|default-if-empty:&quot;I &lt;3 ponies&quot;}}&quot; {:name nil}&#41;</code> => <code>&quot;I &lt;3 ponies&quot;</code></p><p><code>&#40;render &quot;{{name|default-if-empty:&quot;I &lt;3 ponies&quot;}}&quot; {:name &#91;&#93;}&#41;</code> => <code>&quot;I &lt;3 ponies&quot;</code></p><p><code>&#40;render &quot;{{name|default-if-empty:&quot;I &lt;3 ponies&quot;}}&quot; {}&#41;</code> => <code>&quot;I &lt;3 ponies&quot;</code></p><p><strong>double-format</strong></p><p><code>&#40;render &quot;{{tis-a-number|double-format:2}}&quot; {:tis-a-number 10.00001}&#41;</code> => <code>10.00</code></p><p><code>&#40;render &quot;{{tis-a-number|double-format}}&quot; {:tis-a-number 10.00001}&#41;</code> => <code>10.0</code></p><p><strong>first</strong></p><p><code>&#40;render &quot;{{seq-of-some-sort|first}}&quot; {:seq-of-some-sort &#91;:dog :cat :bird :bird :bird :is :the :word&#93;}&#41;</code> => <code>:dog</code></p><p><strong>get-digit</strong></p><p>returns digits from the right, 1 indexing on the last digit</p><p><code>&#40;render &quot;{{tis-a-number|get-digit:1}}&quot; {:tis-a-number 12.34567}&#41;</code> => <code>7</code></p><p><strong>hash</strong></p><p>available hashes: <code>md5</code>, <code>sha</code>, <code>sha256</code>, <code>sha384</code>, <code>sha512</code></p><p><code>&#40;render &quot;{{domain|hash:\&quot;md5\&quot;}}&quot; {:domain &quot;example.org&quot;}&#41;</code> => <code>&quot;1bdf72e04d6b50c82a48c7e4dd38cc69&quot;</code></p><p><strong>join</strong></p><p><code>&#40;render &quot;{{sequence|join}}&quot; {:sequence &#91;1 2 3 4&#93;}&#41;</code> => <code>&quot;1234&quot;</code></p><p><strong>json</strong></p><p>by default content will be escaped</p><p><code>&#40;render &quot;{{data|json}}&quot; {:data &#91;1 2 {:foo 27 :dan &quot;awesome&quot;}&#93;}&#41;</code> => <code>&quot;&#91;1,2,{&amp;quot;foo&amp;quot;:27,&amp;quot;dan&amp;quot;:&amp;quot;awesome&amp;quot;}&#93;&quot;</code></p><p>if you wish to render it unescaped use the <code>safe</code> filter:</p><p><code>&#40;render &quot;{{f|json|safe}}&quot; {:f {:foo 27 :dan &quot;awesome&quot;}}&#41;</code></p><p><strong>last</strong></p><p><code>&#40;render &quot;{{sequence|last}}&quot; {:sequence 12.34567}&#41;</code> => <code>7</code></p><p><code>&#40;render &quot;{{sequence|last}}&quot; {:sequence &#91;1 2 3 4&#93;}&#41;</code> => <code>4</code></p><p><strong>length</strong></p><p><code>&#40;render &quot;{{sequence|length}}&quot; {:sequence &#91;1 2 3 4&#93;}&#41;</code> => <code>4</code></p><p><strong>length-is</strong></p><p><code>&#40;render &quot;{{sequence|length-is:4}}&quot; {:sequence &#91;1 2 3 4&#93;}&#41;</code> => <code>true</code></p><p><strong>linebreaks</strong></p><p>Single newlines become <br />, double newlines mean new paragraph. Content will be escaped by default.</p><p><code>&#40;render &quot;{{foo|linebreaks|safe}}&quot; {:foo &quot;\nbar\nbaz&quot;}&#41;</code> => <code>&quot;&lt;p&gt;&lt;br /&gt;bar&lt;br /&gt;baz&lt;/p&gt;&quot;</code></p><p><strong>linebreaks-br</strong></p><p>like <code>linebreaks</code> but doesn't insert <code>&lt;p&gt;</code> tags.</p><p><code>&#40;render &quot;{{foo|linebreaks-br|safe}}&quot; {:foo &quot;\nbar\nbaz&quot;}&#41;</code> => <code>&quot;bar&lt;br /&gt;baz&quot;</code></p><p><strong>linenumbers</strong></p><p>Displays text with line numbers.</p><p><code>&#40;render &quot;{{foo|linenumbers&quot; {:foo &quot;foo\n\bar\nbaz&quot;}&#41;</code> => <code>&quot;1. foo\n2. \bar\n3. baz&quot;</code></p><p><strong>lower</strong></p><p><code>&#40;render &quot;{{foo|lower}}&quot; {:foo &quot;FOOBaR&quot;}&#41;</code> => <code>&quot;foobar&quot;</code></p><p><strong>pluralize</strong></p><p>Returns the correct (English) pluralization based on the variable. This works with many words, but certainly not all (eg. foot/feet, mouse/mice, etc.)</p><p><code>&#40;render &quot;{{items|count}} item{{items|pluralize}}&quot; {:items &#91;&#93;}&#41;</code> => <code>&quot;0 items&quot;</code></p><p><code>&#40;render &quot;{{items|count}} item{{items|pluralize}}&quot; {:items &#91;1&#93;}&#41;</code> => <code>&quot;1 item&quot;</code></p><p><code>&#40;render &quot;{{items|count}} item{{items|pluralize}}&quot; {:items &#91;1 2&#93;}&#41;</code> => <code>&quot;2 items&quot;</code></p><p><code>&#40;render &quot;{{fruit|count}} tomato{{fruit|pluralize:\&quot;es\&quot;}}&quot; {:fruit &#91;&#93;}&#41;</code> => <code>&quot;0 tomatoes&quot;</code></p><p><code>&#40;render &quot;{{people|count}} lad{{people|pluralize:\&quot;y\&quot;:\&quot;ies\&quot;}}&quot; {:people &#91;1&#93;}&#41;</code> => <code>&quot;1 lady&quot;</code></p><p><code>&#40;render &quot;{{people|count}} lad{{people|pluralize:\&quot;y\&quot;:\&quot;ies\&quot;}}&quot; {:people &#91;1 2&#93;}&#41;</code> => <code>&quot;2 ladies&quot;</code></p><p><strong>rand-nth</strong></p><p>returns rand-nths value from a collection:</p><p><code>&#40;render &quot;{{foo|rand-nth}}&quot; {:foo &#91;1 2 3&#93;}&#41;</code> => <code>&quot;2&quot;</code></p><p><strong>remove</strong></p><p>removes specified characters from the string:</p><p><code>&#40;render &quot;{{foo|remove:\&quot;aeiou\&quot;}}&quot; {:foo &quot;abcdefghijklmnop&quot;}&#41;</code> => <code>&quot;bcdfghjklmnp&quot;</code></p><p><strong>remove-tags</strong></p><p>Removes the specified HTML tags from the string:</p><p><code>&#40;render &quot;{{ value|remove-tags:b:span }}&quot; {:value &quot;&lt;b&gt;&lt;span&gt;foobar&lt;/span&gt;&lt;/b&gt;&quot;}&#41;</code> => <code>&quot;foobar&quot;</code></p><p><strong>safe</strong></p><p>By default Selmer will HTML escape all variables, The <code>safe</code> filter exempts the variable from being html-escaped:</p><p><code>&#40;render &quot;{{data}}&quot; {:data &quot;&lt;foo&gt;&quot;}&#41;</code> => <code>&quot;&amp;lt;foo&amp;gt;&quot;</code></p><p><code>&#40;render &quot;{{data|safe}}&quot; {:data &quot;&lt;foo&gt;&quot;}&#41;</code> => <code>&quot;&lt;foo&gt;&quot;</code></p><p><strong>sort</strong></p><p><code>&#40;render &quot;{{ value|sort }}&quot; {:value &#91;1 4 2 3 5&#93;}&#41;</code> => <code>&quot;&#40;1 2 3 4 5&#41;&quot;</code></p><p><strong>sort-by</strong></p><p><code>&#40;render &quot;{{ value|sort-by:name }}&quot; {:value &#91;{:name &quot;John&quot;} {:name &quot;Jane&quot;}&#93;}&#41;</code> => <code>&quot;&#40;{:name &amp;quot;Jane&amp;quot;} {:name &amp;quot;John&amp;quot;}&#41;&quot;</code></p><p><strong>sort-reversed</strong></p><p>same as sort, but in reverse order</p><p><strong>sort-by-reversed</strong></p><p>same as sort-by, but in reverse order</p><p><strong>upper</strong></p><p><code>&#40;render &quot;{{shout|upper}}&quot; {:shout &quot;hello&quot;}&#41;</code> => <code>&quot;HELLO&quot;</code></p><h3 id="defining&#95;custom&#95;filters">Defining Custom Filters</h3><p>You can easily add your own filters using the <code>selmer.filters/add-filter!</code> function. The filter function should accept the element and return a value that will replace the original value.</p><pre><code class="clojure">&#40;use 'selmer.filters&#41;
+
+&#40;add-filter! :embiginate #&#40;.toUpperCase %&#41;&#41;
+ &#40;render &quot;{{shout|embiginate}}&quot; {:shout &quot;hello&quot;}&#41;
+
+&#40;add-filter! :count count&#41;
+&#40;render &quot;{{foo|count}}&quot; {:foo &#40;range 3&#41;}&#41;
+</code></pre><p>Filters can also be chained together as needed:</p><pre><code class="clojure">&#40;add-filter! :empty? empty?&#41;
+&#40;render &quot;{{foo|upper|empty?}}&quot; {:foo &quot;Hello&quot;}&#41;
+</code></pre><h3 id="tags">Tags</h3><p>Selmer provides two types of tags. The first kind are inline tags such as the <code>extends</code> and <code>include</code> tags. These tags are self contained statements and do not require an end tag. The other type is the block tags. These tags have a start and an end tag, and operate on a block of text. An example of this would be the <code>if</code> ... <code>endif</code> block.</p><p>Let's take a look at the default tags:</p><p><strong>include</strong></p><p>replaces itself with the contents of the referenced template</p><p><code>{% include &quot;path/to/comments.html&quot; %}</code></p><p>optionally, you can supply default arguments any tags matching these will have the <code>default</code> filter applied using the value supplied:</p><p><code>{% include &quot;html/inheritance/child.html&quot; with name=&quot;Jane Doe&quot; greeting=&quot;Hello!&quot; %}</code></p><p><strong>block</strong></p><p>Allows specifying a block of content that can be overwritten using the template inheritance discussed below.</p><p><code>{% block foo %}This text can be overridden later{% endblock %}</code></p><p><strong>cycle</strong></p><p>Will cycle through the supplied argument.</p><p><code>&#40;render &quot;{% for i in items %}&lt;li class={% cycle \&quot;blue\&quot; \&quot;white\&quot; %}&gt;{{i}}&lt;/li&gt;{% endfor %}&quot; {:items &#40;range 5&#41;}&#41;</code> => <code>&quot;&lt;li class=\&quot;blue\&quot;&gt;0&lt;/li&gt;&lt;li class=\&quot;white\&quot;&gt;1&lt;/li&gt;&lt;li class=\&quot;blue\&quot;&gt;2&lt;/li&gt;&lt;li class=\&quot;white\&quot;&gt;3&lt;/li&gt;&lt;li class=\&quot;blue\&quot;&gt;4&lt;/li&gt;&quot;</code></p><p><strong>extends</strong></p><p>This tag is used to reference a parent template. The blocks in parents are recursively overridden by the blocks from child templates.</p><ul><li>Note: child templates can <strong>only</strong> contain blocks. Any tags or text outside the blocks will beignored!</li></ul><p>For example, say we have a base template called <code>base.html</code> and a child template <code>child.html</code>:</p><pre><code class="xml">&lt;html&gt;
+  &lt;body&gt;
+  {% block foo %}This text can be overridden later{% endblock %}
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre><pre><code class="xml">{% extends &quot;base.html&quot; %}
+{% block foo %}
+  &lt;p&gt;This text will override the text in the parent&lt;/p&gt;
+{% endblock %}
+</code></pre><p><strong>if</strong></p><p>It's an <code>if</code> &ndash; only render the body if the conditional is true.</p><p><code>{% if condition %}yes!{% endif %}</code></p><p><code>{% if condition %}yes!{% else %}no!{% endif %}</code></p><p>filters work for the conditions:</p><pre><code class="clojure">&#40;add-filter! :empty? empty?&#41;
+&#40;render &quot;{% if files|empty? %}no files{% else %}files{% endif %}&quot;
+  {:files &#91;&#93;}&#41;
+</code></pre><p><strong>ifequal</strong></p><p>Only render the body if the two args are equal (according to clojure.core/=).</p><p><code>{% ifequal foo bar %}yes!{% endifequal %}</code></p><p><code>{% ifequal foo bar %}yes!{% else %}no!{% endifequal %}</code></p><p><code>{% ifequal foo &quot;this also works&quot; %}yes!{% endifequal %}</code></p><p><strong>for/endfor</strong> <em>block</em></p><p><strong>for</strong></p><p>Render the body one time for each element in the list. Each render will introduce the following variables into the context:</p><ul><li><code>forloop.first</code></li><li><code>forloop.last</code></li><li><code>forloop.counter</code></li><li><code>forloop.counter0</code></li><li><code>forloop.revcounter</code></li><li><code>forloop.revcounter0</code></li><li><code>forloop.length</code></li></ul><p><code>{% for x in some-list %}element: {{x}} first? {{forloop.first}} last? {{forloop.last}}{% endfor %}</code></p><p>you can also iterate over nested data structures, eg:</p><p><code>{% for item in items %} &lt;tr&gt;&lt;td&gt;{{item.name}}&lt;/td&gt;&lt;td&gt;{{item.age}}&lt;/td&gt;&lt;/tr&gt; {% endfor %}</code></p><p><strong>now</strong></p><p>renders current time</p><p><code>&#40;render &#40;str &quot;{% now \&quot;&quot; date-format &quot;\&quot;%}&quot;&#41; {}&#41;</code> => <code>&quot;\&quot;01 08 2013\&quot;&quot;</code></p><p><strong>comment</strong></p><p>ignores any content inside the block</p><p><code>&#40;render &quot;foo bar {% comment %} baz test {{x}} {% endcomment %} blah&quot; {}&#41;</code> => <code>&quot;foo bar  baz test  blah&quot;</code></p><p><strong>firstof</strong></p><p>renders the first occurance of supplied keys that doesn't resolve to false:</p><p><code>&#40;render &quot;{% firstof var1 var2 var3 %}&quot; {:var2 &quot;x&quot; :var3 &quot;not me&quot;}&#41;</code> => <code>&quot;x&quot;</code></p><p><strong>style</strong></p><p>The style tag will generate an HTML script tag and prepend the value of the <code>servlet-context</code> key to the URI. When <code>servlet-context</code> key is not present then the original URI is set.</p><p><code>&#40;render &quot;{% style \&quot;/css/screen.css\&quot; %}&quot; {:servlet-context &quot;/myapp&quot;}&#41;</code> =></p><p><code>&quot;&lt;link href=\&quot;/myapp/css/screen.css\&quot; rel=\&quot;stylesheet\&quot; type=\&quot;text/css\&quot; /&gt;&quot;</code></p><p><strong>script</strong></p><p>The script tag will generate an HTML script tag and prepend the value of the <code>servlet-context</code> key to the URI. When <code>servlet-context</code> key is not present then the original URI is set.</p><p><code>&#40;render &quot;{% script \&quot;/js/site.js\&quot; %}&quot; {:servlet-context &quot;/myapp&quot;}&#41;</code> =></p><p><code>&quot;&lt;script src=\&quot;/myapp/js/site.js\&quot; type=\&quot;text/javascript\&quot;&gt;&lt;/script&gt;&quot;</code></p><p><strong>verbatim</strong></p><p>prevents any tags inside from being parsed:</p><p><code>&#40;render &quot;{% verbatim %}{{if dying}}Still alive.{{/if}}{% endverbatim %}&quot; {}&#41;</code> => <code>&quot;{{if dying}}Still alive.{{/if}}&quot;</code></p><p><strong>with</strong></p><p>injects the specified keys into the context map:</p><pre><code class="clojure">&#40;render &quot;{% with total=business.employees|count %}{{ total }}{% endwith %}&quot;
+         {:business {:employees &#40;range 5&#41;}}&#41;
+</code></pre><p>=> <code>&quot;5 employees&quot;</code></p><h3 id="defining&#95;custom&#95;tags">Defining Custom Tags</h3><p>In addition to tags already provides you can easily define custom tags of your own. This is done by using the <code>add-tag!</code> macro. Let's take a look at a couple of examples to see how it works:</p><pre><code class="clojure">&#40;use 'selmer.parser&#41;
+
+&#40;add-tag! :foo
+  &#40;fn &#91;args context-map&#93;
+    &#40;str &quot;foo &quot; &#40;first args&#41;&#41;&#41;&#41;
+
+&#40;render &quot;{% foo quux %} {% foo baz %}&quot; {}&#41;
+
+
+&#40;add-tag! :bar
+  &#40;fn &#91;args context-map content&#93;
+    &#40;str content&#41;&#41;
+  :baz :endbar&#41;
+
+&#40;render &quot;{% bar %} some text {% baz %} some more text {% endbar %}&quot; {}&#41;
+</code></pre><p>As can be seen above, the tag is defined by providing a keyword specifying the tag name followed by the handler and any closing tags.</p><p>When there are no closing tags the tag will not have any content. The handler for such tags accepts the arguments defined in the tag and the context map.</p><p>When closing tags are present then the content for each block will be keyed on the opening tags. The content will be a map containing the <code>:args</code> and <code>:content</code> keys associated with each block.</p><h3 id="template&#95;inheritance">Template inheritance</h3><p>Selmer templates can refer to other templates using the <code>block</code> tag. There are two ways to refer to a template. We can either use the <code>extends</code> tag or the <code>include</code> tag for this.</p><h4 id="extending&#95;templates">Extending Templates</h4><p>When we use the <code>extends</code> tag, the current template will use the template it's extending as the base. Any blocks in the base template with the names matching the current template will be overwritten.</p><p>The content of the child template <strong>must</strong> be encapsulated in blocks. Any content outside the blocks present in the parent templates will be ignored.</p><p>Let's take a look at a concrete example. First, we'll define our base template and call it <code>base.html</code>:</p><pre><code class="xml">&lt;!DOCTYPE html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot; /&gt;
+    &lt;title&gt;{% block title %}My amazing site{% endblock %}&lt;/title&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+    &lt;div id=&quot;content&quot;&gt;
+        {% block content %}{% endblock %}
+    &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>Then we'll create a new template called <code>home.html</code> that will extend <code>base.html</code> as follows:</p><pre><code class="xml">{% extends &quot;base.html&quot; %}
+
+{% block content %}
+  {% for entry in entries %}
+    &lt;h2&gt;{{ entry.title }}&lt;/h2&gt;
+    &lt;p&gt;{{ entry.body }}&lt;/p&gt;
+  {% endfor %}
+{% endblock %}
+</code></pre><p>When the <code>home.html</code> is rendered the <code>content</code> block will display the entries. However, since we did not define a block for the title, the one from <code>base.html</code> will be used.</p><p>Note that you can chain extended templates together. In this case the latest occurrence of a block tag will be the one that's rendered.</p><h4 id="including&#95;templates">Including Templates</h4><p>The <code>include</code> tag allows including blocks from other templates in the current template. Let's take a look at an example. Let's say we have a <code>base.html</code> template that includes templates named <code>register.html</code> and <code>home.html</code>, then defines blocks called <code>register</code> and <code>home</code>:</p><pre><code class="xml">
+
+
+&lt;!DOCTYPE html&gt;
+&lt;head&gt;
+    &lt;link rel=&quot;stylesheet&quot; href=&quot;style.css&quot; /&gt;
+    &lt;title&gt;{% block title %}My amazing site{% endblock %}&lt;/title&gt;
+&lt;/head&gt;
+
+&lt;body&gt;
+  &lt;div id=&quot;content&quot;&gt;
+    {% if user %}
+    {% include &quot;&lt;templates path&gt;/home.html&quot; %}
+    {% else %}
+    {% include &quot;&lt;templates path&gt;/register.html&quot; %}
+    {% endif %}
+  &lt;/div&gt;
+&lt;/body&gt;
+&lt;/html&gt;
+</code></pre><p>We can now define the content for these blocks in separate template files called <code>register.html</code>:</p><pre><code class="xml">{% block register %}
+&lt;form action=&quot;/register&quot; method=&quot;POST&quot;&gt;
+  &lt;label for=&quot;id&quot;&gt;user id&lt;/label&gt;
+  &lt;input id=&quot;id&quot; name=&quot;id&quot; type=&quot;text&quot;&gt;&lt;/input&gt;
+  &lt;input pass=&quot;pass&quot; name=&quot;pass&quot; type=&quot;text&quot;&gt;&lt;/input&gt;
+  &lt;input type=&quot;submit&quot; value=&quot;register&quot;&gt;
+&lt;/form&gt;
+{% endblock %}
+</code></pre><p>and <code>home.html</code>:</p><pre><code class="xml">{% block home %}
+&lt;h1&gt;Hello {{user}}&lt;/h1&gt;
+{% endblock %}
+</code></pre><p>When the <code>base.html</code> is rendered it will replace the <code>register</code> and <code>home</code> include tags with the content from the templates they are referencing.</p><p>For more details please see the <a href='https://github.com/yogthos/Selmer'>official documentation</a>.</p><h2 id="html&#95;templating&#95;using&#95;hiccup">HTML Templating Using Hiccup</h2><p><a href='https://github.com/weavejester/hiccup'>Hiccup</a> is a popular HTML templating engine for Clojure. The advantage of using Hiccup is that we can use the full power of Clojure to generate and manipulate our markup. This means that you don't have to learn a separate DSL for generating your HTML with its own rules and quirks.</p><p>In Hiccup, HTML elements are represented by Clojure vectors and the structure of the element looks as following:</p><pre><code class="clojure">&#91;:tag-name {:attribute-key &quot;attribute value&quot;} tag-body&#93;
+</code></pre><p>For example, if we wanted to create a div with a paragraph in it, we could write:</p><pre><code class="clojure">&#91;:div {:id &quot;hello&quot;, :class &quot;content&quot;} &#91;:p &quot;Hello world!&quot;&#93;&#93;
+</code></pre><p>which corresponds to the following HTML:</p><pre><code class="xml">&lt;div id=&quot;hello&quot; class=&quot;content&quot;&gt;&lt;p&gt;Hello world!&lt;/p&gt;&lt;/div&gt;
+</code></pre><p>Hiccup provides shortcuts for setting the id and class of the element, so instead of what we wrote above we could simply write:</p><pre><code class="clojure">&#91;:div#hello.content &#91;:p &quot;Hello world!&quot;&#93;&#93;
+</code></pre><p>Hiccup also provides a number of helper functions for defining common elements such as forms, links, images, etc. All of these functions simply output vectors in the format described above. This means that if a function doesn't do what you need, you can either write out the literal form for the element by hand or take its output and modify it to fit your needs. Each function which describes an HTML element can also take optional map of attributes as its first parameter:</p><pre><code class="clojure">&#40;image {:align &quot;left&quot;} &quot;foo.png&quot;&#41;
+</code></pre><p>This would result in the following HTML:</p><pre><code class="xml">&lt;img align=\&quot;left\&quot; src=\&quot;foo.png\&quot;&gt;
+</code></pre><p>However, it is best practice to use CSS for the actual styling of the elements in order to keep the structure separate from the representation.</p><h3 id="forms&#95;and&#95;input">Forms and Input</h3><p>Hiccup also provides helpers for creating HTML forms, here's an example:</p><pre><code class="clojure">&#40;form-to &#91;:post &quot;/login&quot;&#93;
+  &#40;text-field {:placeholder &quot;screen name&quot;} &quot;id&quot;&#41;
+  &#40;password-field {:placeholder &quot;password&quot;} &quot;pass&quot;&#41;
+  &#40;submit-button &quot;login&quot;&#41;&#41;
+</code></pre><p>The helper takes a vector with the type of the HTTP request specified as a keyword followed by the URL string, the rest of the arguments should be HTML elements. The above will generate the following HTML:</p><pre><code class="xml">&lt;form action=&quot;/login&quot; method=&quot;POST&quot;&gt;
+  &lt;input id=&quot;id&quot; name=&quot;id&quot; placeholder=&quot;screen name&quot; type=&quot;text&quot; /&gt;
+  &lt;input id=&quot;pass&quot; name=&quot;pass&quot; placeholder=&quot;password&quot; type=&quot;password&quot; /&gt;
+  &lt;input type=&quot;submit&quot; value=&quot;login&quot; /&gt;
+&lt;/form&gt;
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/editors.html">
+            Editor Configuration
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-mysql.html">
+            kit-mysql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-nrepl.html">
+            kit-nrepl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-conman.html">
+            kit-sql-conman
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-hikari.html">
+            kit-sql-hikari
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-migratus.html">
+            kit-sql-migratus
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Caching</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#setup">Setup</a></li><li><a href="#basic_usage">Basic Usage</a></li></ol>
+      
+      <div id="content">
+        <p>The <code>kit-redis</code> library provides us with a nice interface over <a href='https://github.com/clojure/core.cache'>clojure.core.cache</a> when connecting to Redis. Many thanks to <a href='https://github.com/strongh/crache'>crache</a> for the inspiration</p><h2 id="setup">Setup</h2><p>Let's assume we have Redis setup and running on our local machine. We can configure our integrant component as follows</p><pre><code class="clojure">:cache/redis
+{:ttl  3600
+ :conn {:pool {}
+        :spec #profile {:dev  {:host &quot;localhost&quot; :port 6379}
+                        :test {:host &quot;localhost&quot; :port 6379}
+                        :prod {:uri #env REDIS&#95;URI}}}}
+</code></pre><h2 id="basic&#95;usage">Basic Usage</h2><p>A typical pattern with a cache is to lookup a key and when missed, execute a separate IO operation to find the value if it exists. If we get back a <code>nil</code> we will assume it doesn't exist and not add it to the cache. This may not be applicable in all cases! Sometimes you may wish to cache the nil. For our purposes here let's assume we do not. </p><pre><code class="clojure">&#40;require '&#91;clojure.core.cache :as cache&#93;&#41;
+
+&#40;defn cache-lookup-or-add
+  &#91;cache key lookup-fn &amp; &#91;ttl&#93;&#93;
+  &#40;or &#40;cache/lookup cache key&#41;
+      &#40;let &#91;value &#40;lookup-fn&#41;&#93;
+        &#40;cache/miss cache key {:val value :ttl ttl}&#41;
+        value&#41;&#41;&#41;
+</code></pre><p>Now let's use our function. Say we have a scenario where we want to get users by ID, and cache any users we have found. If we cannot find the user, we will throw an exception with the <code>:type</code> <code>::no-user-found</code>.</p><p>Let's assume we have already written a database lookup function called <code>:get-user-by-id</code> that retrieves a single user entry given an ID. We will pass both the <code>query-fn</code> and our <code>cache/redis</code> (as <code>cache</code>) in our <code>ctx</code> as the first argument.</p><pre><code class="clojure">&#40;defn user-by-id
+  &#91;{:keys &#91;query-fn cache&#93; :as &#95;ctx} id&#93;
+  &#40;or &#40;cache-lookup-or-add cache
+                           ;; key to match in cache on
+                           &#40;str &quot;users/&quot; id&#41;
+                           ;; miss function to execute when not found in cache
+                           #&#40;query-fn :get-user-by-id {:id id}&#41;&#41;
+      &#40;throw &#40;ex-info &quot;No user found&quot; {:id   id
+                                       :type ::no-user-found}&#41;&#41;&#41;&#41;
+</code></pre>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/editors.html">
+            Editor Configuration
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-mysql.html">
+            kit-mysql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-nrepl.html">
+            kit-nrepl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-conman.html">
+            kit-sql-conman
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-hikari.html">
+            kit-sql-hikari
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-migratus.html">
+            kit-sql-migratus
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>

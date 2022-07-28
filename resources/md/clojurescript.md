@@ -392,5 +392,101 @@ Then we'll have to set the header in the request:
          :error-handler error-handler})
 ```
 
+### Websockets
 
+Kit provide support for websockets using an excellent [sente](https://github.com/ptaoussanis/sente) library. To simplify the installation procedure we provide `:kit/sente` module, wich extents existing `:kit/cljs` module to add support for websockets on both server and client.
 
+#### Installation
+
+Installation procedure is the same as for every other kit module. Start the REPL and execute the following:
+
+```clojure
+(kit/sync-modules) ;; sync modules from the remote module repository
+(kit/list-modules) ;; list available modules
+(kit/install-module :kit/sente) ;; install websockets support
+```
+
+After that, you need to restart your REPL and your shadow-cljs watch process, and you are ready to go.
+
+#### Server side
+
+Module adds a new route in `<<ns-name>>.web.routes.ws.clj` for handling websockets. Received websocket events are handled using a `on-message` multimethod, which default implementation just logs the event and doesn nothing. There are also two example message handlers.
+
+```clojure
+(defmethod on-message :guestbook/echo
+  [{:keys [id client-id ?data send-fn] :as message}]
+  (let [response "Hello from the server"]
+    (send-fn client-id [id response])))
+```
+
+Echo handler receives a :guestbook/echo message from the client, and responds to the client that sent the message. Notice the arguents list provided by `sente`, which includes the following:
+
+* `:id` - websocket event id, in this case `:guestbook/echo`
+* `:client-id` - id of the connected client. 
+* `:?data` - data sent with the event
+* `:send-fn` - function to send a message over the socket, provided by sente
+
+For full documentation about keys, please check sente documentation.
+
+Another example functions sends a message through websocket to all connected clients, using `:connected-uids` atom provided as a message key.
+
+```clojure
+(defmethod on-message :guestbook/broadcast
+  [{:keys [id client-id ?data send-fn connected-uids] :as message}]
+  (let [response (str "Hello to everyone from the client " client-id)]
+   (doseq [uid (:any @connected-uids)]
+     (send-fn uid [id response]))))
+```
+
+You are free do implement the message handling for your event and put the wherever in your code.
+
+If you want to add additional processing, like error handling or logging to all event, you can do that inside the `handle-message!` function, which is a general event dispatcher.
+
+#### Client side
+
+The module provides `<<ns-name>>.ws.cljs` file used to connect to the server.
+
+First, you need to require it from your `<<ns-name>>.core.cljs` file.
+
+```clojure
+(ns <<ns-name>>.core
+  (:require
+   [<<ns-name>>.ws :as ws]
+   [reagent.core :as r]
+   [reagent.dom :as d]))
+```
+
+Also, you need to make sure your websockets are initialised and incoming events are handled. For that, you need to define your event handler, and pass it to the websocket initialization function.
+
+```clojure
+(defn handler [resp]
+  (println "response: " resp))
+
+(defn ^:export ^:dev/once init! []
+  (ws/start-router!
+   handler)
+  ;; (ajax/load-interceptors!)
+  (mount-root))
+```
+
+After reloading your web page, you will see log entries in your JavaScript console that websocket connection is established.
+
+Sending events through websocket from the client is easy. You just need to call `ws/send-message!` function.
+
+For example, you can modify your `home-page` to render two additional buttons, which will send an even to thes server when clicked. Like this:
+
+```clojure
+(defn home-page []
+  [:div
+   [:h2 "Welcome to Reagent!"]
+   [:input {:type :button
+            :value "Click to echo"
+            :on-click #(ws/send-message! [:guestbook/echo "Hallo Server"])}]
+   [:input {:type :button
+            :value "Click to broadcast"
+            :on-click #(ws/send-message! [:guestbook/broadcast "Hallo everyone"])}]])
+```
+
+#### What's next?
+
+We deliberately left event message handling on the client side in this example barebones. It's up to you as a developer to decide how you want to implement it. You may want to use multimethod approach, similar to what we have on the server side. Or, if you are using re-frame, you may want to hook websocket event handling to your reframe message bus.

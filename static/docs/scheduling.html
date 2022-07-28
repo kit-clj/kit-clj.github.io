@@ -1,0 +1,623 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="keywords" content="kit, kit-clj, clojure, framework">
+    <meta name="canonical" content="https://kit-clj.github.io">
+    <title>Kit Framework</title>
+    <link href='http://fonts.googleapis.com/css?family=Inconsolata' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/highlight.js/8.1/styles/color-brewer.min.css">
+    <link rel="icon" href="/img/kit.png" type="image/x-icon">
+    <link rel="shortcut icon" href="/img/kit.png" type="image/x-icon">
+    <link href="/css/highlight.css" rel="stylesheet" type="text/css" />
+    <link href="/css/codestyle.css" rel="stylesheet" type="text/css" />
+    <link href="/css/screen.css" rel="stylesheet" type="text/css" />
+  </head>
+  <body>
+    <header>
+      <div class="wrapper">
+        <div class="column-wrapper">
+          <div class="row">
+            <div id="logo">
+              <h1>
+                <a href="/">
+                  <img src="/img/kit.png" alt="Kit">
+                  Kit
+                </a>
+              </h1>
+            </div>
+            <nav>
+              <ul>
+                <li >
+                  <a href="/">Home</a>
+                </li>
+                <li  class="selected">
+                  <a href="/docs/guestbook.html">
+                    <span class="show-on-mobile">Docs</span>
+                    <span class="hide-on-mobile">Documentation</span>
+                  </a>
+                </li>
+                <li >
+                  <a href="/contribute.html">
+                    <span class="hide-on-mobile">Get Involved</span>
+                    <span class="show-on-mobile">Contrib</span>
+                  </a>
+                </li>
+              </ul>
+            </nav>
+          </div>
+          
+          
+        </div>
+      </div>
+    </header>
+    <div class="wrapper">
+      
+<div class="row">
+  <div class="column column-75">
+    <div class="column-wrapper">
+      <h1>Scheduling</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#basic_setup">Basic Setup</a></li><li><a href="#jobs">Jobs</a></li><li><a href="#triggers">Triggers</a></li><li><a href="#quartz_jdbc_jobstore">Quartz JDBC JobStore</a></li></ol>
+      
+      <div id="content">
+        <p>With the kit-quartz library, you are given integrant component functionality for a quartz scheduler.</p><h2 id="basic&#95;setup">Basic Setup</h2><p><a href='https://github.com/troy-west/cronut'>cronut</a> provides us with the <code>:cronut/scheduler</code> integrant component. We can define it as follows for a job that runs once a day.</p><pre><code class="clojure">:cronut/scheduler
+ {:schedule                     #profile {:test    &#91;&#93;
+                                          :default &#91;{:job     #ig/ref :myapp/daily-job
+                                                     :trigger #cronut/cron &quot;0 0 1 1/1 &#42; ?&quot;}&#93;}
+  :disallowConcurrentExecution? true}
+</code></pre><p>There is a reference to a <code>:myapp.core/daily-job</code> which will should be defined as a new integrant component. There is also a <code>#cronut/cron</code> string which is simply a cron string, and we will not worry about for now. </p><p>First in our <code>system.edn</code> we will define the component.</p><pre><code class="clojure">:myapp.core/daily-job
+{:identity          &quot;myapp.core/daily-job&quot;
+ :description       &quot;Runs once a day and prints hi&quot;
+ :recover?          true
+ :durable?          false}
+</code></pre><p>In <code>myapp.core</code> we have our job defined as</p><pre><code class="clojure">&#40;defmethod ig/init-key :myapp.core/daily-job
+  &#91;&#95; ctx&#93;
+  &#40;reify org.quartz.Job
+    &#40;execute &#91;&#95;this &#95;&#93;
+      &#40;log/info &quot;Start daily job&quot;&#41;
+      &#40;println &quot;Hello!&quot;&#41;
+      &#40;log/info &quot;End daily job&quot;&#41;&#41;&#41;&#41;
+</code></pre><h3 id="jobs">Jobs</h3><p>Each integrant Quartz job should return an object that implements the <code>org.quartz.Job</code> interface. This can be done in many ways, such as <code>reify</code> on <code>org.quartz.Job</code> or implementing the interface on a class, record, etc. The choice is yours and more details can be foudn in the <a href='https://github.com/troy-west/cronut'>cronut</a> documentation</p><h3 id="triggers">Triggers</h3><p>Cronut offers three different triggers defined via tagged literals:</p><p>1) <code>#cronut/cron</code> - a valid cron expression as a string, e.g. <code>:trigger #cronut/cron &quot;0 0 1 1/1 &#42; ?&quot;</code> 2) <code>#cronut/interval</code> - the number of milliseconds to execute the job, e.g. <code>:trigger #cronut/interval 3500</code> 3) <code>#cronut/trigger</code> - full Quartz configuration for a trigger. Below are the examples from the cronut documentation:</p><pre><code class="clojure">;; interval
+:trigger #cronut/trigger {:type        :simple
+                          :interval    3000
+                          :repeat      :forever
+                          :identity    &#91;&quot;trigger-two&quot; &quot;test&quot;&#93;
+                          :description &quot;sample simple trigger&quot;
+                          :start       #inst &quot;2019-01-01T00:00:00.000-00:00&quot;
+                          :end         #inst &quot;2019-02-01T00:00:00.000-00:00&quot;
+                          :misfire     :ignore
+                          :priority    5}
+                          
+;;cron
+:trigger #cronut/trigger {:type        :cron
+                          :cron        &quot;&#42;/6 &#42; &#42; &#42; &#42; ?&quot;
+                          :identity    &#91;&quot;trigger-five&quot; &quot;test&quot;&#93;
+                          :description &quot;sample cron trigger&quot;
+                          :start       #inst &quot;2018-01-01T00:00:00.000-00:00&quot;
+                          :end         #inst &quot;2029-02-01T00:00:00.000-00:00&quot;
+                          :time-zone   &quot;Australia/Melbourne&quot;
+                          :misfire     :fire-and-proceed
+                          :priority    4}
+</code></pre><p>For full documentation, review the <a href='https://github.com/troy-west/cronut'>cronut</a> repository.</p><h2 id="quartz&#95;jdbc&#95;jobstore">Quartz JDBC JobStore</h2><p>Of course, having an in-memory scheduler is only useful in development. When you go to production and need to scale your backend horizontally this is no longer an option. Thankfully, Quartz makes it easy to synchronize with a JobStore implementation of your choosing. For this example, we will take a look at what is required for a JDBC configuration.</p><p>First we need a migration. This is taken from the <a href='https://github.com/quartz-scheduler/quartz/blob/master/quartz-core/src/main/resources/org/quartz/impl/jdbcjobstore/tables_postgres.sql'>quartz core migration script</a>. You can find plenty of other migration scripts <a href='https://github.com/quartz-scheduler/quartz/tree/master/quartz-core/src/main/resources/org/quartz/impl/jdbcjobstore'>here</a> as well</p><pre><code class="sql">-- Thanks to Patrick Lightbody for submitting this...
+--
+-- In your Quartz properties file, you'll need to set 
+-- org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+
+DROP TABLE IF EXISTS QRTZ&#95;FIRED&#95;TRIGGERS;
+DROP TABLE IF EXISTS QRTZ&#95;PAUSED&#95;TRIGGER&#95;GRPS;
+DROP TABLE IF EXISTS QRTZ&#95;SCHEDULER&#95;STATE;
+DROP TABLE IF EXISTS QRTZ&#95;LOCKS;
+DROP TABLE IF EXISTS QRTZ&#95;SIMPLE&#95;TRIGGERS;
+DROP TABLE IF EXISTS QRTZ&#95;CRON&#95;TRIGGERS;
+DROP TABLE IF EXISTS QRTZ&#95;SIMPROP&#95;TRIGGERS;
+DROP TABLE IF EXISTS QRTZ&#95;BLOB&#95;TRIGGERS;
+DROP TABLE IF EXISTS QRTZ&#95;TRIGGERS;
+DROP TABLE IF EXISTS QRTZ&#95;JOB&#95;DETAILS;
+DROP TABLE IF EXISTS QRTZ&#95;CALENDARS;
+
+CREATE TABLE QRTZ&#95;JOB&#95;DETAILS
+&#40;
+  SCHED&#95;NAME        VARCHAR&#40;120&#41; NOT NULL,
+  JOB&#95;NAME          VARCHAR&#40;200&#41; NOT NULL,
+  JOB&#95;GROUP         VARCHAR&#40;200&#41; NOT NULL,
+  DESCRIPTION       VARCHAR&#40;250&#41; NULL,
+  JOB&#95;CLASS&#95;NAME    VARCHAR&#40;250&#41; NOT NULL,
+  IS&#95;DURABLE        BOOL         NOT NULL,
+  IS&#95;NONCONCURRENT  BOOL         NOT NULL,
+  IS&#95;UPDATE&#95;DATA    BOOL         NOT NULL,
+  REQUESTS&#95;RECOVERY BOOL         NOT NULL,
+  JOB&#95;DATA          BYTEA        NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, JOB&#95;NAME, JOB&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;TRIGGERS
+&#40;
+  SCHED&#95;NAME     VARCHAR&#40;120&#41; NOT NULL,
+  TRIGGER&#95;NAME   VARCHAR&#40;200&#41; NOT NULL,
+  TRIGGER&#95;GROUP  VARCHAR&#40;200&#41; NOT NULL,
+  JOB&#95;NAME       VARCHAR&#40;200&#41; NOT NULL,
+  JOB&#95;GROUP      VARCHAR&#40;200&#41; NOT NULL,
+  DESCRIPTION    VARCHAR&#40;250&#41; NULL,
+  NEXT&#95;FIRE&#95;TIME BIGINT       NULL,
+  PREV&#95;FIRE&#95;TIME BIGINT       NULL,
+  PRIORITY       INTEGER      NULL,
+  TRIGGER&#95;STATE  VARCHAR&#40;16&#41;  NOT NULL,
+  TRIGGER&#95;TYPE   VARCHAR&#40;8&#41;   NOT NULL,
+  START&#95;TIME     BIGINT       NOT NULL,
+  END&#95;TIME       BIGINT       NULL,
+  CALENDAR&#95;NAME  VARCHAR&#40;200&#41; NULL,
+  MISFIRE&#95;INSTR  SMALLINT     NULL,
+  JOB&#95;DATA       BYTEA        NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;,
+  FOREIGN KEY &#40;SCHED&#95;NAME, JOB&#95;NAME, JOB&#95;GROUP&#41;
+  REFERENCES QRTZ&#95;JOB&#95;DETAILS &#40;SCHED&#95;NAME, JOB&#95;NAME, JOB&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;SIMPLE&#95;TRIGGERS
+&#40;
+  SCHED&#95;NAME      VARCHAR&#40;120&#41; NOT NULL,
+  TRIGGER&#95;NAME    VARCHAR&#40;200&#41; NOT NULL,
+  TRIGGER&#95;GROUP   VARCHAR&#40;200&#41; NOT NULL,
+  REPEAT&#95;COUNT    BIGINT       NOT NULL,
+  REPEAT&#95;INTERVAL BIGINT       NOT NULL,
+  TIMES&#95;TRIGGERED BIGINT       NOT NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;,
+  FOREIGN KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+  REFERENCES QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;CRON&#95;TRIGGERS
+&#40;
+  SCHED&#95;NAME      VARCHAR&#40;120&#41; NOT NULL,
+  TRIGGER&#95;NAME    VARCHAR&#40;200&#41; NOT NULL,
+  TRIGGER&#95;GROUP   VARCHAR&#40;200&#41; NOT NULL,
+  CRON&#95;EXPRESSION VARCHAR&#40;120&#41; NOT NULL,
+  TIME&#95;ZONE&#95;ID    VARCHAR&#40;80&#41;,
+  PRIMARY KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;,
+  FOREIGN KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+  REFERENCES QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;SIMPROP&#95;TRIGGERS
+&#40;
+  SCHED&#95;NAME    VARCHAR&#40;120&#41;   NOT NULL,
+  TRIGGER&#95;NAME  VARCHAR&#40;200&#41;   NOT NULL,
+  TRIGGER&#95;GROUP VARCHAR&#40;200&#41;   NOT NULL,
+  STR&#95;PROP&#95;1    VARCHAR&#40;512&#41;   NULL,
+  STR&#95;PROP&#95;2    VARCHAR&#40;512&#41;   NULL,
+  STR&#95;PROP&#95;3    VARCHAR&#40;512&#41;   NULL,
+  INT&#95;PROP&#95;1    INT            NULL,
+  INT&#95;PROP&#95;2    INT            NULL,
+  LONG&#95;PROP&#95;1   BIGINT         NULL,
+  LONG&#95;PROP&#95;2   BIGINT         NULL,
+  DEC&#95;PROP&#95;1    NUMERIC&#40;13, 4&#41; NULL,
+  DEC&#95;PROP&#95;2    NUMERIC&#40;13, 4&#41; NULL,
+  BOOL&#95;PROP&#95;1   BOOL           NULL,
+  BOOL&#95;PROP&#95;2   BOOL           NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;,
+  FOREIGN KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+  REFERENCES QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;BLOB&#95;TRIGGERS
+&#40;
+  SCHED&#95;NAME    VARCHAR&#40;120&#41; NOT NULL,
+  TRIGGER&#95;NAME  VARCHAR&#40;200&#41; NOT NULL,
+  TRIGGER&#95;GROUP VARCHAR&#40;200&#41; NOT NULL,
+  BLOB&#95;DATA     BYTEA        NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;,
+  FOREIGN KEY &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+  REFERENCES QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;CALENDARS
+&#40;
+  SCHED&#95;NAME    VARCHAR&#40;120&#41; NOT NULL,
+  CALENDAR&#95;NAME VARCHAR&#40;200&#41; NOT NULL,
+  CALENDAR      BYTEA        NOT NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, CALENDAR&#95;NAME&#41;
+&#41;;
+
+
+CREATE TABLE QRTZ&#95;PAUSED&#95;TRIGGER&#95;GRPS
+&#40;
+  SCHED&#95;NAME    VARCHAR&#40;120&#41; NOT NULL,
+  TRIGGER&#95;GROUP VARCHAR&#40;200&#41; NOT NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, TRIGGER&#95;GROUP&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;FIRED&#95;TRIGGERS
+&#40;
+  SCHED&#95;NAME        VARCHAR&#40;120&#41; NOT NULL,
+  ENTRY&#95;ID          VARCHAR&#40;95&#41;  NOT NULL,
+  TRIGGER&#95;NAME      VARCHAR&#40;200&#41; NOT NULL,
+  TRIGGER&#95;GROUP     VARCHAR&#40;200&#41; NOT NULL,
+  INSTANCE&#95;NAME     VARCHAR&#40;200&#41; NOT NULL,
+  FIRED&#95;TIME        BIGINT       NOT NULL,
+  SCHED&#95;TIME        BIGINT       NOT NULL,
+  PRIORITY          INTEGER      NOT NULL,
+  STATE             VARCHAR&#40;16&#41;  NOT NULL,
+  JOB&#95;NAME          VARCHAR&#40;200&#41; NULL,
+  JOB&#95;GROUP         VARCHAR&#40;200&#41; NULL,
+  IS&#95;NONCONCURRENT  BOOL         NULL,
+  REQUESTS&#95;RECOVERY BOOL         NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, ENTRY&#95;ID&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;SCHEDULER&#95;STATE
+&#40;
+  SCHED&#95;NAME        VARCHAR&#40;120&#41; NOT NULL,
+  INSTANCE&#95;NAME     VARCHAR&#40;200&#41; NOT NULL,
+  LAST&#95;CHECKIN&#95;TIME BIGINT       NOT NULL,
+  CHECKIN&#95;INTERVAL  BIGINT       NOT NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, INSTANCE&#95;NAME&#41;
+&#41;;
+
+CREATE TABLE QRTZ&#95;LOCKS
+&#40;
+  SCHED&#95;NAME VARCHAR&#40;120&#41; NOT NULL,
+  LOCK&#95;NAME  VARCHAR&#40;40&#41;  NOT NULL,
+  PRIMARY KEY &#40;SCHED&#95;NAME, LOCK&#95;NAME&#41;
+&#41;;
+
+CREATE INDEX IDX&#95;QRTZ&#95;J&#95;REQ&#95;RECOVERY
+  ON QRTZ&#95;JOB&#95;DETAILS &#40;SCHED&#95;NAME, REQUESTS&#95;RECOVERY&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;J&#95;GRP
+  ON QRTZ&#95;JOB&#95;DETAILS &#40;SCHED&#95;NAME, JOB&#95;GROUP&#41;;
+
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;J
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, JOB&#95;NAME, JOB&#95;GROUP&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;JG
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, JOB&#95;GROUP&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;C
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, CALENDAR&#95;NAME&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;G
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;GROUP&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;STATE
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;STATE&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;N&#95;STATE
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP, TRIGGER&#95;STATE&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;N&#95;G&#95;STATE
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;GROUP, TRIGGER&#95;STATE&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;NEXT&#95;FIRE&#95;TIME
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, NEXT&#95;FIRE&#95;TIME&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;NFT&#95;ST
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;STATE, NEXT&#95;FIRE&#95;TIME&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;NFT&#95;MISFIRE
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, MISFIRE&#95;INSTR, NEXT&#95;FIRE&#95;TIME&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;NFT&#95;ST&#95;MISFIRE
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, MISFIRE&#95;INSTR, NEXT&#95;FIRE&#95;TIME, TRIGGER&#95;STATE&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;T&#95;NFT&#95;ST&#95;MISFIRE&#95;GRP
+  ON QRTZ&#95;TRIGGERS &#40;SCHED&#95;NAME, MISFIRE&#95;INSTR, NEXT&#95;FIRE&#95;TIME, TRIGGER&#95;GROUP, TRIGGER&#95;STATE&#41;;
+
+CREATE INDEX IDX&#95;QRTZ&#95;FT&#95;TRIG&#95;INST&#95;NAME
+  ON QRTZ&#95;FIRED&#95;TRIGGERS &#40;SCHED&#95;NAME, INSTANCE&#95;NAME&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;FT&#95;INST&#95;JOB&#95;REQ&#95;RCVRY
+  ON QRTZ&#95;FIRED&#95;TRIGGERS &#40;SCHED&#95;NAME, INSTANCE&#95;NAME, REQUESTS&#95;RECOVERY&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;FT&#95;J&#95;G
+  ON QRTZ&#95;FIRED&#95;TRIGGERS &#40;SCHED&#95;NAME, JOB&#95;NAME, JOB&#95;GROUP&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;FT&#95;JG
+  ON QRTZ&#95;FIRED&#95;TRIGGERS &#40;SCHED&#95;NAME, JOB&#95;GROUP&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;FT&#95;T&#95;G
+  ON QRTZ&#95;FIRED&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;NAME, TRIGGER&#95;GROUP&#41;;
+CREATE INDEX IDX&#95;QRTZ&#95;FT&#95;TG
+  ON QRTZ&#95;FIRED&#95;TRIGGERS &#40;SCHED&#95;NAME, TRIGGER&#95;GROUP&#41;;
+
+COMMIT;
+</code></pre><p>Next in our <code>prod/resources</code> folder we will create a file <code>quartz.properties</code> and insert this code, replacing <code>myapp</code> and <code>MyApp</code> with the application name of your choosing</p><pre><code class="properties">#============================================================================
+# Configure Main Scheduler Properties
+#============================================================================
+org.quartz.scheduler.instanceName = MyAppClusteredScheduler
+org.quartz.scheduler.instanceId = AUTO
+
+org.quartz.threadPool.threadCount = 4
+#============================================================================
+# Configure JobStore
+#============================================================================
+org.quartz.jobStore.class = org.quartz.impl.jdbcjobstore.JobStoreTX
+org.quartz.jobStore.driverDelegateClass = org.quartz.impl.jdbcjobstore.PostgreSQLDelegate
+org.quartz.jobStore.useProperties = false
+org.quartz.jobStore.dataSource = myapp
+org.quartz.jobStore.tablePrefix = QRTZ&#95;
+
+org.quartz.jobStore.isClustered = true
+org.quartz.jobStore.clusterCheckinInterval = 20000
+#============================================================================
+# Configure Datasources
+#============================================================================
+org.quartz.dataSource.myapp.driver = org.postgresql.Driver
+org.quartz.dataSource.myapp.maxConnections = 5
+
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+# Should set these as env properties or in system.edn
+# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+org.quartz.dataSource.myapp.URL =
+org.quartz.dataSource.myapp.user =
+org.quartz.dataSource.myapp.password =
+</code></pre><p>Now when starting your application in production, ensure you pass in the properties for <code>org.quartz.dataSource.myapp.URL</code>, <code>org.quartz.dataSource.myapp.user</code>, and <code>org.quartz.dataSource.myapp.password</code>. Should you not be able to do this (for various devops restrictions), you can also pass these in your system.edn as follows</p><pre><code class="clojure">:quartz/env-properties
+ {:org.quartz.dataSource.myapp.URL      #env QUARTZ&#95;JDBC&#95;URL
+  :org.quartz.dataSource.myapp.user     #env QUARTZ&#95;JDBC&#95;USER
+  :org.quartz.dataSource.myapp.password #env QUARTZ&#95;JDBC&#95;PASSWORD}
+</code></pre><p>Alternatively you can set up JobStore implementations in <a href='https://github.com/michaelklishin/quartz-mongodb'>MongoDB</a> and other datastores of your choosing.</p><p><a href='http://www.quartz-scheduler.org/documentation/quartz-2.2.2/tutorials/tutorial-lesson-09.html'>Quartz JobStore docs</a></p>
+      </div>
+    </div>
+  </div>
+  <div class="column column-25">
+    <div class="column-wrapper nav">      
+      <h2>Topics</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/guestbook.html">
+            Your First Application
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/repl.html">
+            REPL Driven Development
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/profiles.html">
+            Application Profiles
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/modules.html">
+            Application Modules
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/integrant.html">
+            Integrant
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/html_templating.html">
+            HTML Templating
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/assets.html">
+            Static Assets
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/clojurescript.html">
+            ClojureScript
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/routes.html">
+            Routing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/requests_responses.html">
+            Requests &amp; Responses
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/middleware.html">
+            Middleware
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/sessions.html">
+            Sessions
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/database.html">
+            Database Access
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/caching.html">
+            Caching
+          </a>
+        </li>
+        
+        <li class="selected" >
+          <a href="/docs/scheduling.html">
+            Scheduling
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/logging.html">
+            Logging
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/testing.html">
+            Testing
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/servers.html">
+            Server Tuning
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/environment.html">
+            Environment Variables
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/deployment.html">
+            Deployment
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/useful_libraries.html">
+            Useful Libraries
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/apps.html">
+            Sample Applications
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/upgrading.html">
+            Upgrading
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/editors.html">
+            Editor Configuration
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/learning_clojure.html">
+            Clojure Resources
+          </a>
+        </li>
+        
+      </ul>
+      <h2>Libs</h2>
+      <ul>
+        
+        <li >
+          <a href="/docs/kit-core.html">
+            kit-core
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-hato.html">
+            kit-hato
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-metrics.html">
+            kit-metrics
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-mysql.html">
+            kit-mysql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-nrepl.html">
+            kit-nrepl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-postgres.html">
+            kit-postgres
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-quartz.html">
+            kit-quartz
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-redis.html">
+            kit-redis
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-repl.html">
+            kit-repl
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql.html">
+            kit-sql
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-conman.html">
+            kit-sql-conman
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-hikari.html">
+            kit-sql-hikari
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-sql-migratus.html">
+            kit-sql-migratus
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-undertow.html">
+            kit-undertow
+          </a>
+        </li>
+        
+        <li >
+          <a href="/docs/kit-xtdb.html">
+            kit-xtdb
+          </a>
+        </li>
+        
+      </ul>
+    </div>
+  </div>
+</div>
+
+    </div>
+    <footer>
+      <article class="wrapper">
+        <div class="column-wrapper">
+          <p>
+            Kit framework is released under the <a href="http://opensource.org/licenses/MIT">MIT License</a>
+            -
+            Copyright ©
+            <span id="cpyear"></span>
+          </p>
+          <p><a href="https://github.com/kit-clj/kit">Framework Source Code</a></p>
+          <p><a href="https://github.com/kit-clj/kit-clj.github.io">Docs Source Code</a></p>
+        </div>
+      </article>
+    </footer>
+
+    <script src="/js/highlight.pack.js" type="application/javascript"></script>
+    <script src="/js/site.js" type="application/javascript"></script>
+    
+<script src="/js/docs.js" type="application/javascript"></script>
+
+  </body>
+</html>
