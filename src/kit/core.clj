@@ -13,7 +13,7 @@
 (add-filter! :markdown (fn [content] [:safe (md-to-html-string content)]))
 
 (defn render-page [[url template params]]
-  (let [path (str "static" (string/replace url #"/" (java.io.File/separator)))]
+  (let [path (str "static" url)]
     (io/make-parents path)
     (spit path (parser/render-file (str template) (assoc params :page template)))))
 
