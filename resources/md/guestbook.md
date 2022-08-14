@@ -224,7 +224,7 @@ To confirm that your server is running, visit [http://localhost:3000/api/health]
 System resources such as HTTP server ports, database connections are defined in the `resources/system.edn` file. For example, this key defines HTTP server configuration such as the host, port, and HTTP handler:
 
 ```clojure
-:server/undertow
+:server/http
  {:port #long #or [#env PORT 3000]
   :host #or [#env HTTP_HOST "0.0.0.0"]
   :handler #ig/ref :handler/ring}
