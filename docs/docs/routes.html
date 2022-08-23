@@ -126,7 +126,7 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
    &#91;&quot;/upload&quot; {:get &#40;fn &#91;req&#93;
                       &#40;layout/render request &quot;upload.html&quot;&#41;&#41;
 
-               :post &#40;fn &#91;{{{:keys &#91;file&#93;} :multipart} :parameters}&#93;
+               :post &#40;fn &#91;{{:keys &#91;file&#93;} :params}&#93;
                        &#40;upload-file resource-path file&#41;
                        &#40;redirect &#40;str &quot;/files/&quot; &#40;:filename file&#41;&#41;&#41;&#41;}&#93;
 
