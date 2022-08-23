@@ -149,7 +149,7 @@ we could then render the page and handle the file upload as follows:
    ["/upload" {:get (fn [req]
                       (layout/render request "upload.html"))
 
-               :post (fn [{{{:keys [file]} :multipart} :parameters}]
+               :post (fn [{{:keys [file]} :params}]
                        (upload-file resource-path file)
                        (redirect (str "/files/" (:filename file))))}]
 
