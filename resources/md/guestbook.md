@@ -243,7 +243,7 @@ Kit modules consist of templates that can be used to inject code and resources i
                             :name "kit-modules"}]}
 ```
 
-Since our application needs to serve some HTML content, let's add the official HTML module. In your REPL, you can execute the following: 
+Since our application needs to serve some HTML content, let's add the official HTML module. In your REPL, you can execute the following:
 
 ```clojure
 ;; This will download the official Kit modules from git
@@ -302,30 +302,30 @@ The module also helped generate some routes for us under `kit.guestbook.web.rout
 
 #### Adding a database
 
-Similarly to the way we installed the HTML module, we can add a SQL module with SQLite called `:kit/sql`. The default profile includes SQLite out of the box, but if we wanted to be explicit we could also write `(kit/install-module :kit/sql {:profile :sqlite})`
+Similarly to the way we installed the HTML module, we can add a SQL module with SQLite called `:kit/sql`. The default profile includes SQLite out of the box, but if we wanted to be explicit we could also write `(kit/install-module :kit/sql {:feature-flag :sqlite})`
 
 ```clojure
 (kit/install-module :kit/sql)
 ;; updating file: resources/system.edn
 ;; injecting
-;;  path: [:db.sql/connection] 
+;;  path: [:db.sql/connection]
 ;;  value: #profile {:dev {:jdbc-url "jdbc:sqlite:_dev.db"}, :test {:jdbc-url "jdbc:sqlite:_test.db"}, :prod {:jdbc-url #env JDBC_URL}}
 ;; injecting
-;;  path: [:db.sql/query-fn] 
+;;  path: [:db.sql/query-fn]
 ;;  value: {:conn #ig/ref :db.sql/connection, :options {}, :filename "sql/queries.sql"}
 ;; injecting
-;;  path: [:db.sql/migrations] 
+;;  path: [:db.sql/migrations]
 ;;  value: {:store :database, :db {:datasource #ig/ref :db.sql/connection}, :migrate-on-init? true}
 ;; updating file: deps.edn
 ;; injecting
-;;  path: [:deps io.github.kit-clj/kit-sql] 
+;;  path: [:deps io.github.kit-clj/kit-sql]
 ;;  value: #:mvn{:version "0.1.0"}
 ;; injecting
-;;  path: [:deps org.xerial/sqlite-jdbc] 
+;;  path: [:deps org.xerial/sqlite-jdbc]
 ;;  value: #:mvn{:version "3.34.0"}
 ;; updating file: src/clj/kit/guestbook/core.clj
 ;; applying
-;;  action: :append-requires 
+;;  action: :append-requires
 ;;  value: [[kit.edge.db.sql]]
 ;; sql installed successfully!
 ;; restart required!
@@ -334,7 +334,7 @@ Similarly to the way we installed the HTML module, we can add a SQL module with 
 Restart again and create your first database migration.
 
 ```clojure
-(migratus.core/create 
+(migratus.core/create
   (:db.sql/migrations state/system)
   "add-guestbook-table")
 ```
@@ -434,7 +434,7 @@ Now that our model is all set up, let's reload the application, and test our que
 ;; => [{:id 1, :name "m1", :message "hello world", :timestamp 1636480432353}]
 ```
 
-In this example, the newly defined `query-fn` function allows you to execute the SQL functions you defined in `queries.sql`. It achieves this using the `:db.sql/query-fn` component that comes with kit-sql (a dependency of kit/sqlite you installed). 
+In this example, the newly defined `query-fn` function allows you to execute the SQL functions you defined in `queries.sql`. It achieves this using the `:db.sql/query-fn` component that comes with kit-sql (a dependency of kit/sqlite you installed).
 
 As you can see, `query-fn` takes two arguments: name of the SQL query function to call, and a map of parameters required by that function.
 
@@ -473,16 +473,16 @@ We'll create a new controller that will be responsible for saving new messages i
 
 ```clojure
 (ns kit.guestbook.web.controllers.guestbook
-  (:require   
+  (:require
    [clojure.tools.logging :as log]
-   [kit.guestbook.web.routes.utils :as utils]   
+   [kit.guestbook.web.routes.utils :as utils]
    [ring.util.http-response :as http-response]))
 
 (defn save-message!
   [{{:strs [name message]} :form-params :as request}]
   (log/debug "saving message" name message)
-  (let [{:keys [query-fn]} (utils/route-data request)]    
-    (try      
+  (let [{:keys [query-fn]} (utils/route-data request)]
+    (try
       (if (or (empty? name) (empty? message))
         (cond-> (http-response/found "/")
           (empty? name)
@@ -529,7 +529,7 @@ Finally, we'll add the `/save-message` route in the `page-routes` function. This
 
 ```clojure
 (defn page-routes [_opts]
-  [["/" {:get home}]   
+  [["/" {:get home}]
    ["/save-message" {:post guestbook/save-message!}]])
 ```
 
@@ -676,7 +676,7 @@ To learn more about HTML templating options you can use with Kit, see [HTML Temp
 
 ## Adding some tests
 
-Tests are found under the `test` source path. 
+Tests are found under the `test` source path.
 
 We can now run `clj -M:test` in the terminal to see that our database interaction works
 as expected.
