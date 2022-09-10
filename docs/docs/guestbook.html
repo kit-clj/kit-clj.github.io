@@ -131,7 +131,7 @@ cd guestbook
             :repositories &#91;{:url  &quot;git@github.com:kit-clj/modules.git&quot;
                             :tag  &quot;master&quot;
                             :name &quot;kit-modules&quot;}&#93;}
-</code></pre><p>Since our application needs to serve some HTML content, let's add the official HTML module. In your REPL, you can execute the following: </p><pre><code class="clojure">;; This will download the official Kit modules from git
+</code></pre><p>Since our application needs to serve some HTML content, let's add the official HTML module. In your REPL, you can execute the following:</p><pre><code class="clojure">;; This will download the official Kit modules from git
 &#40;kit/sync-modules&#41;
 
 ;; This will list the available modules
@@ -166,31 +166,31 @@ cd guestbook
 ;; html installed successfully!
 ;; restart required!
 ;; nil
-</code></pre><p>We can see from the output of the <code>kit/install-module</code> that we need to restart our REPL. Let's do that. Once we are up again, we can test if our module is installed correctly by starting up the server with <code>&#40;go&#41;</code> and navigating to <a href='http://localhost:3000'>localhost:3000</a>.</p><h4 id="html&#95;templates">HTML templates</h4><p>The module generated the following files under the <code>resources/html</code> directory:</p><ul><li><code>home.html</code> - home page</li><li><code>error.html</code> - error page template</li></ul><p>This directory is reserved for HTML templates that represent the application pages.</p><p>The module also generated the namespace <code>kit.guestbook.web.pages.layout</code> which helps you render HTML pages using <a href='https://github.com/yogthos/Selmer'>Selmer templating engine</a></p><h4 id="routing">Routing</h4><p>The module also helped generate some routes for us under <code>kit.guestbook.web.routes.pages</code>. See <a href='/docs/routes.html'>routing</a> documentation for more details.</p><h4 id="adding&#95;a&#95;database">Adding a database</h4><p>Similarly to the way we installed the HTML module, we can add a SQL module with SQLite called <code>:kit/sql</code>. The default profile includes SQLite out of the box, but if we wanted to be explicit we could also write <code>&#40;kit/install-module :kit/sql {:profile :sqlite}&#41;</code></p><pre><code class="clojure">&#40;kit/install-module :kit/sql&#41;
+</code></pre><p>We can see from the output of the <code>kit/install-module</code> that we need to restart our REPL. Let's do that. Once we are up again, we can test if our module is installed correctly by starting up the server with <code>&#40;go&#41;</code> and navigating to <a href='http://localhost:3000'>localhost:3000</a>.</p><h4 id="html&#95;templates">HTML templates</h4><p>The module generated the following files under the <code>resources/html</code> directory:</p><ul><li><code>home.html</code> - home page</li><li><code>error.html</code> - error page template</li></ul><p>This directory is reserved for HTML templates that represent the application pages.</p><p>The module also generated the namespace <code>kit.guestbook.web.pages.layout</code> which helps you render HTML pages using <a href='https://github.com/yogthos/Selmer'>Selmer templating engine</a></p><h4 id="routing">Routing</h4><p>The module also helped generate some routes for us under <code>kit.guestbook.web.routes.pages</code>. See <a href='/docs/routes.html'>routing</a> documentation for more details.</p><h4 id="adding&#95;a&#95;database">Adding a database</h4><p>Similarly to the way we installed the HTML module, we can add a SQL module with SQLite called <code>:kit/sql</code>. The default profile includes SQLite out of the box, but if we wanted to be explicit we could also write <code>&#40;kit/install-module :kit/sql {:feature-flag :sqlite}&#41;</code></p><pre><code class="clojure">&#40;kit/install-module :kit/sql&#41;
 ;; updating file: resources/system.edn
 ;; injecting
-;;  path: &#91;:db.sql/connection&#93; 
+;;  path: &#91;:db.sql/connection&#93;
 ;;  value: #profile {:dev {:jdbc-url &quot;jdbc:sqlite:&#95;dev.db&quot;}, :test {:jdbc-url &quot;jdbc:sqlite:&#95;test.db&quot;}, :prod {:jdbc-url #env JDBC&#95;URL}}
 ;; injecting
-;;  path: &#91;:db.sql/query-fn&#93; 
+;;  path: &#91;:db.sql/query-fn&#93;
 ;;  value: {:conn #ig/ref :db.sql/connection, :options {}, :filename &quot;sql/queries.sql&quot;}
 ;; injecting
-;;  path: &#91;:db.sql/migrations&#93; 
+;;  path: &#91;:db.sql/migrations&#93;
 ;;  value: {:store :database, :db {:datasource #ig/ref :db.sql/connection}, :migrate-on-init? true}
 ;; updating file: deps.edn
 ;; injecting
-;;  path: &#91;:deps io.github.kit-clj/kit-sql&#93; 
+;;  path: &#91;:deps io.github.kit-clj/kit-sql&#93;
 ;;  value: #:mvn{:version &quot;0.1.0&quot;}
 ;; injecting
-;;  path: &#91;:deps org.xerial/sqlite-jdbc&#93; 
+;;  path: &#91;:deps org.xerial/sqlite-jdbc&#93;
 ;;  value: #:mvn{:version &quot;3.34.0&quot;}
 ;; updating file: src/clj/kit/guestbook/core.clj
 ;; applying
-;;  action: :append-requires 
+;;  action: :append-requires
 ;;  value: &#91;&#91;kit.edge.db.sql&#93;&#93;
 ;; sql installed successfully!
 ;; restart required!
-</code></pre><p>Restart again and create your first database migration.</p><pre><code class="clojure">&#40;migratus.core/create 
+</code></pre><p>Restart again and create your first database migration.</p><pre><code class="clojure">&#40;migratus.core/create
   &#40;:db.sql/migrations state/system&#41;
   &quot;add-guestbook-table&quot;&#41;
 </code></pre><p>This will generate two files under your <code>resources/migrations</code> directory. They will look something like this, but with a different prefix:</p><pre><code>20211109173842-add-guestbook-table.up.sql
@@ -239,7 +239,7 @@ SELECT &#42; FROM guestbook
 
 &#40;query-fn :get-messages {}&#41;
 ;; =&gt; &#91;{:id 1, :name &quot;m1&quot;, :message &quot;hello world&quot;, :timestamp 1636480432353}&#93;
-</code></pre><p>In this example, the newly defined <code>query-fn</code> function allows you to execute the SQL functions you defined in <code>queries.sql</code>. It achieves this using the <code>:db.sql/query-fn</code> component that comes with kit-sql (a dependency of kit/sqlite you installed). </p><p>As you can see, <code>query-fn</code> takes two arguments: name of the SQL query function to call, and a map of parameters required by that function.</p><p>For more information on how components like <code>:db.sql/query-fn</code> work, see <a href='/docs/integrant.html#accessing_components'>Accessing Components</a>.</p><h3 id="exposing&#95;database&#95;queries&#95;in&#95;the&#95;router&#95;component">Exposing Database Queries in the Router Component</h3><p>Now that we've added the queries, we'll need to update <code>resources/system.edn</code> to make these queries available in the page router component. To do this, add a <code>:query-fn</code> key in the component definition as follows:</p><pre><code class="clojure">:reitit.routes/pages
+</code></pre><p>In this example, the newly defined <code>query-fn</code> function allows you to execute the SQL functions you defined in <code>queries.sql</code>. It achieves this using the <code>:db.sql/query-fn</code> component that comes with kit-sql (a dependency of kit/sqlite you installed).</p><p>As you can see, <code>query-fn</code> takes two arguments: name of the SQL query function to call, and a map of parameters required by that function.</p><p>For more information on how components like <code>:db.sql/query-fn</code> work, see <a href='/docs/integrant.html#accessing_components'>Accessing Components</a>.</p><h3 id="exposing&#95;database&#95;queries&#95;in&#95;the&#95;router&#95;component">Exposing Database Queries in the Router Component</h3><p>Now that we've added the queries, we'll need to update <code>resources/system.edn</code> to make these queries available in the page router component. To do this, add a <code>:query-fn</code> key in the component definition as follows:</p><pre><code class="clojure">:reitit.routes/pages
 {:base-path &quot;&quot;,
  :query-fn #ig/ref :db.sql/query-fn
  :env      #ig/ref :system/env}
@@ -248,16 +248,16 @@ SELECT &#42; FROM guestbook
  :options {},
  :filename &quot;sql/queries.sql&quot;}
 </code></pre><p>Like in the REPL example towards the end of the <a href='accessing_the_database'>Accessing the Database</a> section, the <code>:db.sql/query-fn</code> component comes from kit-sql. Unlike in that example:</p><ul><li>we pass specific database connection information</li><li>we only make available the query functions from one specific file.</li></ul><p>For more information on how components like <code>:db.sql/query-fn</code> work, see <a href='/docs/integrant.html#accessing_components'>Accessing Components</a>.</p><h3 id="creating&#95;a&#95;controller&#95;for&#95;the&#95;guestbook">Creating a controller for the guestbook</h3><p>We'll create a new controller that will be responsible for saving new messages in the database. Let's create a new namespace called <code>kit.guestbook.web.controllers.guestbook</code>, and add the following content to it:</p><pre><code class="clojure">&#40;ns kit.guestbook.web.controllers.guestbook
-  &#40;:require   
+  &#40;:require
    &#91;clojure.tools.logging :as log&#93;
-   &#91;kit.guestbook.web.routes.utils :as utils&#93;   
+   &#91;kit.guestbook.web.routes.utils :as utils&#93;
    &#91;ring.util.http-response :as http-response&#93;&#41;&#41;
 
 &#40;defn save-message!
   &#91;{{:strs &#91;name message&#93;} :form-params :as request}&#93;
   &#40;log/debug &quot;saving message&quot; name message&#41;
-  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data request&#41;&#93;    
-    &#40;try      
+  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data request&#41;&#93;
+    &#40;try
       &#40;if &#40;or &#40;empty? name&#41; &#40;empty? message&#41;&#41;
         &#40;cond-&gt; &#40;http-response/found &quot;/&quot;&#41;
           &#40;empty? name&#41;
@@ -281,7 +281,7 @@ SELECT &#42; FROM guestbook
     &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
                                         :errors &#40;:errors flash&#41;}&#41;&#41;&#41;
 </code></pre><p>The function now renders the <code>home.html</code> template, and passes into it the messages from the database (using the <code>:messages</code> key), and any errors (using the <code>:errors</code> key).</p><p>Finally, we'll add the <code>/save-message</code> route in the <code>page-routes</code> function. This route will pass the request to the <code>guestbook/save-message!</code> function we defined above when the form post happens:</p><pre><code class="clojure">&#40;defn page-routes &#91;&#95;opts&#93;
-  &#91;&#91;&quot;/&quot; {:get home}&#93;   
+  &#91;&#91;&quot;/&quot; {:get home}&#93;
    &#91;&quot;/save-message&quot; {:post guestbook/save-message!}&#93;&#93;&#41;
 </code></pre><p>Now that we have our controllers set up, let's open <code>home.html</code> template located in the <code>resources/html</code> directory. Currently, it simply renders a static page. We'll update our <code>content</code> div to iterate over the messages and print each one in a list:</p><pre><code class="xml">&lt;div class=&quot;content container&quot;&gt;
   &lt;div class=&quot;columns&quot;&gt;
@@ -391,7 +391,7 @@ form, .error {
 	margin-bottom: 50px;
 	position: relative;
 }
-</code></pre><p>When we reload the page in the browser we should be greeted by the guestbook page. We can test that everything is working as expected by adding a comment in our comment form.</p><p>To learn more about HTML templating options you can use with Kit, see <a href='/docs/html_templating.html'>HTML Templating</a>.</p><h2 id="adding&#95;some&#95;tests">Adding some tests</h2><p>Tests are found under the <code>test</code> source path. </p><p>We can now run <code>clj -M:test</code> in the terminal to see that our database interaction works as expected.</p><h2 id="packaging&#95;the&#95;application">Packaging the application</h2><p>You can package your application for standalone deployment by running the following command:</p><p>clj -Sforce -T:build all</p><p>This will create a runnable jar that you can run using the following commands:</p><pre><code>export JDBC&#95;URL=&quot;jdbc:sqlite:guestbook&#95;dev.db&quot;
+</code></pre><p>When we reload the page in the browser we should be greeted by the guestbook page. We can test that everything is working as expected by adding a comment in our comment form.</p><p>To learn more about HTML templating options you can use with Kit, see <a href='/docs/html_templating.html'>HTML Templating</a>.</p><h2 id="adding&#95;some&#95;tests">Adding some tests</h2><p>Tests are found under the <code>test</code> source path.</p><p>We can now run <code>clj -M:test</code> in the terminal to see that our database interaction works as expected.</p><h2 id="packaging&#95;the&#95;application">Packaging the application</h2><p>You can package your application for standalone deployment by running the following command:</p><p>clj -Sforce -T:build all</p><p>This will create a runnable jar that you can run using the following commands:</p><pre><code>export JDBC&#95;URL=&quot;jdbc:sqlite:guestbook&#95;dev.db&quot;
 java -jar target/guestbook-standalone.jar
 </code></pre><p>Note that we have to supply the <code>JDBC&#95;URL</code> environment variable when running as a jar, as it's not packaged with the application.</p><hr/><p>Complete source listing for the tutorial is available <a href='https://github.com/kit-clj/examples/tree/master/guestbook'>here</a>.</p>
       </div>
