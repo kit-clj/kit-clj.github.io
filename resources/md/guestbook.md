@@ -205,7 +205,7 @@ Your REPL is your best friend in Clojure. Let's start our local development REPL
 clj -M:dev
 ```
 
-You can alternatively use `clj -M:dev:cider` if you intend to connect to the REPL from Emacs and [CIDER](https://docs.cider.mx/cider/index.html), or `clj -M:dev:nrepl` if you want to start [nREPL](https://github.com/nrepl/nrepl) but don't need the CIDER middleware.
+You can alternatively use `clj -M:dev:cider` if you intend to connect to the REPL from Emacs and [CIDER](https://docs.cider.mx/cider/index.html) (this also works with VS Code and [Calva](https://calva.io)). Or do `clj -M:dev:nrepl` if you want to start [nREPL](https://github.com/nrepl/nrepl) but don't need the CIDER middleware. See the [Guestbook example](https://github.com/kit-clj/demo-guestbook) README for more info on connecting the REPL with a Clojure editor.
 
 Once you are in the REPL, you can start the system by running a command provided in `env/dev/user.clj`
 
