@@ -10,7 +10,7 @@ ClojureScript is an excellent alternative to JavaScript for client-side applicat
 
 This section provides a short list of steps that you need to complete to start ClojureScript development with Kit. See the sections below for details.
 
-1. Add the `:kit/cljs` module by running `(kit/install-module :kit/cljs)`.
+1. Add the `:kit/cljs` module by running `(kit/install-module :kit/cljs)`. Be sure to first run `(kit/sync-modules)` to download the modules if you haven't done that in your project yet.
 2. Restart your application.
 3. Install JavaScript dependencies by running `npm install` in your project's root directory.
 4. Run the `shadow-cljs` compiler in *watch* mode by executing `npx shadow-cljs watch app`.
@@ -22,7 +22,7 @@ This section provides a short list of steps that you need to complete to start C
 
 ### Adding ClojureScript Support
 
-ClojureScript support can be added via the official `:kit/cljs` module. Run `(kit/install-module :kit/cljs)` to add the assets. This will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html). Be sure to restart the application afterwards.
+ClojureScript support can be added via the official `:kit/cljs` module. Run `(kit/sync-modules)`, followed by `(kit/install-module :kit/cljs)` to add the assets. This will add support for compiling ClojureScript using [shadow-cljs](https://shadow-cljs.github.io/docs/UsersGuide.html). Be sure to restart the application afterwards.
 
 ### Managing JavaScript and ClojureScript dependencies
 
