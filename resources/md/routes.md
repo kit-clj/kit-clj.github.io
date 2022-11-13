@@ -240,12 +240,14 @@ First, we'll add the following code in the `<app>.middleware` namespace:
                      :on-error on-error}))
 
 (defn wrap-base
-  [{:keys [metrics site-defaults-config cookie-session] :as opts}]
-  (fn [handler]
-    (cond-> ((:middleware env/defaults) handler opts)
-            true (defaults/wrap-defaults
-                   (assoc-in site-defaults-config [:session :store] (cookie/cookie-store cookie-session)))
-            true (wrap-authentication (session-backend)))))
+  [{:keys [metrics site-defaults-config cookie-secret] :as opts}]
+  (let [cookie-store (cookie/cookie-store {:key (.getBytes ^String cookie-secret)})]
+    (fn [handler]
+      (cond-> ((:middleware env/defaults) handler opts)
+        true (wrap-authentication (session-backend))
+        true (defaults/wrap-defaults
+              (assoc-in site-defaults-config [:session :store] cookie-store))))))            
+
 ```
 
 We'll wrap the authentication middleware that will set the `:identity` key in the request if it's present in the session.
@@ -304,12 +306,13 @@ Finally, we have to add the necessary middleware to enable the access rules and 
 ```clojure
 (defn wrap-base
   [{:keys [metrics site-defaults-config cookie-session] :as opts}]
-  (fn [handler]
-    (cond-> ((:middleware env/defaults) handler opts)
-            true (defaults/wrap-defaults
-                   (assoc-in site-defaults-config [:session :store] (cookie/cookie-store cookie-session)))
-            true (wrap-access-rules {:rules rules :on-error on-error})
-            true (wrap-authentication (session-backend)))))
+  (let [cookie-store (cookie/cookie-store {:key (.getBytes ^String cookie-secret)})]
+    (fn [handler]
+      (cond-> ((:middleware env/defaults) handler opts)
+        true (wrap-access-rules {:rules rules :on-error on-error})
+        true (wrap-authentication (session-backend))
+        true (defaults/wrap-defaults
+              (assoc-in site-defaults-config [:session :store] cookie-store))))))
 ```
 
 Note that the order of the middleware matters and `wrap-access-rules` must precede `wrap-authentication`.
