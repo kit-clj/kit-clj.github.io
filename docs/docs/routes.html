@@ -177,12 +177,14 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
                      :on-error on-error}&#41;&#41;
 
 &#40;defn wrap-base
-  &#91;{:keys &#91;metrics site-defaults-config cookie-session&#93; :as opts}&#93;
-  &#40;fn &#91;handler&#93;
-    &#40;cond-&gt; &#40;&#40;:middleware env/defaults&#41; handler opts&#41;
-            true &#40;defaults/wrap-defaults
-                   &#40;assoc-in site-defaults-config &#91;:session :store&#93; &#40;cookie/cookie-store cookie-session&#41;&#41;&#41;
-            true &#40;wrap-authentication &#40;session-backend&#41;&#41;&#41;&#41;&#41;
+  &#91;{:keys &#91;metrics site-defaults-config cookie-secret&#93; :as opts}&#93;
+  &#40;let &#91;cookie-store &#40;cookie/cookie-store {:key &#40;.getBytes &#94;String cookie-secret&#41;}&#41;&#93;
+    &#40;fn &#91;handler&#93;
+      &#40;cond-&gt; &#40;&#40;:middleware env/defaults&#41; handler opts&#41;
+        true &#40;wrap-authentication &#40;session-backend&#41;&#41;
+        true &#40;defaults/wrap-defaults
+              &#40;assoc-in site-defaults-config &#91;:session :store&#93; cookie-store&#41;&#41;&#41;&#41;&#41;&#41;            
+
 </code></pre><p>We'll wrap the authentication middleware that will set the <code>:identity</code> key in the request if it's present in the session. The session backend is the simplest one available, however Buddy provides a number of different authentications backends as described <a href='https://funcool.github.io/buddy-auth/latest/#_authentication'>here</a>.</p><p>The <code>authenticated?</code> helper is used to check the <code>:identity</code> key in the request and pass it to the handler when it's present. Otherwise, the <code>on-error</code> function will be called.</p><p>We can now wrap the route groups we wish to be private using the <code>wrap-restricted</code> middleware as follows:</p><pre><code class="clojure">&#40;wrap-routes middleware/wrap-restricted&#41;
 </code></pre><h3 id="restricting&#95;access&#95;based&#95;on&#95;uri">Restricting access based on URI</h3><p>Using the <code>buddy.auth.accessrules</code> namespace from <a href='https://funcool.github.io/buddy-auth/latest/'>Buddy</a>, we can define rules for restricting access to specific pages based on its URI pattern.</p><h3 id="specifying&#95;access&#95;rules">Specifying Access Rules</h3><p>Let's take a look at how to create a rule to specify that restricted routes should only be accessible if the <code>:identity</code> key is present in the session.</p><p>First, we'll reference several Buddy namespaces in the <code>&lt;app&gt;.middleware</code> namespace.</p><pre><code class="clojure">&#40;ns myapp.middleware
   &#40;:require ...
@@ -200,12 +202,13 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
    :body &quot;Not authorized&quot;}&#41;
 </code></pre><p>Finally, we have to add the necessary middleware to enable the access rules and authentication using a session backend.</p><pre><code class="clojure">&#40;defn wrap-base
   &#91;{:keys &#91;metrics site-defaults-config cookie-session&#93; :as opts}&#93;
-  &#40;fn &#91;handler&#93;
-    &#40;cond-&gt; &#40;&#40;:middleware env/defaults&#41; handler opts&#41;
-            true &#40;defaults/wrap-defaults
-                   &#40;assoc-in site-defaults-config &#91;:session :store&#93; &#40;cookie/cookie-store cookie-session&#41;&#41;&#41;
-            true &#40;wrap-access-rules {:rules rules :on-error on-error}&#41;
-            true &#40;wrap-authentication &#40;session-backend&#41;&#41;&#41;&#41;&#41;
+  &#40;let &#91;cookie-store &#40;cookie/cookie-store {:key &#40;.getBytes &#94;String cookie-secret&#41;}&#41;&#93;
+    &#40;fn &#91;handler&#93;
+      &#40;cond-&gt; &#40;&#40;:middleware env/defaults&#41; handler opts&#41;
+        true &#40;wrap-access-rules {:rules rules :on-error on-error}&#41;
+        true &#40;wrap-authentication &#40;session-backend&#41;&#41;
+        true &#40;defaults/wrap-defaults
+              &#40;assoc-in site-defaults-config &#91;:session :store&#93; cookie-store&#41;&#41;&#41;&#41;&#41;&#41;
 </code></pre><p>Note that the order of the middleware matters and <code>wrap-access-rules</code> must precede <code>wrap-authentication</code>.</p><p>Buddy session based authentication is triggered by setting the <code>:identity</code> key in the session when the user is successfully authenticated.</p><pre><code class="clojure">&#40;def user {:id &quot;bob&quot; :pass &quot;secret&quot;}&#41;
 
 &#40;defn login! &#91;{:keys &#91;params session&#93;}&#93;
