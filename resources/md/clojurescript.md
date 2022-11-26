@@ -394,7 +394,7 @@ Then we'll have to set the header in the request:
 
 ### Websockets
 
-Kit provide support for websockets using an excellent [sente](https://github.com/ptaoussanis/sente) library. To simplify the installation procedure we provide `:kit/sente` module, wich extents existing `:kit/cljs` module to add support for websockets on both server and client.
+Kit provide support for websockets using an excellent [sente](https://github.com/ptaoussanis/sente) library. To simplify the installation procedure we provide `:kit/sente` module, which extends existing `:kit/cljs` module to add support for websockets on both server and client.
 
 #### Installation
 
