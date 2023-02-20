@@ -307,20 +307,24 @@ SELECT &#42; FROM guestbook
       &lt;form method=&quot;POST&quot; action=&quot;/save-message&quot;&gt;
           {% csrf-field %}
           &lt;p&gt;
+              &lt;label&gt;
               Name:
               &lt;input class=&quot;input&quot; type=&quot;text&quot; name=&quot;name&quot; value=&quot;{{name}}&quot; /&gt;
+              &lt;/label&gt;
           &lt;/p&gt;
           {% if errors.name %}
           &lt;div class=&quot;notification is-danger&quot;&gt;{{errors.name}}&lt;/div&gt;
           {% endif %}
           &lt;p&gt;
+              &lt;label&gt;
               Message:
               &lt;textarea class=&quot;textarea&quot; name=&quot;message&quot;&gt;{{message}}&lt;/textarea&gt;
+              &lt;/label&gt;
           &lt;/p&gt;
           {% if errors.message %}
           &lt;div class=&quot;notification is-danger&quot;&gt;{{errors.message}}&lt;/div&gt;
           {% endif %}
-          &lt;input type=&quot;submit&quot; class=&quot;button is-primary&quot; value=&quot;comment&quot; /&gt;
+          &lt;input type=&quot;submit&quot; class=&quot;button is-primary is-outlined has-text-dark&quot; value=&quot;comment&quot; /&gt;
       &lt;/form&gt;
   &lt;/div&gt;
 &lt;/div&gt;
@@ -347,20 +351,24 @@ SELECT &#42; FROM guestbook
           &lt;form method=&quot;POST&quot; action=&quot;/save-message&quot;&gt;
               {% csrf-field %}
               &lt;p&gt;
+                  &lt;label&gt;
                   Name:
                   &lt;input class=&quot;input&quot; type=&quot;text&quot; name=&quot;name&quot; value=&quot;{{name}}&quot; /&gt;
+                  &lt;/label&gt;
               &lt;/p&gt;
               {% if errors.name %}
               &lt;div class=&quot;notification is-danger&quot;&gt;{{errors.name}}&lt;/div&gt;
               {% endif %}
               &lt;p&gt;
+                  &lt;label&gt;
                   Message:
                   &lt;textarea class=&quot;textarea&quot; name=&quot;message&quot;&gt;{{message}}&lt;/textarea&gt;
+                  &lt;/label&gt;
               &lt;/p&gt;
               {% if errors.message %}
               &lt;div class=&quot;notification is-danger&quot;&gt;{{errors.message}}&lt;/div&gt;
               {% endif %}
-              &lt;input type=&quot;submit&quot; class=&quot;button is-primary&quot; value=&quot;comment&quot; /&gt;
+              &lt;input type=&quot;submit&quot; class=&quot;button is-primary is-outlined has-text-dark&quot; value=&quot;comment&quot; /&gt;
           &lt;/form&gt;
       &lt;/div&gt;
   &lt;/div&gt;
