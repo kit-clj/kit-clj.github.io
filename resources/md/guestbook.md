@@ -568,20 +568,24 @@ Finally, we'll create a form to allow users to submit their messages. We'll popu
       <form method="POST" action="/save-message">
           {% csrf-field %}
           <p>
+              <label>
               Name:
               <input class="input" type="text" name="name" value="{{name}}" />
+              </label>
           </p>
           {% if errors.name %}
           <div class="notification is-danger">{{errors.name}}</div>
           {% endif %}
           <p>
+              <label>
               Message:
               <textarea class="textarea" name="message">{{message}}</textarea>
+              </label>
           </p>
           {% if errors.message %}
           <div class="notification is-danger">{{errors.message}}</div>
           {% endif %}
-          <input type="submit" class="button is-primary" value="comment" />
+          <input type="submit" class="button is-primary is-outlined has-text-dark" value="comment" />
       </form>
   </div>
 </div>
@@ -613,20 +617,24 @@ Our final `content` div should look as follows:
           <form method="POST" action="/save-message">
               {% csrf-field %}
               <p>
+                  <label>
                   Name:
                   <input class="input" type="text" name="name" value="{{name}}" />
+                  </label>
               </p>
               {% if errors.name %}
               <div class="notification is-danger">{{errors.name}}</div>
               {% endif %}
               <p>
+                  <label>
                   Message:
                   <textarea class="textarea" name="message">{{message}}</textarea>
+                  </label>
               </p>
               {% if errors.message %}
               <div class="notification is-danger">{{errors.message}}</div>
               {% endif %}
-              <input type="submit" class="button is-primary" value="comment" />
+              <input type="submit" class="button is-primary is-outlined has-text-dark" value="comment" />
           </form>
       </div>
   </div>
