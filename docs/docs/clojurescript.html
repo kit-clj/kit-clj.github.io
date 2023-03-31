@@ -233,7 +233,7 @@
    handler&#41;
   ;; &#40;ajax/load-interceptors!&#41;
   &#40;mount-root&#41;&#41;
-</code></pre><p>After reloading your web page, you will see log entries in your JavaScript console that websocket connection is established.</p><p>Sending events through websocket from the client is easy. You just need to call <code>ws/send-message!</code> function.</p><p>For example, you can modify your <code>home-page</code> to render two additional buttons, which will send an even to thes server when clicked. Like this:</p><pre><code class="clojure">&#40;defn home-page &#91;&#93;
+</code></pre><p>After reloading your web page, you will see log entries in your JavaScript console that websocket connection is established.</p><p>Sending events through websocket from the client is easy. You just need to call <code>ws/send-message!</code> function.</p><p>For example, you can modify your <code>home-page</code> to render two additional buttons, which will send an event to the server when clicked. Like this:</p><pre><code class="clojure">&#40;defn home-page &#91;&#93;
   &#91;:div
    &#91;:h2 &quot;Welcome to Reagent!&quot;&#93;
    &#91;:input {:type :button
