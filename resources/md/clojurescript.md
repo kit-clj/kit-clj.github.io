@@ -473,7 +473,7 @@ After reloading your web page, you will see log entries in your JavaScript conso
 
 Sending events through websocket from the client is easy. You just need to call `ws/send-message!` function.
 
-For example, you can modify your `home-page` to render two additional buttons, which will send an even to thes server when clicked. Like this:
+For example, you can modify your `home-page` to render two additional buttons, which will send an event to the server when clicked. Like this:
 
 ```clojure
 (defn home-page []
