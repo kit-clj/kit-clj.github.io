@@ -67,7 +67,7 @@
 chmod +x linux-install-1.10.3.986.sh
 sudo ./linux-install-1.10.3.986.sh
 </code></pre><p>For both macOS and Linux, you will need <a href='https://github.com/seancorfield/clj-new'><code>clj-new</code></a> installed as follows:</p><pre><code>clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag &quot;v1.2.381&quot;}' :as new
-</code></pre><p>For information on customization options, for example on how to change your install location, see <a href='https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools'>the official docs here</a>.</p><h3 id="creating&#95;a&#95;new&#95;application">Creating a new application</h3><p>Once you have the Clojure CLI installed, you can run the following commands in your terminal to initialize your application:</p><pre><code>clojure -Mnew create :template io.github.kit-clj :name kit/guestbook
+</code></pre><p>For information on customization options, for example on how to change your install location, see <a href='https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools'>the official docs here</a>.</p><h3 id="creating&#95;a&#95;new&#95;application">Creating a new application</h3><p>Once you have the Clojure CLI installed, you can run the following commands in your terminal to initialize your application:</p><pre><code>clojure -Tnew create :template io.github.kit-clj :name kit/guestbook
 cd guestbook
 </code></pre><p>The above will create a new project, named kit/guestbook, based on the kit-clj template.</p><h3 id="anatomy&#95;of&#95;a&#95;kit&#95;application">Anatomy of a Kit application</h3><p>The newly created application has the following structure:</p><pre><code>├── Dockerfile
 ├── README.md
