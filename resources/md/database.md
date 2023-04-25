@@ -61,7 +61,7 @@ SQL queries are parsed by HugSQL as defined in your `system.edn` and `resources/
  :filename "queries.sql"}
 ```
 
-This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have the following SQL:
+This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have following SQL queries defined:
 
 ```sql
 -- :name get-user-by-id :? :1
@@ -69,6 +69,11 @@ This Integrant component is a reference to a function that executes the SQL quer
 SELECT *
 FROM users
 WHERE id = :id
+
+-- :name add-user! :n
+insert into users
+(id, password)
+values (:id, :password)
 ```
 
 You can run this SQL query using the following `query-fn` call:
@@ -76,6 +81,17 @@ You can run this SQL query using the following `query-fn` call:
 ```clojure
 (query-fn :get-user-by-id {:id 1})
 ```
+
+To run queries in a transaction you have to use `next.jdbc/with-transaction` as follows:
+
+```clojure
+(let [conn (:db.sql/connection system)]
+  (next.jdbc/with-transaction [tx conn]
+    (query-fn tx :add-user! {:id "foo" :password "secret"})
+    (query-fn tx :get-user-by-id {:id "foo"})))
+```
+
+Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within the scope of the transaction.
 
 For reference, here is the full definition from the Kit SQL edge:
 
