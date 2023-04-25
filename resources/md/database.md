@@ -91,7 +91,7 @@ To run queries in a transaction you have to use `next.jdbc/with-transaction` as 
     (query-fn tx :get-user-by-id {:id "foo"})))
 ```
 
-Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within the scope of the transaction.
+Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within the scope of the transaction. Please see official [nex.jdbc](https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md) documentation on transactions for further examples.
 
 For reference, here is the full definition from the Kit SQL edge:
 
