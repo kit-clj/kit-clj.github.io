@@ -80,13 +80,22 @@ resources/migrations/20210720004935-add-users-table.up.sql
 {:conn     #ig/ref :db.sql/connection
  :options  {}
  :filename &quot;queries.sql&quot;}
-</code></pre><p>This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have the following SQL:</p><pre><code class="sql">-- :name get-user-by-id :? :1
+</code></pre><p>This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have following SQL queries defined:</p><pre><code class="sql">-- :name get-user-by-id :? :1
 -- :doc returns a user object by id, or nil if not present
 SELECT &#42;
 FROM users
 WHERE id = :id
+
+-- :name add-user! :n
+insert into users
+&#40;id, password&#41;
+values &#40;:id, :password&#41;
 </code></pre><p>You can run this SQL query using the following <code>query-fn</code> call:</p><pre><code class="clojure">&#40;query-fn :get-user-by-id {:id 1}&#41;
-</code></pre><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defmethod ig/init-key :db.sql/query-fn
+</code></pre><p>To run queries in a transaction you have to use <code>next.jdbc/with-transaction</code> as follows:</p><pre><code class="clojure">&#40;let &#91;conn &#40;:db.sql/connection system&#41;&#93;
+  &#40;next.jdbc/with-transaction &#91;tx conn&#93;
+    &#40;query-fn tx :add-user! {:id &quot;foo&quot; :password &quot;secret&quot;}&#41;
+    &#40;query-fn tx :get-user-by-id {:id &quot;foo&quot;}&#41;&#41;&#41;
+</code></pre><p>Note that you must use <code>tx</code> connection created by <code>with-transaction</code> in order for the query to be considered within the scope of the transaction.</p><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defmethod ig/init-key :db.sql/query-fn
   &#91;&#95; {:keys &#91;conn options filename&#93;
       :or   {options {}}}&#93;
   &#40;let &#91;queries &#40;conman/bind-connection-map conn options filename&#41;&#93;
