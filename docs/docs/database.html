@@ -95,7 +95,7 @@ values &#40;:id, :password&#41;
   &#40;next.jdbc/with-transaction &#91;tx conn&#93;
     &#40;query-fn tx :add-user! {:id &quot;foo&quot; :password &quot;secret&quot;}&#41;
     &#40;query-fn tx :get-user-by-id {:id &quot;foo&quot;}&#41;&#41;&#41;
-</code></pre><p>Note that you must use <code>tx</code> connection created by <code>with-transaction</code> in order for the query to be considered within the scope of the transaction.</p><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defmethod ig/init-key :db.sql/query-fn
+</code></pre><p>Note that you must use <code>tx</code> connection created by <code>with-transaction</code> in order for the query to be considered within the scope of the transaction. Please see official <a href='https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md'>nex.jdbc</a> documentation on transactions for further examples.</p><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defmethod ig/init-key :db.sql/query-fn
   &#91;&#95; {:keys &#91;conn options filename&#93;
       :or   {options {}}}&#93;
   &#40;let &#91;queries &#40;conman/bind-connection-map conn options filename&#41;&#93;
