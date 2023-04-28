@@ -145,4 +145,26 @@ The result flags are:
 
 The query itself is written using plain SQL and the dynamic parameters are denoted by prefixing the parameter name with a colon.
 
+#### Debugging HugSQL queries
+
+The following code illustrates how to use `hugsql.core/hugsql-command-fn` multimethod to log the query that's being generated:
+
+```clojure
+
+(defn log-sqlvec [sqlvec] 
+  (log/info (->> sqlvec
+                 (map #(clojure.string/replace (or % "") #"\n" ""))
+                 (clojure.string/join " ; "))))
+
+(defn log-command-fn [this db sqlvec options]
+  (log-sqlvec sqlvec)
+  (condp contains? (:command options)
+    #{:!} (hugsql.adapter/execute this db sqlvec options)
+    #{:? :<!} (hugsql.adapter/query this db sqlvec options)))
+
+(defmethod hugsql.core/hugsql-command-fn :! [_sym] `log-command-fn)
+(defmethod hugsql.core/hugsql-command-fn :<! [_sym] `log-command-fn)
+(defmethod hugsql.core/hugsql-command-fn :? [_sym] `log-command-fn)
+```
+
 See the [official documentation of HugSQL](http://www.hugsql.org/) for more details.
