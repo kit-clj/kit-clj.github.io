@@ -109,7 +109,22 @@ values &#40;:id, :password&#41;
 INSERT INTO users
 &#40;id, first&#95;name, last&#95;name, email, pass&#41;
 VALUES &#40;:id, :first&#95;name, :last&#95;name, :email, :pass&#41;
-</code></pre><p>You specify the name of the generated function using the <code>-- :name</code> comment. The name is followed by the command and the result flags.</p><p>The following command flags are available:</p><ul><li><code>:?</code> - query with a result-set (default)</li><li><code>:!</code> - any statement</li><li><code>:&lt;!</code> - support for <code>INSERT ... RETURNING</code></li><li><code>:i!</code> - support for insert and jdbc <code>.getGeneratedKeys</code></li></ul><p>The result flags are:</p><ul><li><code>:1</code> - one row as a hash-map</li><li><code>:&#42;</code> - many rows as a vector of hash-maps</li><li><code>:n</code> - number of rows affected (inserted/updated/deleted)</li><li><code>:raw</code> - pass through an untouched result (default)</li></ul><p>The query itself is written using plain SQL and the dynamic parameters are denoted by prefixing the parameter name with a colon.</p><p>See the <a href='http://www.hugsql.org/'>official documentation of HugSQL</a> for more details.</p>
+</code></pre><p>You specify the name of the generated function using the <code>-- :name</code> comment. The name is followed by the command and the result flags.</p><p>The following command flags are available:</p><ul><li><code>:?</code> - query with a result-set (default)</li><li><code>:!</code> - any statement</li><li><code>:&lt;!</code> - support for <code>INSERT ... RETURNING</code></li><li><code>:i!</code> - support for insert and jdbc <code>.getGeneratedKeys</code></li></ul><p>The result flags are:</p><ul><li><code>:1</code> - one row as a hash-map</li><li><code>:&#42;</code> - many rows as a vector of hash-maps</li><li><code>:n</code> - number of rows affected (inserted/updated/deleted)</li><li><code>:raw</code> - pass through an untouched result (default)</li></ul><p>The query itself is written using plain SQL and the dynamic parameters are denoted by prefixing the parameter name with a colon.</p><h4 id="debugging&#95;hugsql&#95;queries">Debugging HugSQL queries</h4><p>The following code illustrates how to use <code>hugsql.core/hugsql-command-fn</code> multimethod to log the query that's being generated:</p><pre><code class="clojure">
+&#40;defn log-sqlvec &#91;sqlvec&#93; 
+  &#40;log/info &#40;-&gt;&gt; sqlvec
+                 &#40;map #&#40;clojure.string/replace &#40;or % &quot;&quot;&#41; #&quot;\n&quot; &quot;&quot;&#41;&#41;
+                 &#40;clojure.string/join &quot; ; &quot;&#41;&#41;&#41;&#41;
+
+&#40;defn log-command-fn &#91;this db sqlvec options&#93;
+  &#40;log-sqlvec sqlvec&#41;
+  &#40;condp contains? &#40;:command options&#41;
+    #{:!} &#40;hugsql.adapter/execute this db sqlvec options&#41;
+    #{:? :&lt;!} &#40;hugsql.adapter/query this db sqlvec options&#41;&#41;&#41;
+
+&#40;defmethod hugsql.core/hugsql-command-fn :! &#91;&#95;sym&#93; `log-command-fn&#41;
+&#40;defmethod hugsql.core/hugsql-command-fn :&lt;! &#91;&#95;sym&#93; `log-command-fn&#41;
+&#40;defmethod hugsql.core/hugsql-command-fn :? &#91;&#95;sym&#93; `log-command-fn&#41;
+</code></pre><p>See the <a href='http://www.hugsql.org/'>official documentation of HugSQL</a> for more details.</p>
       </div>
     </div>
   </div>
