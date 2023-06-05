@@ -7,6 +7,7 @@
  ["assets.md"             "Static Assets"           "topic"]
  ["clojurescript.md"      "ClojureScript"           "topic"]
  ["routes.md"             "Routing"                 "topic"]
+ ["websockets.md"         "Websockets"              "topic"]
  ["requests_responses.md" "Requests & Responses"    "topic"]
  ["middleware.md"         "Middleware"              "topic"]
  ["sessions.md"           "Sessions"                "topic"]
