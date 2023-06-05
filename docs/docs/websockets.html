@@ -56,10 +56,23 @@
 <div class="row">
   <div class="column column-75">
     <div class="column-wrapper">
-      <h1>kit-sql</h1>
+      <h1>Websockets</h1>
+      
+      <h2>Contents</h2>
+      <ol class="contents"><li><a href="#websockets">Websockets</a></li></ol>
       
       <div id="content">
-        <p>This library serves as a wrapper that imports <a href='/docs/kit-sql-conman.html'>kit-sql-conman</a> and <a href='/docs/kit-sql-migratus.html'>kit-sql-migratus</a>. It is used only for compatibility purposes.</p>
+        <h2 id="websockets">Websockets</h2><p>Websocket support is provided by the web server adapters, and you will have to look at the documentation of the adapter you are using for configuration details. Kit defaults to using <a href='https://github.com/luminus-framework/ring-undertow-adapter/'>ring-undertow-adapter</a>. A websocket handler can be configured as follows using this adapter. The handler is created using a Ring handler function that returns a map containing a <code>:undertow/websocket</code> with the configuration map:</p><ul><li><code>:on-open</code> - fn taking a map with the key <code>:channel</code> (optional)</li><li><code>:on-message</code> - fn taking map of keys <code>:channel</code>, <code>:data</code> (optional)</li><li><code>:on-close-message</code> - fn taking map of keys <code>:channel</code>, <code>:message</code> (optional)</li><li><code>:on-error</code> - fn taking map of keys <code>:channel</code>, <code>:error</code> (optional)</li></ul><p>The handler provides helper functions for doing websocket communication in the <a href='https://github.com/luminus-framework/ring-undertow-adapter/blob/master/src/ring/adapter/undertow/websocket.clj'>ring.adapter.undertow.websocket</a> namespace. In particular there are <code>send-text</code>, <code>send-binary</code>, and <code>send</code> functions available. The last will try to infer the type of content automatically. An example websocket handler can be seen below:</p><pre><code class="clojure">&#40;require '&#91;ring.adapter.undertow.websocket :as ws&#93;&#41;
+
+&#40;fn &#91;request&#93;
+  {:undertow/websocket 
+   {:on-open &#40;fn &#91;{:keys &#91;channel&#93;}&#93; &#40;println &quot;WS open!&quot;&#41;&#41;
+    :on-message &#40;fn &#91;{:keys &#91;channel data&#93;}&#93; &#40;ws/send &quot;message received&quot; channel&#41;&#41;
+    :on-close-message &#40;fn &#91;{:keys &#91;channel message&#93;}&#93; &#40;println &quot;WS closeed!&quot;&#41;&#41;}}&#41;
+</code></pre><p>If headers are provided in the map returned from the handler function they are included in the response to the WebSocket upgrade request. Handlers relevant to the WebSocket handshake (eg Connection) will be overwritten so that the WebSocket handshake completes correctly:</p><pre><code class="clojure">&#40;defn- websocket-handler-with-headers &#91;request&#93;
+  {:headers            {&quot;X-Test-Header&quot; &quot;Hello!&quot;}
+   :undertow/websocket {}}&#41;
+</code></pre>
       </div>
     </div>
   </div>
@@ -122,7 +135,7 @@
           </a>
         </li>
         
-        <li >
+        <li class="selected" >
           <a href="/docs/websockets.html">
             Websockets
           </a>
@@ -282,7 +295,7 @@
           </a>
         </li>
         
-        <li class="selected" >
+        <li >
           <a href="/docs/kit-sql.html">
             kit-sql
           </a>
