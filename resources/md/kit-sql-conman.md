@@ -2,7 +2,12 @@
 
 ### :db.sql/connection
 
-This component uses [conman](https://github.com/luminus-framework/conman) to create a pooled connection to your database. It resolves to the conman connection when referenced.
+This component uses [conman](https://github.com/luminus-framework/conman) to create a pooled connection to your database. It resolves to the conman connection when referenced. The component accepts the following keys:
+
+* `conn` - database connection string
+* `options` - optional map of configuration options (see conman docs for details)
+* `filename` - string with the name of the file with SQL queries relative to `resources`
+* `filenames` - a vector of strings with the names of the files with SQL queries relative to `resources`
 
 It might be useful if you need to create transactions to reference the connection directly when calling your `query-fn`.
 
