@@ -123,8 +123,12 @@
       &#91;:input {:type &quot;text&quot;
                :value @value
                :on-change #&#40;reset! value &#40;-&gt; % .-target .-value&#41;&#41;}&#93;&#93;&#41;&#41;
-</code></pre><p>All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.</p><p>Finally, rendering components is accomplished by calling the <code>render-component</code> function:</p><pre><code class="clojure">&#40;defn render-simple &#91;&#93;
-  &#40;reagent/render-component &#91;input-field&#93; &#40;.-body js/document&#41;&#41;
+</code></pre><p>All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.</p><p>Finally, rendering components is accomplished by calling the <code>reagent.dom/render</code> function:</p><pre><code class="clojure">&#40;ns myapp
+  &#40;:require &#91;reagent.core :as reagent&#93;
+            &#91;reagent.dom :as d&#93;&#41;&#41;
+
+&#40;defn render-simple &#91;&#93;
+  &#40;d/render &#91;input-field&#93; &#40;.-body js/document&#41;&#41;
 </code></pre><h3 id="client&#95;side&#95;routing">Client Side Routing</h3><p>Reitit is used to handle both client and server routes. We'd need to require Reitit in the routing namespace along with Google Closure history and events helpers.</p><pre><code class="clojure">&#40;ns &lt;app&gt;.core
  &#40;:require
   &#91;reagent.core :as r&#93;
