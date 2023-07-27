@@ -197,11 +197,15 @@ In the previous example, we used a global atom to hold the state. While it's con
 
 All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.
 
-Finally, rendering components is accomplished by calling the `render-component` function:
+Finally, rendering components is accomplished by calling the `reagent.dom/render` function:
 
 ```clojure
+(ns myapp
+  (:require [reagent.core :as reagent]
+            [reagent.dom :as d]))
+
 (defn render-simple []
-  (reagent/render-component [input-field] (.-body js/document))
+  (d/render [input-field] (.-body js/document))
 ```
 
 ### Client Side Routing
