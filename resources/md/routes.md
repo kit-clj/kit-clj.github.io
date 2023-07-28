@@ -183,9 +183,37 @@ Your application will typically have two types of routes. The first type is used
 HTML pages that are rendered by the browser. The second type are routes used to expose your
 service API. These are accessed by the client to retrieve data from the server via AJAX.
 
-Once all your application routes are defined you can add them to the main handler of your application.
-You'll notice that the template already defined the `app` route group in the `handler` namespace of your
-application. All you have to do is add your new routes there.
+The route groups are defined using Integrant components as follows:
+
+```clojure
+(derive :reitit.routes/api :reitit/routes)
+
+(defmethod ig/init-key :reitit.routes/api
+  [_ {:keys [base-path]
+      :or   {base-path ""}
+      :as   opts}]
+  [base-path (route-data opts) (api-routes opts)])
+```
+
+All the routing components that derive `:reitit/routes` are aggregated by the `:router/routes` component:
+
+```clojure
+(defmethod ig/init-key :router/routes
+  [_ {:keys [routes]}]
+  (apply conj [] routes))
+```
+
+Finally, you'll notice that Ring handler uses the router defined using
+the `:router/routes` Integrant multimethod above. This component is referenced by the router component in `reosurces/system.edn`
+under the `router` key:
+
+```clojure
+:handler/ring
+ {:router #ig/ref :router/core
+  ...}
+```
+
+The Integrant intitialized multimethod for `:handler/ring` then uses the `:router` ley from the provided options:
 
 ```clojure
 (defmethod ig/init-key :handler/ring
