@@ -4,7 +4,7 @@ Since Kit uses Ring and Reitit for routing the application handler
 is a standard Ring handler and can be wrapped in middleware
 just like you would in any other Ring based application.
 
-Traditionally, you can define Ring middleware as functions, however Reitit also allows us to define middleware as data. All value
+Traditionally, you can define Ring middleware as functions, however Reitit also allows us to define middleware as data.
 
 The middleware allows wrapping the handlers in functions which can modify the way the request is processed. 
 Middleware functions are often used to extend the base functionality of Ring handlers to match the needs of 
