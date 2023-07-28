@@ -142,7 +142,20 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
                    &#40;log/info &quot;bytes read:&quot; bytes-read
                              &quot;\ncontent length:&quot; content-length
                              &quot;\nitem count:&quot; item-count&#41;&#41;}&#41;&#41;&#41;
-</code></pre><p>Alternatively, if you're fronting with Nginx then you can use its <a href='http://wiki.nginx.org/HttpUploadProgressModule'>Upload Progress Module</a>.</p><h2 id="organizing&#95;application&#95;routes">Organizing application routes</h2><p>It's a good practice to organize your application routes together by functionality. Your application will typically have two types of routes. The first type is used to serve HTML pages that are rendered by the browser. The second type are routes used to expose your service API. These are accessed by the client to retrieve data from the server via AJAX.</p><p>Once all your application routes are defined you can add them to the main handler of your application. You'll notice that the template already defined the <code>app</code> route group in the <code>handler</code> namespace of your application. All you have to do is add your new routes there.</p><pre><code class="clojure">&#40;defmethod ig/init-key :handler/ring
+</code></pre><p>Alternatively, if you're fronting with Nginx then you can use its <a href='http://wiki.nginx.org/HttpUploadProgressModule'>Upload Progress Module</a>.</p><h2 id="organizing&#95;application&#95;routes">Organizing application routes</h2><p>It's a good practice to organize your application routes together by functionality. Your application will typically have two types of routes. The first type is used to serve HTML pages that are rendered by the browser. The second type are routes used to expose your service API. These are accessed by the client to retrieve data from the server via AJAX.</p><p>The route groups are defined using Integrant components as follows:</p><pre><code class="clojure">&#40;derive :reitit.routes/api :reitit/routes&#41;
+
+&#40;defmethod ig/init-key :reitit.routes/api
+  &#91;&#95; {:keys &#91;base-path&#93;
+      :or   {base-path &quot;&quot;}
+      :as   opts}&#93;
+  &#91;base-path &#40;route-data opts&#41; &#40;api-routes opts&#41;&#93;&#41;
+</code></pre><p>All the routing components that derive <code>:reitit/routes</code> are aggregated by the <code>:router/routes</code> component:</p><pre><code class="clojure">&#40;defmethod ig/init-key :router/routes
+  &#91;&#95; {:keys &#91;routes&#93;}&#93;
+  &#40;apply conj &#91;&#93; routes&#41;&#41;
+</code></pre><p>Finally, you'll notice that Ring handler uses the router defined using the <code>:router/routes</code> Integrant multimethod above. This component is referenced by the router component in <code>reosurces/system.edn</code> under the <code>router</code> key:</p><pre><code class="clojure">:handler/ring
+ {:router #ig/ref :router/core
+  ...}
+</code></pre><p>The Integrant intitialized multimethod for <code>:handler/ring</code> then uses the <code>:router</code> ley from the provided options:</p><pre><code class="clojure">&#40;defmethod ig/init-key :handler/ring
   &#91;&#95; {:keys &#91;router api-path&#93; :as opts}&#93;
   &#40;ring/ring-handler
     router
