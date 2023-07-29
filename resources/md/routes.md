@@ -213,7 +213,7 @@ under the `router` key:
   ...}
 ```
 
-The Integrant intitialized multimethod for `:handler/ring` then uses the `:router` ley from the provided options:
+The Integrant intitialized multimethod for `:handler/ring` then uses the `:router` key from the provided options:
 
 ```clojure
 (defmethod ig/init-key :handler/ring
