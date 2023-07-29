@@ -155,7 +155,7 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
 </code></pre><p>Finally, you'll notice that Ring handler uses the router defined using the <code>:router/routes</code> Integrant multimethod above. This component is referenced by the router component in <code>reosurces/system.edn</code> under the <code>router</code> key:</p><pre><code class="clojure">:handler/ring
  {:router #ig/ref :router/core
   ...}
-</code></pre><p>The Integrant intitialized multimethod for <code>:handler/ring</code> then uses the <code>:router</code> ley from the provided options:</p><pre><code class="clojure">&#40;defmethod ig/init-key :handler/ring
+</code></pre><p>The Integrant intitialized multimethod for <code>:handler/ring</code> then uses the <code>:router</code> key from the provided options:</p><pre><code class="clojure">&#40;defmethod ig/init-key :handler/ring
   &#91;&#95; {:keys &#91;router api-path&#93; :as opts}&#93;
   &#40;ring/ring-handler
     router
