@@ -2,6 +2,67 @@
 
 Kit modules are templates that can be applied to an existing project using the [kit-generator](https://github.com/kit-clj/kit/tree/master/libs/kit-generator). In that, they are different from profiles, which you can apply only when creating a new project. 
 
+### Using Modules
+
+Kit embraces the REPL and the generator library is aliased in the `user` namespace as `kit`. Let's see how we can us it to install HTML module in the project. First, we need to sync our module repositories. This is done by running the following command in the REPL:
+
+```clojure
+user=> (kit/sync-modules)
+2021-11-30 11:42:41,010 [main] DEBUG org.eclipse.jgit.util.FS - readpipe [git, --version],/usr/local/bin
+2021-11-30 11:42:41,030 [main] DEBUG org.eclipse.jgit.util.FS - readpipe may return 'git version 2.33.1'
+2021-11-30 11:42:41,030 [main] DEBUG org.eclipse.jgit.util.FS - remaining output:
+...
+2021-11-30 11:42:41,769 [main] DEBUG o.e.jgit.transport.PacketLineOut - git> 0000
+2021-11-30 11:42:41,769 [main] DEBUG o.e.jgit.transport.PacketLineOut - git> done
+
+2021-11-30 11:42:41,835 [main] DEBUG o.e.jgit.transport.PacketLineIn - git< NAK
+nil
+user=>
+```
+
+Once the modules are synchronized, we can list the available modules by running `kit/list-modules`:
+
+```clojure
+user=> (kit/list-modules)
+:kit/html - adds support for HTML templating using Selmer
+:kit/sqlite - adds support for SQLite embedded database
+:kit/cljs - adds support for cljs using shadow-cljs
+nil
+user=>
+```
+
+We can see that the three modules specified in the official modules repository are now available for use. Let's install the HTML module by running `kit/install-module` function and passing it the keyword specifying the module name:
+
+```clojure
+user=> (kit/install-module :kit/html)
+updating file: resources/system.edn
+updating file: deps.edn
+updating file: src/clj/kit/guestbook/core.clj
+applying
+ action: :append-requires
+ value: ["[kit.guestbook.web.routes.pages]"]
+:kit/html installed successfully!
+restart required!
+nil
+user=>
+```
+
+Let's restart the REPL and run `(go)` command again to start the application. We should now be able to navigate to `http://localhost:3000` and see the default HTML page provided by the module.
+
+Generator aims to be idempotent, and will err on the side of safety in case of conflicts. For example, if we attempt to install `:kit/html` module a second time then we'll see he following output:
+
+```clojure
+user=> (kit/install-module :kit/html)
+:kit/html requires following modules: nil
+module :kit/html is already installed!
+nil
+user=>
+```
+
+Generator lets us know that the module already exists and there is nothing to be done.
+
+### Creating Custom Modules
+
 Modules are managed using git repositories. You can find the official modules [here](https://github.com/kit-clj/modules). Let's take a brief look at what a module repository looks like.
 
 A module repository must contain a `modules.edn` file describing the modules that are provided. For example, here are the official modules provided by Kit:
