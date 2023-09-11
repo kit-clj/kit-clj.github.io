@@ -469,7 +469,8 @@ For more information on how components like `:db.sql/query-fn` work, see [Access
 
 ### Creating a controller for the guestbook
 
-We'll create a new controller that will be responsible for saving new messages in the database. Let's create a new namespace called `kit.guestbook.web.controllers.guestbook`, and add the following content to it:
+We'll create a new controller that will be responsible for saving new messages in the database. Let's create a new namespace called `kit.guestbook.web.controllers.guestbook`, this namespace should be placed in
+a corresponding file called `guestbook.clj` under the `src/clj/kit/guestbook/web/controllers/` folder. We'll add the following content to the namespace:
 
 ```clojure
 (ns kit.guestbook.web.controllers.guestbook
