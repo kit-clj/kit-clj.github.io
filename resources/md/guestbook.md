@@ -14,6 +14,8 @@ If you have configured your Github account, you can start the project without an
 
 You can also clone this repo locally, and using vscode (with the devcontainer plugin), and Docker Desktop, run an isolated, fully setup version of this application locally. Open the repo in your editor and run the command `Dev Containers: Open Folder in Container...`.
 
+Once you're running in a devcontainer, open a terminal and jump to [Creating a new application](#creating-a-new-application)
+
 ### Installing JDK
 
 Clojure runs on the JVM and requires a copy of JDK to be installed. If you don't
