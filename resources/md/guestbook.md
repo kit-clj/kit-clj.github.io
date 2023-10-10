@@ -7,6 +7,15 @@ project architecture.
 
 If you don't have a preferred Clojure editor already, then it's recommended that you use [Calva](https://calva.io/getting-started/) to follow along with this tutorial.
 
+## Quickstart via Devcontainers or Github Codespaces
+If you have configured your Github account, you can start the project without any other setup.  It will open a web-based vscode editor backed by a Github Codespace VM. (Codespaces is Github's hosted Devcontainer solution)
+
+[![Open in Github Codespaces](https://github.com/codespaces/badge.svg)](https://codespaces.new/jwhitlark/kit-clj.github.io)
+
+You can also clone this repo locally, and using vscode (with the devcontainer plugin), and Docker Desktop, run an isolated, fully setup version of this application locally. Open the repo in your editor and run the command `Dev Containers: Open Folder in Container...`.
+
+Once you're running in a devcontainer, open a terminal and jump to [Creating a new application](#creating-a-new-application)
+
 ### Installing JDK
 
 Clojure runs on the JVM and requires a copy of JDK to be installed. If you don't
