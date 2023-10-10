@@ -8,15 +8,7 @@ Kit embraces the REPL and the generator library is aliased in the `user` namespa
 
 ```clojure
 user=> (kit/sync-modules)
-2021-11-30 11:42:41,010 [main] DEBUG org.eclipse.jgit.util.FS - readpipe [git, --version],/usr/local/bin
-2021-11-30 11:42:41,030 [main] DEBUG org.eclipse.jgit.util.FS - readpipe may return 'git version 2.33.1'
-2021-11-30 11:42:41,030 [main] DEBUG org.eclipse.jgit.util.FS - remaining output:
-...
-2021-11-30 11:42:41,769 [main] DEBUG o.e.jgit.transport.PacketLineOut - git> 0000
-2021-11-30 11:42:41,769 [main] DEBUG o.e.jgit.transport.PacketLineOut - git> done
-
-2021-11-30 11:42:41,835 [main] DEBUG o.e.jgit.transport.PacketLineIn - git< NAK
-nil
+:done
 user=>
 ```
 
