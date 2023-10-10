@@ -31,9 +31,9 @@ brew install clojure/tools/clojure
 Linux
 
 ```
-curl -O https://download.clojure.org/install/linux-install-1.10.3.986.sh
-chmod +x linux-install-1.10.3.986.sh
-sudo ./linux-install-1.10.3.986.sh
+curl -L -O https://github.com/clojure/brew-install/releases/latest/download/posix-install.sh
+chmod +x posix-install.sh
+sudo ./posix-install.sh
 ```
 
 For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfield/clj-new) installed as follows:
