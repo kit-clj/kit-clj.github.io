@@ -63,15 +63,7 @@
       
       <div id="content">
         <h2 id="kit&#95;modules">Kit Modules</h2><p>Kit modules are templates that can be applied to an existing project using the <a href='https://github.com/kit-clj/kit/tree/master/libs/kit-generator'>kit-generator</a>. In that, they are different from profiles, which you can apply only when creating a new project. </p><h3 id="using&#95;modules">Using Modules</h3><p>Kit embraces the REPL and the generator library is aliased in the <code>user</code> namespace as <code>kit</code>. Let's see how we can us it to install HTML module in the project. First, we need to sync our module repositories. This is done by running the following command in the REPL:</p><pre><code class="clojure">user=&gt; &#40;kit/sync-modules&#41;
-2021-11-30 11:42:41,010 &#91;main&#93; DEBUG org.eclipse.jgit.util.FS - readpipe &#91;git, --version&#93;,/usr/local/bin
-2021-11-30 11:42:41,030 &#91;main&#93; DEBUG org.eclipse.jgit.util.FS - readpipe may return 'git version 2.33.1'
-2021-11-30 11:42:41,030 &#91;main&#93; DEBUG org.eclipse.jgit.util.FS - remaining output:
-...
-2021-11-30 11:42:41,769 &#91;main&#93; DEBUG o.e.jgit.transport.PacketLineOut - git&gt; 0000
-2021-11-30 11:42:41,769 &#91;main&#93; DEBUG o.e.jgit.transport.PacketLineOut - git&gt; done
-
-2021-11-30 11:42:41,835 &#91;main&#93; DEBUG o.e.jgit.transport.PacketLineIn - git&lt; NAK
-nil
+:done
 user=&gt;
 </code></pre><p>Once the modules are synchronized, we can list the available modules by running <code>kit/list-modules</code>:</p><pre><code class="clojure">user=&gt; &#40;kit/list-modules&#41;
 :kit/sql - adds support for SQL. Available profiles &#91; :postgres :sqlite &#93;. Default profile :sqlite
