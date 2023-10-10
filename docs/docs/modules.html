@@ -74,10 +74,16 @@
 nil
 user=&gt;
 </code></pre><p>Once the modules are synchronized, we can list the available modules by running <code>kit/list-modules</code>:</p><pre><code class="clojure">user=&gt; &#40;kit/list-modules&#41;
+:kit/sql - adds support for SQL. Available profiles &#91; :postgres :sqlite &#93;. Default profile :sqlite
 :kit/html - adds support for HTML templating using Selmer
-:kit/sqlite - adds support for SQLite embedded database
+:kit/ctmx - adds support for HTMX using CTMX
+:kit/sente - adds support for Sente websockets to cljs
 :kit/cljs - adds support for cljs using shadow-cljs
-nil
+:kit/metrics - adds support for metrics using prometheus through iapetos
+:kit/auth - adds support for auth middleware using Buddy
+:kit/nrepl - adds support for nREPL
+:kit/htmx - adds support for HTMX using hiccup
+:done
 user=&gt;
 </code></pre><p>We can see that the three modules specified in the official modules repository are now available for use. Let's install the HTML module by running <code>kit/install-module</code> function and passing it the keyword specifying the module name:</p><pre><code class="clojure">user=&gt; &#40;kit/install-module :kit/html&#41;
 updating file: resources/system.edn
