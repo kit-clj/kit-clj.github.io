@@ -4,3 +4,9 @@
 *.iml
 */.DS_Store
 target/
+
+# Devcontainer ignores
+.clj-kondo/*
+.lsp/*
+# Tutorial project, comment out if you want to save your work.
+guestbook/*
