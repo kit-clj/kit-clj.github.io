@@ -24,10 +24,16 @@ Once the modules are synchronized, we can list the available modules by running 
 
 ```clojure
 user=> (kit/list-modules)
+:kit/sql - adds support for SQL. Available profiles [ :postgres :sqlite ]. Default profile :sqlite
 :kit/html - adds support for HTML templating using Selmer
-:kit/sqlite - adds support for SQLite embedded database
+:kit/ctmx - adds support for HTMX using CTMX
+:kit/sente - adds support for Sente websockets to cljs
 :kit/cljs - adds support for cljs using shadow-cljs
-nil
+:kit/metrics - adds support for metrics using prometheus through iapetos
+:kit/auth - adds support for auth middleware using Buddy
+:kit/nrepl - adds support for nREPL
+:kit/htmx - adds support for HTMX using hiccup
+:done
 user=>
 ```
 
