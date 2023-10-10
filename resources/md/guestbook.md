@@ -50,7 +50,7 @@ Once you have the Clojure CLI installed, you can run the following commands in y
 initialize your application:
 
 ```
-clojure -Tnew create :template io.github.kit-clj :name kit/guestbook
+clojure -Tclj-new create :template io.github.kit-clj :name kit/guestbook
 cd guestbook
 ```
 
