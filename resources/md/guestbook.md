@@ -7,6 +7,10 @@ project architecture.
 
 If you don't have a preferred Clojure editor already, then it's recommended that you use [Calva](https://calva.io/getting-started/) to follow along with this tutorial.
 
+### Quickstart Github Codespaces
+
+You can follow the tutorial using browser based environment by starting a dev container from the following repo [https://github.com/kit-clj/playground/](https://github.com/kit-clj/playground/).
+
 ### Installing JDK
 
 Clojure runs on the JVM and requires a copy of JDK to be installed. If you don't
