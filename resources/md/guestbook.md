@@ -464,7 +464,7 @@ The key references the `:db.sql/query-fn` component which is responsible for ins
  :filename "sql/queries.sql"}
 ```
 
-Like in the REPL example towards the end of the [Accessing the Database](accessing_the_database) section, the `:db.sql/query-fn` component comes from kit-sql. Unlike in that example:
+Like in the REPL example towards the end of the [Accessing the Database](#accessing_the_database) section, the `:db.sql/query-fn` component comes from kit-sql. Unlike in that example:
 
 - we pass specific database connection information
 - we only make available the query functions from one specific file.
