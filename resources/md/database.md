@@ -58,7 +58,6 @@ can update the filename to indicate a different path, e.g. `"sql/queries.sql"`.
 ```clojure
 :db.sql/query-fn
 {:conn     #ig/ref :db.sql/connection
- :options  {}
  :filename "queries.sql"}
 ```
 
@@ -67,7 +66,6 @@ You can also make use of several files and instead specify them as a vector in a
 ```clojure
 :db.sql/query-fn
 {:conn     #ig/ref :db.sql/connection
- :options  {}
  :filenames "queries.sql other-queries.sql"}
 ```
 
