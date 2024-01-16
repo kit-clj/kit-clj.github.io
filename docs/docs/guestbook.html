@@ -231,7 +231,7 @@ VALUES &#40;:name, :message&#41;
 SELECT &#42; FROM guestbook
 </code></pre><p>Now that our model is all set up, let's reload the application, and test our queries in the REPL:</p><pre><code class="clojure">&#40;reset&#41;
 
-&#40;def query-fn &#40;:db.sql/query-fn state/system&#41;&#41;
+&#40;def query-fn &#40;ig/resolve-key :db.sql/query-fn &#40;:db.sql/query-fn state/system&#41;&#41;&#41;
 
 &#40;query-fn :save-message! {:name      &quot;m1&quot;
                           :message   &quot;hello world&quot;}&#41;
