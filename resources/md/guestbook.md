@@ -428,7 +428,7 @@ Now that our model is all set up, let's reload the application, and test our que
 ```clojure
 (reset)
 
-(def query-fn (ig/resolve-key :db.sql/query-fn (:db.sql/query-fn state/system)))
+(def query-fn (:db.sql/query-fn state/system))
 
 (query-fn :save-message! {:name      "m1"
                           :message   "hello world"})
