@@ -81,7 +81,7 @@ resources/migrations/20210720004935-add-users-table.up.sql
  :filename &quot;queries.sql&quot;}
 </code></pre><p>You can also make use of several files and instead specify them as a vector in a <code>:filenames</code> key:</p><pre><code class="clojure">:db.sql/query-fn
 {:conn     #ig/ref :db.sql/connection
- :filenames &quot;queries.sql other-queries.sql&quot;}
+ :filenames &#91;&quot;queries.sql&quot; &quot;other-queries.sql&quot;&#93;}
 </code></pre><p>This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have following SQL queries defined:</p><pre><code class="sql">-- :name get-user-by-id :? :1
 -- :doc returns a user object by id, or nil if not present
 SELECT &#42;

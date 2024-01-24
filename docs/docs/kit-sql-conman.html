@@ -74,6 +74,10 @@
  {:conn     #ig/ref :db.sql/connection
   :options  {}
   :filename &quot;queries.sql&quot;}
+</code></pre><p>Sample configuration with multiple query files:</p><pre><code class="clojure">:db.sql/query-fn
+ {:conn     #ig/ref :db.sql/connection
+  :options  {}
+  :filenames &#91;&quot;queries.sql&quot; &quot;other-queries.sql&quot;&#93;}
 </code></pre>
       </div>
     </div>
