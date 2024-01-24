@@ -66,7 +66,7 @@ You can also make use of several files and instead specify them as a vector in a
 ```clojure
 :db.sql/query-fn
 {:conn     #ig/ref :db.sql/connection
- :filenames "queries.sql other-queries.sql"}
+ :filenames ["queries.sql" "other-queries.sql"]}
 ```
 
 This Integrant component is a reference to a function that executes the SQL query along with any arguments you wish to pass in. For example, let's say you have following SQL queries defined:
