@@ -38,3 +38,12 @@ Sample configuration:
   :options  {}
   :filename "queries.sql"}
 ```
+
+Sample configuration with multiple query files:
+
+```clojure
+:db.sql/query-fn
+ {:conn     #ig/ref :db.sql/connection
+  :options  {}
+  :filenames ["queries.sql" "other-queries.sql"]}
+```
