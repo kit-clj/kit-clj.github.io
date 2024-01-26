@@ -198,8 +198,17 @@ body params: {:password &quot;xyz&quot;, :username &quot;xyz&quot;}
         true &#40;defaults/wrap-defaults
               &#40;assoc-in site-defaults-config &#91;:session :store&#93; cookie-store&#41;&#41;&#41;&#41;&#41;&#41;            
 
-</code></pre><p>We'll wrap the authentication middleware that will set the <code>:identity</code> key in the request if it's present in the session. The session backend is the simplest one available, however Buddy provides a number of different authentications backends as described <a href='https://funcool.github.io/buddy-auth/latest/#_authentication'>here</a>.</p><p>The <code>authenticated?</code> helper is used to check the <code>:identity</code> key in the request and pass it to the handler when it's present. Otherwise, the <code>on-error</code> function will be called.</p><p>We can now wrap the route groups we wish to be private using the <code>wrap-restricted</code> middleware as follows:</p><pre><code class="clojure">&#40;wrap-routes middleware/wrap-restricted&#41;
-</code></pre><h3 id="restricting&#95;access&#95;based&#95;on&#95;uri">Restricting access based on URI</h3><p>Using the <code>buddy.auth.accessrules</code> namespace from <a href='https://funcool.github.io/buddy-auth/latest/'>Buddy</a>, we can define rules for restricting access to specific pages based on its URI pattern.</p><h3 id="specifying&#95;access&#95;rules">Specifying Access Rules</h3><p>Let's take a look at how to create a rule to specify that restricted routes should only be accessible if the <code>:identity</code> key is present in the session.</p><p>First, we'll reference several Buddy namespaces in the <code>&lt;app&gt;.middleware</code> namespace.</p><pre><code class="clojure">&#40;ns myapp.middleware
+</code></pre><p>We'll wrap the authentication middleware that will set the <code>:identity</code> key in the request if it's present in the session. The session backend is the simplest one available, however Buddy provides a number of different authentications backends as described <a href='https://funcool.github.io/buddy-auth/latest/#_authentication'>here</a>.</p><p>The <code>authenticated?</code> helper is used to check the <code>:identity</code> key in the request and pass it to the handler when it's present. Otherwise, the <code>on-error</code> function will be called.</p><p>We can now wrap the route groups we wish to be private using the <code>wrap-restricted</code> middleware in the <code>api</code> namespace as follows:</p><pre><code class="clojure">&#40;defn route-data
+  &#91;opts&#93;
+  &#40;merge
+    opts
+    {:coercion   malli/coercion
+     :muuntaja   formats/instance
+     :swagger    {:id ::api}
+     :middleware &#91;...
+                  ;; wrap restricted routes
+                  wrap-restricted&#93;}&#41;&#41;
+</code></pre><p>For more information on using middleware with Reitit, please see the official documentation <a href='https://cljdoc.org/d/metosin/reitit/0.7.0-alpha7/doc/ring/data-driven-middleware'>here</a>.</p><h3 id="restricting&#95;access&#95;based&#95;on&#95;uri">Restricting access based on URI</h3><p>Using the <code>buddy.auth.accessrules</code> namespace from <a href='https://funcool.github.io/buddy-auth/latest/'>Buddy</a>, we can define rules for restricting access to specific pages based on its URI pattern.</p><h3 id="specifying&#95;access&#95;rules">Specifying Access Rules</h3><p>Let's take a look at how to create a rule to specify that restricted routes should only be accessible if the <code>:identity</code> key is present in the session.</p><p>First, we'll reference several Buddy namespaces in the <code>&lt;app&gt;.middleware</code> namespace.</p><pre><code class="clojure">&#40;ns myapp.middleware
   &#40;:require ...
             &#91;buddy.auth.middleware :refer &#91;wrap-authentication&#93;&#93;
             &#91;buddy.auth.accessrules :refer &#91;wrap-access-rules&#93;&#93;
