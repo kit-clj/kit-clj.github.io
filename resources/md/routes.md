@@ -285,11 +285,23 @@ as described [here](https://funcool.github.io/buddy-auth/latest/#_authentication
 The `authenticated?` helper is used to check the `:identity` key in the request and pass it to the handler when it's present.
 Otherwise, the `on-error` function will be called.
 
-We can now wrap the route groups we wish to be private using the `wrap-restricted` middleware as follows:
+We can now wrap the route groups we wish to be private using the `wrap-restricted` middleware in the `api` namespace as follows:
 
 ```clojure
-(wrap-routes middleware/wrap-restricted)
+(defn route-data
+  [opts]
+  (merge
+    opts
+    {:coercion   malli/coercion
+     :muuntaja   formats/instance
+     :swagger    {:id ::api}
+     :middleware [...
+                  ;; wrap restricted routes
+                  wrap-restricted]}))
 ```
+
+For more information on using middleware with Reitit, please see the official documentation [here](https://cljdoc.org/d/metosin/reitit/0.7.0-alpha7/doc/ring/data-driven-middleware).
+
 
 ### Restricting access based on URI
 
