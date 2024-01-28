@@ -75,6 +75,7 @@ user=&gt;
 :kit/auth - adds support for auth middleware using Buddy
 :kit/nrepl - adds support for nREPL
 :kit/htmx - adds support for HTMX using hiccup
+:kit/hato - adds support for kit-Hato HTTP client
 :done
 user=&gt;
 </code></pre><p>We can see that the three modules specified in the official modules repository are now available for use. Let's install the HTML module by running <code>kit/install-module</code> function and passing it the keyword specifying the module name:</p><pre><code class="clojure">user=&gt; &#40;kit/install-module :kit/html&#41;
@@ -109,7 +110,10 @@ user=&gt;
    :doc &quot;adds support for cljs using shadow-cljs&quot;}
   :kit/nrepl
   {:path &quot;nrepl&quot;
-   :doc &quot;adds support for nREPL&quot;}}}
+   :doc &quot;adds support for nREPL&quot;}
+  :kit/hato
+  {:path &quot;hato&quot;
+   :doc &quot;adds support for kit-Hato HTTP client&quot;}}}
 </code></pre><p>As you can see above, the official repository contains five modules. Let's take a look at the <a href='https://github.com/kit-clj/modules/tree/master/html'><code>:kit/html</code></a> module to see how it works. This module contains a <code>config.edn</code> file and a folder called <code>assets</code>. It has the following configuration:</p><pre><code class="clojure">{:default
  {:require-restart? true
   :actions
