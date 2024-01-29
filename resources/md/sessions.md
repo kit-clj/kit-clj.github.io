@@ -32,7 +32,7 @@ Below we have a simple example of interaction with the session.
 
 (defn clear-session! []
   (-> (response "Session cleared")
-      (dissoc :session)
+      (assoc :session nil)
       (assoc :headers {"Content-Type" "text/plain"})))
 
 (def app-routes
