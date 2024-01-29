@@ -26,6 +26,7 @@ user=> (kit/list-modules)
 :kit/nrepl - adds support for nREPL
 :kit/htmx - adds support for HTMX using hiccup
 :kit/hato - adds support for kit-Hato HTTP client
+:kit/codox - adds support for Codox
 :done
 user=>
 ```
@@ -86,7 +87,10 @@ A module repository must contain a `modules.edn` file describing the modules tha
    :doc "adds support for nREPL"}
   :kit/hato
   {:path "hato"
-   :doc "adds support for kit-Hato HTTP client"}}}
+   :doc "adds support for kit-Hato HTTP client"}
+  :kit/codox
+  {:path "codox"
+   :doc "adds support for codox"}}}
 ```
 
 As you can see above, the official repository contains five modules. Let's take a look at the [`:kit/html`](https://github.com/kit-clj/modules/tree/master/html) module to see how it works. This module contains a `config.edn` file and a folder called `assets`. It has the following configuration:
