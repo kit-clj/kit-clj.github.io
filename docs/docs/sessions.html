@@ -81,7 +81,7 @@
 
 &#40;defn clear-session! &#91;&#93;
   &#40;-&gt; &#40;response &quot;Session cleared&quot;&#41;
-      &#40;dissoc :session&#41;
+      &#40;assoc :session nil&#41;
       &#40;assoc :headers {&quot;Content-Type&quot; &quot;text/plain&quot;}&#41;&#41;&#41;
 
 &#40;def app-routes
