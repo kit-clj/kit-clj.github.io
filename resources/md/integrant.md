@@ -125,8 +125,7 @@ The multimethod attaches the `opts` to the request map by calling `(route-data o
 
 ```clojure
 
-(defn home [{:keys [flash] :as request}]
-  (let [{:keys [query-fn]} (utils/route-data request)]
-    (layout/render request "home.html" {:messages (query-fn :get-messages {})
-                                        :errors (:errors flash)})))
+(defn home [{:keys [query-fn]} {:keys [flash] :as request}]
+  (layout/render request "home.html" {:messages (query-fn :get-messages {})
+                                      :errors (:errors flash)}))
 ```
