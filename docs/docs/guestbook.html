@@ -254,35 +254,32 @@ SELECT &#42; FROM guestbook
    &#91;ring.util.http-response :as http-response&#93;&#41;&#41;
 
 &#40;defn save-message!
-  &#91;{{:strs &#91;name message&#93;} :form-params :as request}&#93;
+  &#91;{:keys &#91;query-fn&#93;} {{:strs &#91;name message&#93;} :form-params :as request}&#93;
   &#40;log/debug &quot;saving message&quot; name message&#41;
-  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data request&#41;&#93;
-    &#40;try
-      &#40;if &#40;or &#40;empty? name&#41; &#40;empty? message&#41;&#41;
-        &#40;cond-&gt; &#40;http-response/found &quot;/&quot;&#41;
-          &#40;empty? name&#41;
-          &#40;assoc-in &#91;:flash :errors :name&#93; &quot;name is required&quot;&#41;
-          &#40;empty? message&#41;
-          &#40;assoc-in &#91;:flash :errors :message&#93; &quot;message is required&quot;&#41;&#41;
-        &#40;do
-          &#40;query-fn :save-message! {:name name :message message}&#41;
-          &#40;http-response/found &quot;/&quot;&#41;&#41;&#41;
-      &#40;catch Exception e
-        &#40;log/error e &quot;failed to save message!&quot;&#41;
-        &#40;-&gt; &#40;http-response/found &quot;/&quot;&#41;
-            &#40;assoc :flash {:errors {:unknown &#40;.getMessage e&#41;}}&#41;&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>As you can see, the namespace contains a <code>save-message!</code> function that executes the query to add a new message to the guestbook table. The query is accessed from the request route data using the <code>kit.guestbook.web.routes.utils/route-data</code> function. The function returns a map containing the <code>query-fn</code> key that in turn contains a map of the query functions. The names of these functions are inferred from the <code>-- :name</code> comments in the SQL templates found in the <code>resources/sq/queries.sql</code> file.</p><p>Our function will grab the <code>form-params</code> key from the request that contains the form data and attempt to save the message in the database. The controller will redirect back to the home page, and if set any errors as a flash session on the response.</p><h3 id="creating&#95;pages&#95;and&#95;handling&#95;form&#95;input">Creating Pages and Handling Form Input</h3><p>The routes for the HTML pages are defined in the <code>kit.guestbook.web.routes.pages</code> namespace. Let's reference our <code>kit.guestbook.web.controllers.guestbook</code> and <code>kit.guestbook.web.routes.utils</code> namespaces in the namespace declaration.</p><pre><code class="clojure">&#40;ns kit.guestbook.web.routes.pages
+  &#40;try
+    &#40;if &#40;or &#40;empty? name&#41; &#40;empty? message&#41;&#41;
+      &#40;cond-&gt; &#40;http-response/found &quot;/&quot;&#41;
+        &#40;empty? name&#41;
+        &#40;assoc-in &#91;:flash :errors :name&#93; &quot;name is required&quot;&#41;
+        &#40;empty? message&#41;
+        &#40;assoc-in &#91;:flash :errors :message&#93; &quot;message is required&quot;&#41;&#41;
+      &#40;do
+        &#40;query-fn :save-message! {:name name :message message}&#41;
+        &#40;http-response/found &quot;/&quot;&#41;&#41;&#41;
+    &#40;catch Exception e
+      &#40;log/error e &quot;failed to save message!&quot;&#41;
+      &#40;-&gt; &#40;http-response/found &quot;/&quot;&#41;
+          &#40;assoc :flash {:errors {:unknown &#40;.getMessage e&#41;}}&#41;&#41;&#41;&#41;&#41;
+</code></pre><p>As you can see, the namespace contains a <code>save-message!</code> function that executes the query to add a new message to the guestbook table. The query is accessed from the first argument which is the Integrant system map that's passed to the handler. The <code>query-fn</code> key contains a map of the query functions. The names of these functions are inferred from the <code>-- :name</code> comments in the SQL templates found in the <code>resources/sq/queries.sql</code> file.</p><p>Our function will grab the <code>form-params</code> key from the request that contains the form data and attempt to save the message in the database. The controller will redirect back to the home page, and if set any errors as a flash session on the response.</p><h3 id="creating&#95;pages&#95;and&#95;handling&#95;form&#95;input">Creating Pages and Handling Form Input</h3><p>The routes for the HTML pages are defined in the <code>kit.guestbook.web.routes.pages</code> namespace. Let's reference our <code>kit.guestbook.web.controllers.guestbook</code> and <code>kit.guestbook.web.routes.utils</code> namespaces in the namespace declaration.</p><pre><code class="clojure">&#40;ns kit.guestbook.web.routes.pages
   &#40;:require
     ...
     &#91;kit.guestbook.web.routes.utils :as utils&#93;
     &#91;kit.guestbook.web.controllers.guestbook :as guestbook&#93;&#41;&#41;
-</code></pre><p>We can now add the logic for rendering the messages from the database by updating the <code>home-page</code> handler function to look as follows:</p><pre><code class="clojure">&#40;defn home &#91;{:keys &#91;flash&#93; :as request}&#93;
-  &#40;let &#91;{:keys &#91;query-fn&#93;} &#40;utils/route-data request&#41;&#93;
-    &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
-                                        :errors &#40;:errors flash&#41;}&#41;&#41;&#41;
-</code></pre><p>The function now renders the <code>home.html</code> template, and passes into it the messages from the database (using the <code>:messages</code> key), and any errors (using the <code>:errors</code> key).</p><p>Finally, we'll add the <code>/save-message</code> route in the <code>page-routes</code> function. This route will pass the request to the <code>guestbook/save-message!</code> function we defined above when the form post happens:</p><pre><code class="clojure">&#40;defn page-routes &#91;&#95;opts&#93;
-  &#91;&#91;&quot;/&quot; {:get home}&#93;
-   &#91;&quot;/save-message&quot; {:post guestbook/save-message!}&#93;&#93;&#41;
+</code></pre><p>We can now add the logic for rendering the messages from the database by updating the <code>home-page</code> handler function to look as follows:</p><pre><code class="clojure">&#40;defn home &#91;{:keys &#91;query-fn&#93;} {:keys &#91;flash&#93; :as request}&#93;
+  &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
+                                      :errors &#40;:errors flash&#41;}&#41;&#41;</code></pre><p>The function now renders the <code>home.html</code> template, and passes into it the messages from the database (using the <code>:messages</code> key), and any errors (using the <code>:errors</code> key).</p><p>Finally, we'll add the <code>/save-message</code> route in the <code>page-routes</code> function. This route will pass the request to the <code>guestbook/save-message!</code> function we defined above when the form post happens:</p><pre><code class="clojure">&#40;defn page-routes &#91;opts&#93;
+  &#91;&#91;&quot;/&quot; {:get &#40;partial home opts&#41;}&#93;
+   &#91;&quot;/save-message&quot; {:post &#40;partial guestbook/save-message! opts&#41;}&#93;&#93;&#41;
 </code></pre><p>Now that we have our controllers set up, let's open <code>home.html</code> template located in the <code>resources/html</code> directory. Currently, it simply renders a static page. We'll update our <code>content</code> div to iterate over the messages and print each one in a list:</p><pre><code class="xml">&lt;div class=&quot;content container&quot;&gt;
   &lt;div class=&quot;columns&quot;&gt;
     &lt;div class=&quot;column&quot;&gt;
