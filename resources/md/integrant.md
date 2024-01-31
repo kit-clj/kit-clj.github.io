@@ -121,7 +121,7 @@ With the above wiring in place, the `:query-fn` key referencing `:db.sql/query-f
   [base-path (route-data opts) (page-routes opts)])
 ```
 
-The multimethod attaches the `opts` to the request map by calling `(route-data opts)`, and the request handle function can now access the `:query-fn` key from the request map by calling `(utils/route-data request)` as follows:
+The multimethod should pass the opts to the function that defines the routes, and from there to the request handler function that will access the `:query-fn` key from the opts map as follows:
 
 ```clojure
 
