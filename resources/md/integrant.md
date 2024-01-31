@@ -124,8 +124,10 @@ With the above wiring in place, the `:query-fn` key referencing `:db.sql/query-f
 The multimethod should pass the opts to the function that defines the routes, and from there to the request handler function that will access the `:query-fn` key from the opts map as follows:
 
 ```clojure
-
 (defn home [{:keys [query-fn]} {:keys [flash] :as request}]
   (layout/render request "home.html" {:messages (query-fn :get-messages {})
                                       :errors (:errors flash)}))
+
+(defn page-routes [opts]
+  [["/" {:get (partial home opts)}]])
 ```
