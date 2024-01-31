@@ -114,7 +114,7 @@
       :as   opts}&#93;
   &#40;layout/init-selmer!&#41;
   &#91;base-path &#40;route-data opts&#41; &#40;page-routes opts&#41;&#93;&#41;
-</code></pre><p>The multimethod attaches the <code>opts</code> to the request map by calling <code>&#40;route-data opts&#41;</code>, and the request handle function can now access the <code>:query-fn</code> key from the request map by calling <code>&#40;utils/route-data request&#41;</code> as follows:</p><pre><code class="clojure">
+</code></pre><p>The multimethod should pass the opts to the function that defines the routes, and from there to the request handler function that will access the <code>:query-fn</code> key from the opts map as follows:</p><pre><code class="clojure">
 &#40;defn home &#91;{:keys &#91;query-fn&#93;} {:keys &#91;flash&#93; :as request}&#93;
   &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
                                       :errors &#40;:errors flash&#41;}&#41;&#41;
