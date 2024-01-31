@@ -484,26 +484,25 @@ a corresponding file called `guestbook.clj` under the `src/clj/kit/guestbook/web
    [ring.util.http-response :as http-response]))
 
 (defn save-message!
-  [{{:strs [name message]} :form-params :as request}]
+  [{:keys [query-fn]} {{:strs [name message]} :form-params :as request}]
   (log/debug "saving message" name message)
-  (let [{:keys [query-fn]} (utils/route-data request)]
-    (try
-      (if (or (empty? name) (empty? message))
-        (cond-> (http-response/found "/")
-          (empty? name)
-          (assoc-in [:flash :errors :name] "name is required")
-          (empty? message)
-          (assoc-in [:flash :errors :message] "message is required"))
-        (do
-          (query-fn :save-message! {:name name :message message})
-          (http-response/found "/")))
-      (catch Exception e
-        (log/error e "failed to save message!")
-        (-> (http-response/found "/")
-            (assoc :flash {:errors {:unknown (.getMessage e)}}))))))
+  (try
+    (if (or (empty? name) (empty? message))
+      (cond-> (http-response/found "/")
+        (empty? name)
+        (assoc-in [:flash :errors :name] "name is required")
+        (empty? message)
+        (assoc-in [:flash :errors :message] "message is required"))
+      (do
+        (query-fn :save-message! {:name name :message message})
+        (http-response/found "/")))
+    (catch Exception e
+      (log/error e "failed to save message!")
+      (-> (http-response/found "/")
+          (assoc :flash {:errors {:unknown (.getMessage e)}})))))
 ```
 
-As you can see, the namespace contains a `save-message!` function that executes the query to add a new message to the guestbook table. The query is accessed from the request route data using the `kit.guestbook.web.routes.utils/route-data` function. The function returns a map containing the `query-fn` key that in turn contains a map of the query functions. The names of these functions are inferred from the `-- :name` comments in the SQL templates found in the `resources/sq/queries.sql` file.
+As you can see, the namespace contains a `save-message!` function that executes the query to add a new message to the guestbook table. The query is accessed from the first argument which is the Integrant system map that's passed to the handler. The `query-fn` key contains a map of the query functions. The names of these functions are inferred from the `-- :name` comments in the SQL templates found in the `resources/sq/queries.sql` file.
 
 Our function will grab the `form-params` key from the request that contains the form data and attempt to save the message in the database. The controller will redirect back to the home page, and if set any errors as a flash session on the response.
 
@@ -522,20 +521,18 @@ The routes for the HTML pages are defined in the `kit.guestbook.web.routes.pages
 We can now add the logic for rendering the messages from the database by updating the `home-page` handler function to look as follows:
 
 ```clojure
-(defn home [{:keys [flash] :as request}]
-  (let [{:keys [query-fn]} (utils/route-data request)]
-    (layout/render request "home.html" {:messages (query-fn :get-messages {})
-                                        :errors (:errors flash)})))
-```
+(defn home [{:keys [query-fn]} {:keys [flash] :as request}]
+  (layout/render request "home.html" {:messages (query-fn :get-messages {})
+                                      :errors (:errors flash)}))```
 
 The function now renders the `home.html` template, and passes into it the messages from the database (using the `:messages` key), and any errors (using the `:errors` key).
 
 Finally, we'll add the `/save-message` route in the `page-routes` function. This route will pass the request to the `guestbook/save-message!` function we defined above when the form post happens:
 
 ```clojure
-(defn page-routes [_opts]
-  [["/" {:get home}]
-   ["/save-message" {:post guestbook/save-message!}]])
+(defn page-routes [opts]
+  [["/" {:get (partial home opts)}]
+   ["/save-message" {:post (partial guestbook/save-message! opts)}]])
 ```
 
 Now that we have our controllers set up, let's open `home.html` template located in the `resources/html` directory. Currently, it simply renders a static page. We'll update our `content` div to iterate over the messages and print each one in a list:
