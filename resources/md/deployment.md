@@ -212,6 +212,25 @@ openssl dhparam -out dhparam.pem 4096
 
 There are two options for handling HTTPS connections. You can either configure the HTTP server in the app itself, or front it with Nginx. We'll look at both approaches below.
 
+##### ring-undertow-adapter SSL config
+
+The Kit framework uses [ring-undertow-adapter](https://github.com/luminus-framework/ring-undertow-adapter).
+This adapter supports SSL, and it expects a [*keystore*](https://docs.oracle.com/cd/E19509-01/820-3503/6nf1il6er/index.html) with your certificate and key.
+
+First, use the **keytool** (packaged for your operating system) to convert your LetsEncrypt certificate and key to a `.p12` file.
+
+Once you have the `.p12` keystore, update the Kit app configuration.
+Edit `resources/system.edn` and find the value of `:server/http` key.
+To this existing map, add the following keys:
+
+```
+  :ssl-port 443
+  :keystore "/path/to/your/keystore.jks"
+  :key-password "password-for-keystore"
+```
+
+Then restart the webapp.
+
 ##### Nginx SSL config
 
 To use Nginx as your SSL proxy you'll want to update the configuration in `/etc/nginx/sites-available/default` as follows:
