@@ -6,7 +6,7 @@ To create a standalone executable for your application simply run
 clj -Sforce -T:build all
 ```
 
-The resulting `jar` can be found in the `target/uberjar` folder. It can be run as follows:
+The resulting `jar` can be found in the `target` folder. It can be run as follows:
 
 ```bash
 java -jar <app>.jar
