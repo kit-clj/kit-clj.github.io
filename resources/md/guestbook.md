@@ -43,7 +43,7 @@ sudo ./posix-install.sh
 For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfield/clj-new) installed as follows:
 
 ```
-clojure -Ttools install-latest :lib io.github.seancorfield/clj-new :as clj-new
+clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag "v1.2.404"}' :as clj-new
 ```
 
 For information on customization options, for example on how to change your install location, see [the official docs here](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools).
