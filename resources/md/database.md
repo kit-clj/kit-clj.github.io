@@ -99,20 +99,34 @@ To run queries in a transaction you have to use `next.jdbc/with-transaction` as 
     (query-fn tx :get-user-by-id {:id "foo"})))
 ```
 
-Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within the scope of the transaction. Please see official [nex.jdbc](https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md) documentation on transactions for further examples.
+Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within 
+the scope of the transaction. In addition, the database connection object is also accessible in the `connection` 
+metadata key of the `query-fn`, and so the above code can also be written as:
+
+```clojure
+(next.jdbc/with-transaction [tx (:connection (meta query-fn))]
+    (query-fn tx :add-user! {:id "foo" :password "secret"})
+    ...)
+```
+
+Please see official [nex.jdbc](https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md) documentation on transactions for further examples.
 
 For reference, here is the full definition from the Kit SQL edge:
 
 ```clojure
 (defmethod ig/init-key :db.sql/query-fn
-  [_ {:keys [conn options filename]
+  [_ {:keys [conn options filename filenames]
       :or   {options {}}}]
-  (let [queries (conman/bind-connection-map conn options filename)]
-    (fn
-      ([query params]
-       (conman/query queries query params))
-      ([conn query params & opts]
-       (apply conman/query conn queries query params opts)))))
+  (let [filenames (or filenames [filename])
+        queries (apply conman/bind-connection-map conn options filenames)]
+    (with-meta
+      (fn
+        ([query params]
+         (conman/query queries query params))
+        ([conn query params & opts]
+         (apply conman/query conn queries query params opts)))
+      {:connection conn
+       :mtimes (map ig-utils/last-modified filenames)})))
 ```
 
 As you can see, the two-arity `query-fn` uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.
