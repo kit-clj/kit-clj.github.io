@@ -2,7 +2,7 @@
 
 ### :db.sql/migrations
 
-This component uses [migratus](https://github.com/yogthos/migratus) to execute your migrations. It optionally takes a `migrate-on-init?` key that defaults to `true`. When `true`, this key ensures your migrations run when the component is initialized. 
+This component uses [migratus](https://github.com/yogthos/migratus) to execute your migrations. It optionally takes a `migrate-on-init?` key that defaults to `true`. When `true`, this key ensures your migrations run when the component is initialized.
 
 The component resolves to the configuration options that are initially passed in.
 
@@ -19,3 +19,4 @@ Sample configuration:
   :migration-table-name "foo_bar"
   :db                   {:datasource #ig/ref :db.sql/connection}
   :migrate-on-init?     true}
+```
