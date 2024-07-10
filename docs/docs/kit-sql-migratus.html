@@ -62,7 +62,7 @@
       <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:db.sql/migrations">:db.sql/migrations</a></li></ol>
       
       <div id="content">
-        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.sql/migrations">:db.sql/migrations</h3><p>This component uses <a href='https://github.com/yogthos/migratus'>migratus</a> to execute your migrations. It optionally takes a <code>migrate-on-init?</code> key that defaults to <code>true</code>. When <code>true</code>, this key ensures your migrations run when the component is initialized. </p><p>The component resolves to the configuration options that are initially passed in.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/migrations
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":db.sql/migrations">:db.sql/migrations</h3><p>This component uses <a href='https://github.com/yogthos/migratus'>migratus</a> to execute your migrations. It optionally takes a <code>migrate-on-init?</code> key that defaults to <code>true</code>. When <code>true</code>, this key ensures your migrations run when the component is initialized.</p><p>The component resolves to the configuration options that are initially passed in.</p><p>Sample configuration:</p><pre><code class="clojure">:db.sql/migrations
  {:store                :database
   :migration-dir        &quot;custom-migrations&quot;
   :init-script          &quot;init.sql&quot; ;script should be located in the :migration-dir path
@@ -72,8 +72,7 @@
   :migration-table-name &quot;foo&#95;bar&quot;
   :db                   {:datasource #ig/ref :db.sql/connection}
   :migrate-on-init?     true}
-
-
+</code></pre>
       </div>
     </div>
   </div>
