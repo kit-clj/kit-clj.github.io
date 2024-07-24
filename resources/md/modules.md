@@ -4,7 +4,7 @@ Kit modules are templates that can be applied to an existing project using the [
 
 ### Using Modules
 
-Kit embraces the REPL and the generator library is aliased in the `user` namespace as `kit`. Let's see how we can us it to install HTML module in the project. First, we need to sync our module repositories. This is done by running the following command in the REPL:
+Kit embraces the REPL and the generator library is aliased in the `user` namespace as `kit`. Let's see how we can use it to install HTML module in the project. First, we need to sync our module repositories. This is done by running the following command in the REPL:
 
 ```clojure
 user=> (kit/sync-modules)
