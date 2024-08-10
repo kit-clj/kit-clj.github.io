@@ -479,8 +479,7 @@ a corresponding file called `guestbook.clj` under the `src/clj/kit/guestbook/web
 ```clojure
 (ns kit.guestbook.web.controllers.guestbook
   (:require
-   [clojure.tools.logging :as log]
-   [kit.guestbook.web.routes.utils :as utils]
+   [clojure.tools.logging :as log]   
    [ring.util.http-response :as http-response]))
 
 (defn save-message!
@@ -513,8 +512,7 @@ The routes for the HTML pages are defined in the `kit.guestbook.web.routes.pages
 ```clojure
 (ns kit.guestbook.web.routes.pages
   (:require
-    ...
-    [kit.guestbook.web.routes.utils :as utils]
+    ...    
     [kit.guestbook.web.controllers.guestbook :as guestbook]))
 ```
 
