@@ -249,8 +249,7 @@ SELECT &#42; FROM guestbook
  :filename &quot;sql/queries.sql&quot;}
 </code></pre><p>Like in the REPL example towards the end of the <a href='#accessing_the_database'>Accessing the Database</a> section, the <code>:db.sql/query-fn</code> component comes from kit-sql. Unlike in that example:</p><ul><li>we pass specific database connection information</li><li>we only make available the query functions from one specific file.</li></ul><p>For more information on how components like <code>:db.sql/query-fn</code> work, see <a href='/docs/integrant.html#accessing_components'>Accessing Components</a>.</p><h3 id="creating&#95;a&#95;controller&#95;for&#95;the&#95;guestbook">Creating a controller for the guestbook</h3><p>We'll create a new controller that will be responsible for saving new messages in the database. Let's create a new namespace called <code>kit.guestbook.web.controllers.guestbook</code>, this namespace should be placed in a corresponding file called <code>guestbook.clj</code> under the <code>src/clj/kit/guestbook/web/controllers/</code> folder. We'll add the following content to the namespace:</p><pre><code class="clojure">&#40;ns kit.guestbook.web.controllers.guestbook
   &#40;:require
-   &#91;clojure.tools.logging :as log&#93;
-   &#91;kit.guestbook.web.routes.utils :as utils&#93;
+   &#91;clojure.tools.logging :as log&#93;   
    &#91;ring.util.http-response :as http-response&#93;&#41;&#41;
 
 &#40;defn save-message!
@@ -272,8 +271,7 @@ SELECT &#42; FROM guestbook
           &#40;assoc :flash {:errors {:unknown &#40;.getMessage e&#41;}}&#41;&#41;&#41;&#41;&#41;
 </code></pre><p>As you can see, the namespace contains a <code>save-message!</code> function that executes the query to add a new message to the guestbook table. The query is accessed from the first argument which is the Integrant system map that's passed to the handler. The <code>query-fn</code> key contains a map of the query functions. The names of these functions are inferred from the <code>-- :name</code> comments in the SQL templates found in the <code>resources/sq/queries.sql</code> file.</p><p>Our function will grab the <code>form-params</code> key from the request that contains the form data and attempt to save the message in the database. The controller will redirect back to the home page, and if set any errors as a flash session on the response.</p><h3 id="creating&#95;pages&#95;and&#95;handling&#95;form&#95;input">Creating Pages and Handling Form Input</h3><p>The routes for the HTML pages are defined in the <code>kit.guestbook.web.routes.pages</code> namespace. Let's reference our <code>kit.guestbook.web.controllers.guestbook</code> and <code>kit.guestbook.web.routes.utils</code> namespaces in the namespace declaration.</p><pre><code class="clojure">&#40;ns kit.guestbook.web.routes.pages
   &#40;:require
-    ...
-    &#91;kit.guestbook.web.routes.utils :as utils&#93;
+    ...    
     &#91;kit.guestbook.web.controllers.guestbook :as guestbook&#93;&#41;&#41;
 </code></pre><p>We can now add the logic for rendering the messages from the database by updating the <code>home-page</code> handler function to look as follows:</p><pre><code class="clojure">&#40;defn home &#91;{:keys &#91;query-fn&#93;} {:keys &#91;flash&#93; :as request}&#93;
   &#40;layout/render request &quot;home.html&quot; {:messages &#40;query-fn :get-messages {}&#41;
