@@ -118,10 +118,10 @@ With the above wiring in place, the `:query-fn` key referencing `:db.sql/query-f
       :or   {base-path ""}
       :as   opts}]
   (layout/init-selmer!)
-  [base-path (route-data opts) (page-routes opts)])
+  [base-path route-data (page-routes opts)])
 ```
 
-The multimethod should pass the opts to the function that defines the routes, and from there to the request handler function that will access the `:query-fn` key from the opts map as follows:
+The multimethod should pass the opts to the function that defines the routes, and from there to the request handler function that will access the `:query-fn` key from the `opts` map as follows:
 
 ```clojure
 (defn home [{:keys [query-fn]} {:keys [flash] :as request}]
