@@ -67,8 +67,8 @@ Kit uses `env/dev/clj` and `env/prod/clj` source paths for this purpose. By defa
 The config references the `<app>.dev-middleware` namespace found in the same source path. Any development specific middleware
 should be placed there.
 
-Meanwhile, the `prod` config will not 
- 
+Meanwhile, the `prod` config will not
+
 ```clojure
 (ns <project-ns>.env
   (:require [clojure.tools.logging :as log]))
@@ -85,3 +85,21 @@ Meanwhile, the `prod` config will not
 ```
 
 Only the middleware defined in the `<app>.middleware` namespace is run during production.
+
+## Storing secrets
+
+Storing secrets in the files tracked by version control system should be avoided hence aero comes with an [`#include`](https://github.com/juxt/aero?tab=readme-ov-file#include) macro that allows for content loading from another file. Thanks to that you can use your sensitive data in the following way:
+
+```clojure
+{:secrets #include "secrets.edn"}
+```
+
+or load it based on the profile:
+
+```clojure
+{:secrets #include #profile {:dev "dev-config.edn"
+                             :prod "prod-config.edn"
+                             :test "test-config.edn"}}
+```
+
+Note that the paths you provide are relative to the `system.edn` and for a custom behavior it is recommended to create your own resolver. Feel encouraged to check [aero documentation](https://github.com/juxt/aero/blob/master/README.md) out for more tips and usage patterns.
