@@ -2,7 +2,7 @@
 
 ### :http.client/hato
 
-Component that creates a [hato](https://github.com/gnarroway/hato) HTTP client for use throughout your application. 
+Component that creates a [hato](https://github.com/gnarroway/hato) HTTP client for use throughout your application.
 
 For example, you may configure it as follows in your `system.edn`
 
@@ -37,9 +37,8 @@ Now you can use this component throughout the application, e.g.
       :body
       (http-response/ok)))
 
-(defn api-routes [base-path]
-  [base-path
-   ["/swagger.json"
+(defn api-routes [_opts]
+  [["/swagger.json"
     {:get {:no-doc  true
            :swagger {:info {:title " API"}}
            :handler (swagger/create-swagger-handler)}}]

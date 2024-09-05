@@ -3,15 +3,14 @@ This section provides links to online resources, books, and development environm
 ### Online Clojure Guides
 
 * [Clojure Distilled](http://yogthos.github.io/ClojureDistilled.html) - introduction to core Clojure concepts
-* [Clojure - Functional Programming for the JVM](http://java.ociweb.com/mark/clojure/article.html) - a detailed Clojure primer aimed at Java developers
+* [Clojure - Functional Programming for the JVM](https://objectcomputing.com/resources/publications/sett/march-2009-core-functional-programming-for-the-jvm) - a detailed Clojure primer aimed at Java developers
 * [Clojure for the Brave and True](http://www.braveclojure.com/) - an excellent and humorous introduction to the language
 * [Clojure Documentation](http://clojure-doc.org/) - a collection of Clojure guides and tutorials
-* [4Clojure](http://www.4clojure.com/) - a site for practicing Clojure by solving interactive problems
+* [4Clojure](https://4clojure.oxal.com/) - a site for practicing Clojure by solving interactive problems
 * [ClojureScript in 15 minutes](https://github.com/shaunlebron/ClojureScript-Syntax-in-15-minutes) - concise guide to ClojureScript
 
 ### Clojure Reference
 
-* [Grimoire API reference](http://conj.io/)
 * [Clojure cheatsheet](http://clojure.org/cheatsheet)
 * [Clojure style guide](https://github.com/bbatsov/clojure-style-guide)
 * [Clojure by Example](https://kimh.github.io/clojure-by-example/)
@@ -24,7 +23,7 @@ This section provides links to online resources, books, and development environm
 * [Clojure in Action](http://www.amazon.com/Clojure-Action-Amit-Rathore/dp/1935182595/)
 * [The Joy of Clojure: Thinking the Clojure Way](http://www.amazon.com/The-Joy-Clojure-Thinking-Way/dp/1935182641/ref=pd_bxgy_b_img_y)
 * [Practical Clojure](http://www.apress.com/9781430272311)
-* [Web Development with Clojure](https://pragprog.com/book/dswdcloj2/web-development-with-clojure-second-edition)
+* [Web Development with Clojure](https://www.oreilly.com/library/view/web-development-with/9781680508833)
 * [Clojure Web Development Essentials](https://www.packtpub.com/application-development/clojure-web-development-essentials)
 
 
@@ -32,7 +31,7 @@ This section provides links to online resources, books, and development environm
 
 There is a number of IDEs to choose from for Clojure development.
 
-* [Emacs](http://clojure-doc.org/articles/tutorials/emacs.html) - currently the most popular IDE for Clojure.
+* [Emacs](http://clojure.org/guides/editors#_emacs_most_popular_most_customizable) - currently the most popular IDE for Clojure.
 * [IntelliJ](http://www.jetbrains.com/idea/download/) - IntelliJ provides an excellent Clojure development environment via the [Cursive plugin](http://cursiveclojure.com/).
 * [Visual Studio Code](https://code.visualstudio.com/) - Extensible editor featuring the [Calva](https://github.com/BetterThanTomorrow/calva) plugin available from the editor Plugin Marketplace.
 * [Vim Iced](https://github.com/liquidz/vim-iced) - Full-featured Clojure editing for Vim.

@@ -14,7 +14,7 @@ It might be useful if you need to create transactions to reference the connectio
 Sample configuration:
 
 ```clojure
-:db.sql/connection 
+:db.sql/connection
 #profile {:prod {:jdbc-url   #env JDBC_URL
                  :init-size  1
                  :min-idle   1
@@ -36,7 +36,8 @@ Sample configuration:
 :db.sql/query-fn
  {:conn     #ig/ref :db.sql/connection
   :options  {}
-  :filename "queries.sql"}
+  :filename "queries.sql"
+  :env #ig/ref :system/env}
 ```
 
 Sample configuration with multiple query files:
@@ -45,5 +46,6 @@ Sample configuration with multiple query files:
 :db.sql/query-fn
  {:conn     #ig/ref :db.sql/connection
   :options  {}
-  :filenames ["queries.sql" "other-queries.sql"]}
+  :filenames ["queries.sql" "other-queries.sql"]
+  :env #ig/ref :system/env}
 ```
