@@ -15,7 +15,7 @@ Undertow allows setting the number of worker and IO threads using the `:worker-t
 If you want to do a custom configuration that includes calculating the `io-threads` at runtime, you can override the default `ig/init-key` for `server/undertow`. This is the definition in `kit.edge.server.undertow`
 
 ```clojure
-(defmethod ig/prep-key :server/undertow
+(defmethod ig/expand-key :server/undertow
   [_ config]
   (merge {:port 3000
           :host "0.0.0.0"}
@@ -25,12 +25,12 @@ If you want to do a custom configuration that includes calculating the `io-threa
 For example,
 
 ```clojure
-(defmethod ig/prep-key :server/undertow
-  [_ config]
-  (merge {:port 3000
+(defmethod ig/expand-key :server/undertow
+  [k config]
+  {k (merge {:port 3000
           :host "0.0.0.0"
           :io-threads (* 2 (.availableProcessors (Runtime/getRuntime)))}
-         config))
+         config)})
 ```
 
 For a full listing of all configuration options, review the [ring-undertow-adapter documentation](https://github.com/luminus-framework/ring-undertow-adapter).
