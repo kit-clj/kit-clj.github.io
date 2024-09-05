@@ -52,7 +52,7 @@ helper functions:
 
 ### SQL Queries
 
-SQL queries are parsed by HugSQL as defined in your `system.edn` and `resources/queries.sql` file by default. You 
+SQL queries are parsed by HugSQL as defined in your `system.edn` and `resources/queries.sql` file by default. You
 can update the filename to indicate a different path, e.g. `"sql/queries.sql"`.
 
 ```clojure
@@ -99,23 +99,39 @@ To run queries in a transaction you have to use `next.jdbc/with-transaction` as 
     (query-fn tx :get-user-by-id {:id "foo"})))
 ```
 
-Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within the scope of the transaction. Please see official [nex.jdbc](https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md) documentation on transactions for further examples.
+Note that you must use `tx` connection created by `with-transaction` in order for the query to be considered within the scope of the transaction. Please see official [next.jdbc](https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md) documentation on transactions for further examples.
 
 For reference, here is the full definition from the Kit SQL edge:
 
 ```clojure
-(defmethod ig/init-key :db.sql/query-fn
-  [_ {:keys [conn options filename]
-      :or   {options {}}}]
-  (let [queries (conman/bind-connection-map conn options filename)]
+(defn queries-dev [load-queries]
+  (fn
+    ([query params]
+     (conman/query (load-queries) query params))
+    ([conn query params & opts]
+     (conman/query conn (load-queries) query params opts))))
+
+(defn queries-prod [load-queries]
+  (let [queries (load-queries)]
     (fn
       ([query params]
        (conman/query queries query params))
       ([conn query params & opts]
-       (apply conman/query conn queries query params opts)))))
+       (conman/query conn queries query params opts)))))
+
+(defmethod ig/init-key :db.sql/query-fn
+  [_ {:keys [conn options filename filenames env]
+      :or   {options {}}}]
+  (let [filenames (or filenames [filename])
+        load-queries #(apply conman/bind-connection-map conn options filenames)]
+    (with-meta
+      (if (= env :dev)
+        (queries-dev load-queries)
+        (queries-prod load-queries))
+      {:mtimes (mapv ig-utils/last-modified filenames)})))
 ```
 
-As you can see, the two-arity `query-fn` uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.
+As you can see, the two-arity `query-fn` uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions. Definition above also allows Kit to reload queries source (be it single or multiple files) automatically if you operate on the `:dev` environment - for non-dev profile it would be loaded only once.
 
 
 ### Working with HugSQL
@@ -159,7 +175,7 @@ The following code illustrates how to use `hugsql.core/hugsql-command-fn` multim
 
 ```clojure
 
-(defn log-sqlvec [sqlvec] 
+(defn log-sqlvec [sqlvec]
   (log/info (->> sqlvec
                  (map #(clojure.string/replace (or % "") #"\n" ""))
                  (clojure.string/join " ; "))))
