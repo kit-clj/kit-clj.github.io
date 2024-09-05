@@ -67,17 +67,17 @@
  :handler #ig/ref :handler/ring
  :worker-threads 200
  :io-threads 4}
-</code></pre><p>If you want to do a custom configuration that includes calculating the <code>io-threads</code> at runtime, you can override the default <code>ig/init-key</code> for <code>server/undertow</code>. This is the definition in <code>kit.edge.server.undertow</code></p><pre><code class="clojure">&#40;defmethod ig/prep-key :server/undertow
-  &#91;&#95; config&#93;
-  &#40;merge {:port 3000
+</code></pre><p>If you want to do a custom configuration that includes calculating the <code>io-threads</code> at runtime, you can override the default <code>ig/init-key</code> for <code>server/undertow</code>. This is the definition in <code>kit.edge.server.undertow</code></p><pre><code class="clojure">&#40;defmethod ig/expand-key :server/undertow
+  &#91;k config&#93;
+  {k &#40;merge {:port 3000
           :host &quot;0.0.0.0&quot;}
-         config&#41;&#41;
-</code></pre><p>For example,</p><pre><code class="clojure">&#40;defmethod ig/prep-key :server/undertow
-  &#91;&#95; config&#93;
-  &#40;merge {:port 3000
+         config&#41;}&#41;
+</code></pre><p>For example,</p><pre><code class="clojure">&#40;defmethod ig/expand-key :server/undertow
+  &#91;k config&#93;
+  {k &#40;merge {:port 3000
           :host &quot;0.0.0.0&quot;
           :io-threads &#40;&#42; 2 &#40;.availableProcessors &#40;Runtime/getRuntime&#41;&#41;&#41;}
-         config&#41;&#41;
+         config&#41;}&#41;
 </code></pre><p>For a full listing of all configuration options, review the <a href='https://github.com/luminus-framework/ring-undertow-adapter'>ring-undertow-adapter documentation</a>.</p><p>Undertow uses separate thread pools for managing the IO and the worker threads. The <code>:dispatch?</code> flag is used to decide whether the request should be dispatched by the IO thread to a separate worker thread. Since dispatching the request to a worker carries overhead, it may be more performant to handle some requests, such as hardcoded text responses, directly in the IO thread.</p>
       </div>
     </div>
