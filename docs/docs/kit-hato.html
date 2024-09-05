@@ -62,7 +62,7 @@
       <ol class="contents"><li><a href="#integrant_components">Integrant components</a></li><li><a href="#:http.client/hato">:http.client/hato</a></li></ol>
       
       <div id="content">
-        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":http.client/hato">:http.client/hato</h3><p>Component that creates a <a href='https://github.com/gnarroway/hato'>hato</a> HTTP client for use throughout your application. </p><p>For example, you may configure it as follows in your <code>system.edn</code></p><pre><code class="clojure">:http.client.hato/auth0
+        <h2 id="integrant&#95;components">Integrant components</h2><h3 id=":http.client/hato">:http.client/hato</h3><p>Component that creates a <a href='https://github.com/gnarroway/hato'>hato</a> HTTP client for use throughout your application.</p><p>For example, you may configure it as follows in your <code>system.edn</code></p><pre><code class="clojure">:http.client.hato/auth0
 {:connect-timeout 3000}
 </code></pre><p>And as follows in your Clojure code:</p><pre><code class="clojure">&#40;derive :http.client.hato/auth0 :http.client/hato&#41;
 </code></pre><p>Note the derivation allows you to have multiple clients should you want one per individual service</p><p>Now you can use this component throughout the application, e.g.</p><pre><code class="clojure">;; system.edn
@@ -79,9 +79,8 @@
       :body
       &#40;http-response/ok&#41;&#41;&#41;
 
-&#40;defn api-routes &#91;base-path&#93;
-  &#91;base-path
-   &#91;&quot;/swagger.json&quot;
+&#40;defn api-routes &#91;&#95;opts&#93;
+  &#91;&#91;&quot;/swagger.json&quot;
     {:get {:no-doc  true
            :swagger {:info {:title &quot; API&quot;}}
            :handler &#40;swagger/create-swagger-handler&#41;}}&#93;

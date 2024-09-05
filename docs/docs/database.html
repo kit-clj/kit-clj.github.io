@@ -76,7 +76,7 @@ resources/migrations/20210720004935-add-users-table.up.sql
  {:store            :database
   :db               {:datasource #ig/ref :db/connection}
   :migrate-on-init? true}
-</code></pre><p>You can also run the migrations via the REPL. The <code>migratus.core</code> namespace provides the following helper functions:</p><ul><li><code>&#40;migratus.core/reset &#40;:db.sql/migrations state/system&#41;&#41;</code> - resets the state of the database by rolling back all the applied migrations (by using the appropriate down-scripts), and running all migrations (up-scripts)</li><li><code>&#40;migratus.core/migrate &#40;:db.sql/migrations state/system&#41;&#41;</code> - runs the pending migrations</li><li><code>&#40;migratus.core/rollback &#40;:db.sql/migrations state/system&#41;&#41;</code> - rolls back the last set of migrations</li><li><code>&#40;migratus.core/create &#40;:db.sql/migrations state/system&#41; &quot;add-guestbook-table&quot;&#41;</code> - creates the up/down migration files with the given name</li></ul><p><strong>Important</strong>: the database connection must be initialized before migrations can be run in the REPL</p><h3 id="sql&#95;queries">SQL Queries</h3><p>SQL queries are parsed by HugSQL as defined in your <code>system.edn</code> and <code>resources/queries.sql</code> file by default. You  can update the filename to indicate a different path, e.g. <code>&quot;sql/queries.sql&quot;</code>.</p><pre><code class="clojure">:db.sql/query-fn
+</code></pre><p>You can also run the migrations via the REPL. The <code>migratus.core</code> namespace provides the following helper functions:</p><ul><li><code>&#40;migratus.core/reset &#40;:db.sql/migrations state/system&#41;&#41;</code> - resets the state of the database by rolling back all the applied migrations (by using the appropriate down-scripts), and running all migrations (up-scripts)</li><li><code>&#40;migratus.core/migrate &#40;:db.sql/migrations state/system&#41;&#41;</code> - runs the pending migrations</li><li><code>&#40;migratus.core/rollback &#40;:db.sql/migrations state/system&#41;&#41;</code> - rolls back the last set of migrations</li><li><code>&#40;migratus.core/create &#40;:db.sql/migrations state/system&#41; &quot;add-guestbook-table&quot;&#41;</code> - creates the up/down migration files with the given name</li></ul><p><strong>Important</strong>: the database connection must be initialized before migrations can be run in the REPL</p><h3 id="sql&#95;queries">SQL Queries</h3><p>SQL queries are parsed by HugSQL as defined in your <code>system.edn</code> and <code>resources/queries.sql</code> file by default. You can update the filename to indicate a different path, e.g. <code>&quot;sql/queries.sql&quot;</code>.</p><pre><code class="clojure">:db.sql/query-fn
 {:conn     #ig/ref :db.sql/connection
  :filename &quot;queries.sql&quot;}
 </code></pre><p>You can also make use of several files and instead specify them as a vector in a <code>:filenames</code> key:</p><pre><code class="clojure">:db.sql/query-fn
@@ -97,22 +97,38 @@ values &#40;:id, :password&#41;
   &#40;next.jdbc/with-transaction &#91;tx conn&#93;
     &#40;query-fn tx :add-user! {:id &quot;foo&quot; :password &quot;secret&quot;}&#41;
     &#40;query-fn tx :get-user-by-id {:id &quot;foo&quot;}&#41;&#41;&#41;
-</code></pre><p>Note that you must use <code>tx</code> connection created by <code>with-transaction</code> in order for the query to be considered within the scope of the transaction. Please see official <a href='https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md'>nex.jdbc</a> documentation on transactions for further examples.</p><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defmethod ig/init-key :db.sql/query-fn
-  &#91;&#95; {:keys &#91;conn options filename&#93;
-      :or   {options {}}}&#93;
-  &#40;let &#91;queries &#40;conman/bind-connection-map conn options filename&#41;&#93;
+</code></pre><p>Note that you must use <code>tx</code> connection created by <code>with-transaction</code> in order for the query to be considered within the scope of the transaction. Please see official <a href='https://github.com/seancorfield/next-jdbc/blob/develop/doc/transactions.md'>next.jdbc</a> documentation on transactions for further examples.</p><p>For reference, here is the full definition from the Kit SQL edge:</p><pre><code class="clojure">&#40;defn queries-dev &#91;load-queries&#93;
+  &#40;fn
+    &#40;&#91;query params&#93;
+     &#40;conman/query &#40;load-queries&#41; query params&#41;&#41;
+    &#40;&#91;conn query params &amp; opts&#93;
+     &#40;conman/query conn &#40;load-queries&#41; query params opts&#41;&#41;&#41;&#41;
+
+&#40;defn queries-prod &#91;load-queries&#93;
+  &#40;let &#91;queries &#40;load-queries&#41;&#93;
     &#40;fn
       &#40;&#91;query params&#93;
        &#40;conman/query queries query params&#41;&#41;
       &#40;&#91;conn query params &amp; opts&#93;
-       &#40;apply conman/query conn queries query params opts&#41;&#41;&#41;&#41;&#41;
-</code></pre><p>As you can see, the two-arity <code>query-fn</code> uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions.</p><h3 id="working&#95;with&#95;hugsql">Working with HugSQL</h3><p>HugSQL takes the approach similar to HTML templating for writing SQL queries. The queries are written using plain SQL, and the dynamic parameters are specified using Clojure keyword syntax. HugSQL will use the SQL templates to automatically generate the functions for interacting with the database.</p><p>Conventionally, the queries are placed in the <code>resources/sql/queries.sql</code> file. However, once your application grows you may consider splitting the queries into multiple files.</p><p>You can see the format of an example SQL function below:</p><pre><code class="sql">-- :name create-user! :! :n
+       &#40;conman/query conn queries query params opts&#41;&#41;&#41;&#41;&#41;
+
+&#40;defmethod ig/init-key :db.sql/query-fn
+  &#91;&#95; {:keys &#91;conn options filename filenames env&#93;
+      :or   {options {}}}&#93;
+  &#40;let &#91;filenames &#40;or filenames &#91;filename&#93;&#41;
+        load-queries #&#40;apply conman/bind-connection-map conn options filenames&#41;&#93;
+    &#40;with-meta
+      &#40;if &#40;= env :dev&#41;
+        &#40;queries-dev load-queries&#41;
+        &#40;queries-prod load-queries&#41;&#41;
+      {:mtimes &#40;mapv ig-utils/last-modified filenames&#41;}&#41;&#41;&#41;
+</code></pre><p>As you can see, the two-arity <code>query-fn</code> uses the database that you pass in the initial system configuration. However, the three plus-arity variant allows you to pass in a custom connection, allowing for SQL transactions. Definition above also allows Kit to reload queries source (be it single or multiple files) automatically if you operate on the <code>:dev</code> environment - for non-dev profile it would be loaded only once.</p><h3 id="working&#95;with&#95;hugsql">Working with HugSQL</h3><p>HugSQL takes the approach similar to HTML templating for writing SQL queries. The queries are written using plain SQL, and the dynamic parameters are specified using Clojure keyword syntax. HugSQL will use the SQL templates to automatically generate the functions for interacting with the database.</p><p>Conventionally, the queries are placed in the <code>resources/sql/queries.sql</code> file. However, once your application grows you may consider splitting the queries into multiple files.</p><p>You can see the format of an example SQL function below:</p><pre><code class="sql">-- :name create-user! :! :n
 -- :doc creates a new user record
 INSERT INTO users
 &#40;id, first&#95;name, last&#95;name, email, pass&#41;
 VALUES &#40;:id, :first&#95;name, :last&#95;name, :email, :pass&#41;
 </code></pre><p>You specify the name of the generated function using the <code>-- :name</code> comment. The name is followed by the command and the result flags.</p><p>The following command flags are available:</p><ul><li><code>:?</code> - query with a result-set (default)</li><li><code>:!</code> - any statement</li><li><code>:&lt;!</code> - support for <code>INSERT ... RETURNING</code></li><li><code>:i!</code> - support for insert and jdbc <code>.getGeneratedKeys</code></li></ul><p>The result flags are:</p><ul><li><code>:1</code> - one row as a hash-map</li><li><code>:&#42;</code> - many rows as a vector of hash-maps</li><li><code>:n</code> - number of rows affected (inserted/updated/deleted)</li><li><code>:raw</code> - pass through an untouched result (default)</li></ul><p>The query itself is written using plain SQL and the dynamic parameters are denoted by prefixing the parameter name with a colon.</p><h4 id="debugging&#95;hugsql&#95;queries">Debugging HugSQL queries</h4><p>The following code illustrates how to use <code>hugsql.core/hugsql-command-fn</code> multimethod to log the query that's being generated:</p><pre><code class="clojure">
-&#40;defn log-sqlvec &#91;sqlvec&#93; 
+&#40;defn log-sqlvec &#91;sqlvec&#93;
   &#40;log/info &#40;-&gt;&gt; sqlvec
                  &#40;map #&#40;clojure.string/replace &#40;or % &quot;&quot;&#41; #&quot;\n&quot; &quot;&quot;&#41;&#41;
                  &#40;clojure.string/join &quot; ; &quot;&#41;&#41;&#41;&#41;
