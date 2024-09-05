@@ -16,10 +16,10 @@ If you want to do a custom configuration that includes calculating the `io-threa
 
 ```clojure
 (defmethod ig/expand-key :server/undertow
-  [_ config]
-  (merge {:port 3000
+  [k config]
+  {k (merge {:port 3000
           :host "0.0.0.0"}
-         config))
+         config)})
 ```
 
 For example,
