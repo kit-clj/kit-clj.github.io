@@ -35,7 +35,7 @@ In Kit, your Integrant components are defined in the `system.edn` file. This fil
 
 The full lifecycle of an Integrant component is:
 
-1) `prep`
+1) `expand`
 2) `init`
 3) `suspend` (stop but retain state)
 4) `resume`
@@ -84,7 +84,7 @@ If you would like to run your tests from the REPL, a helper function is generate
   []
   (integrant.repl/set-prep! (fn []
                               (-> (<project-ns>.config/system-config {:profile :test})
-                                  (ig/prep)))))
+                                  (ig/expand)))))
 ```
 
 This function uses the test profile regardless of your environment, allowing you to execute tests as if you were in that environment. This is particularly useful if you have a transient set of data sinks (databases, caches, etc.) for your test environment, and a permanent set for development.
