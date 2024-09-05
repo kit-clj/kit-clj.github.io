@@ -59,7 +59,7 @@
       <h1>Environment Variables</h1>
       
       <h2>Contents</h2>
-      <ol class="contents"><li><a href="#default_environment_variables">Default Environment Variables</a></li><li><a href="#the_config_namespace">The Config Namespace</a></li><li><a href="#environment_specific_code">Environment Specific Code</a></li></ol>
+      <ol class="contents"><li><a href="#default_environment_variables">Default Environment Variables</a></li><li><a href="#the_config_namespace">The Config Namespace</a></li><li><a href="#environment_specific_code">Environment Specific Code</a></li><li><a href="#storing_secrets">Storing secrets</a></li></ol>
       
       <div id="content">
         <p>Kit aims to facilitate developing <a href='http://12factor.net/'>12 factor</a> style applications. The 12 factor approach states that the configuration should be kept separate from the code. The application should not have to be packaged differently for each environment that it's deployed in.</p><p>Kit utilizes <a href='https://github.com/juxt/aero'>aero</a> to add reader macros for loading in environment variables in your <code>system.edn</code> configuration. For example, say we want to load in the environment variable <code>PORT</code>, and if it's not present default back to <code>3001</code>. We can do this thanks to aero in our EDN file like so</p><pre><code class="clojure">#long #or &#91;#env PORT 3001&#93;
@@ -92,7 +92,7 @@
    :opts       {:profile       :dev
                 :persist-data? true}}&#41;
 
-</code></pre><p>The config references the <code>&lt;app&gt;.dev-middleware</code> namespace found in the same source path. Any development specific middleware should be placed there.</p><p>Meanwhile, the <code>prod</code> config will not   </p><pre><code class="clojure">&#40;ns &lt;project-ns&gt;.env
+</code></pre><p>The config references the <code>&lt;app&gt;.dev-middleware</code> namespace found in the same source path. Any development specific middleware should be placed there.</p><p>Meanwhile, the <code>prod</code> config will not</p><pre><code class="clojure">&#40;ns &lt;project-ns&gt;.env
   &#40;:require &#91;clojure.tools.logging :as log&#93;&#41;&#41;
 
 &#40;def defaults
@@ -104,7 +104,11 @@
                  &#40;log/info &quot;\n-=&#91; has shut down successfully&#93;=-&quot;&#41;&#41;
    :middleware &#40;fn &#91;handler &#95;&#93; handler&#41;
    :opts       {:profile :prod}}&#41;
-</code></pre><p>Only the middleware defined in the <code>&lt;app&gt;.middleware</code> namespace is run during production.</p>
+</code></pre><p>Only the middleware defined in the <code>&lt;app&gt;.middleware</code> namespace is run during production.</p><h2 id="storing&#95;secrets">Storing secrets</h2><p>Storing secrets in the files tracked by version control system should be avoided hence aero comes with an <a href='https://github.com/juxt/aero?tab=readme-ov-file#include'><code>#include</code></a> macro that allows for content loading from another file. Thanks to that you can use your sensitive data in the following way:</p><pre><code class="clojure">{:secrets #include &quot;secrets.edn&quot;}
+</code></pre><p>or load it based on the profile:</p><pre><code class="clojure">{:secrets #include #profile {:dev &quot;dev-config.edn&quot;
+                             :prod &quot;prod-config.edn&quot;
+                             :test &quot;test-config.edn&quot;}}
+</code></pre><p>Note that the paths you provide are relative to the <code>system.edn</code> and for a custom behavior it is recommended to create your own resolver. Feel encouraged to check <a href='https://github.com/juxt/aero/blob/master/README.md'>aero documentation</a> out for more tips and usage patterns.</p>
       </div>
     </div>
   </div>
