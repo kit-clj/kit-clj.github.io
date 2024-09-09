@@ -67,7 +67,46 @@
         :spec #profile {:dev  {:host &quot;localhost&quot; :port 6379}
                         :test {:host &quot;localhost&quot; :port 6379}
                         :prod {:uri #env REDIS&#95;URI}}}}
-</code></pre>
+</code></pre><p>Now, in order to be able to use component-based connection in our routes we need to refer it in <code>:reitit.routes/pages</code> configuration key.</p><pre><code class="clojure">:reitit.routes/pages {:base-path &quot;&quot;,
+                      :redis #ig/ref :cache/redis
+                      :env #ig/ref :system/env}
+</code></pre><p>Now, let's create some controller that would use a redis from opts and returns all items available in the DB:</p><pre><code class="clojure">&#40;ns &lt;&lt;your-app-ns&gt;&gt;.web.controllers.todo
+  &#40;:require &#91;ring.util.http-response :refer &#91;content-type ok&#93;&#93;
+            &#91;taoensso.carmine :refer &#91;wcar&#93; :as car&#93;
+            &#91;&lt;&lt;your-app-ns&gt;&gt;.web.controllers.components :as c&#93;
+            &#91;&lt;&lt;your-app-ns&gt;&gt;.web.pages.layout :as layout&#93;&#41;&#41;
+
+&#40;defn home &#91;opts request&#93;
+  &#40;let &#91;redis &#40;:cache/redis opts&#41;
+        items &#40;wcar redis &#40;car/keys &quot;&#42;&quot;&#41;&#41;&#93;
+    &#40;layout/render request &quot;home.html&quot; {:items items}&#41;&#41;&#41;
+</code></pre><p>Make sure that you pass the <code>opts</code> parameter to your controller. Normally it can be done by the partial application:</p><pre><code class="clojure">&#40;ns &lt;&lt;your-app-ns&gt;&gt;.web.routes.pages
+  &#40;:require
+   &#91;&lt;&lt;your-ns&gt;&gt;.web.controllers.todo :as todo&#93;
+   # ...
+   &#41;&#41;
+
+&#40;defn page-routes &#91;opts&#93;
+  &#91;&#91;&quot;/&quot; {:get &#40;partial todo/home opts&#41;}&#93;&#93;&#41;
+</code></pre><p>Go to <code>user.clj</code> namespace and put some records to Redis:</p><pre><code>&#40;comment
+  &#40;require '&#91;taoensso.carmine :refer &#91;wcar&#93; :as car&#93;&#41;
+  &#40;def rs &#40;:cache/redis state/system&#41;&#41;
+  &#40;wcar rs &#40;car/set &quot;foo&quot; &quot;bar&quot;&#41;&#41;
+  &#40;wcar rs &#40;car/set &quot;baz&quot; &quot;zoo&quot;&#41;&#41;
+  &#41;
+</code></pre><p>Last thing that you need to do is to simply change <code>home.html</code> to iterate over items and print them in a list:</p><pre><code class="html">&lt;div class=&quot;content container&quot;&gt;
+  &lt;div class=&quot;columns&quot;&gt;
+    &lt;div class=&quot;column&quot;&gt;
+      &lt;h3&gt;Items&lt;/h3&gt;
+      &lt;ul class=&quot;items&quot;&gt;
+        {% for item in items %}
+        &lt;li&gt;{{ item }}&lt;/li&gt;
+        {% endfor %}
+      &lt;/ul&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre><p>Head over to http://localhost:3000/ to see the results. For examplary web application, please reach out to <a href='https://github.com/kit-clj/kit-examples/tree/master/todolist-with-redis-and-htmx'>todolist created with redis and htmx</a> where you can see how redis usage can be extended to serve as an in-memory database for small todo-list application enriched with HTMX interactions.</p>
       </div>
     </div>
   </div>
