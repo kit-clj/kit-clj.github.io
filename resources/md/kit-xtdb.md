@@ -9,4 +9,4 @@ Implements a [XTDB](https://xtdb.com/) server node.
 {}
 ```
 
-Please review the [XTDB quickstart](https://docs.xtdb.com/guides/quickstart/) for more usage information.
+Please review the [XTDB quickstart](https://v1-docs.xtdb.com/guides/quickstart/) for more usage information.
