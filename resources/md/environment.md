@@ -59,8 +59,7 @@ Kit uses `env/dev/clj` and `env/prod/clj` source paths for this purpose. By defa
    :stop       (fn []
                  (log/info "\n-=[ has shut down successfully]=-"))
    :middleware wrap-dev
-   :opts       {:profile       :dev
-                :persist-data? true}})
+   :opts       {:profile       :dev}})
 
 ```
 
