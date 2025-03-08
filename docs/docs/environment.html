@@ -89,8 +89,7 @@
    :stop       &#40;fn &#91;&#93;
                  &#40;log/info &quot;\n-=&#91; has shut down successfully&#93;=-&quot;&#41;&#41;
    :middleware wrap-dev
-   :opts       {:profile       :dev
-                :persist-data? true}}&#41;
+   :opts       {:profile       :dev}}&#41;
 
 </code></pre><p>The config references the <code>&lt;app&gt;.dev-middleware</code> namespace found in the same source path. Any development specific middleware should be placed there.</p><p>Meanwhile, the <code>prod</code> config will not</p><pre><code class="clojure">&#40;ns &lt;project-ns&gt;.env
   &#40;:require &#91;clojure.tools.logging :as log&#93;&#41;&#41;
