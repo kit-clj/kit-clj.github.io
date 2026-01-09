@@ -144,7 +144,7 @@ The `web` namespace is used to define the edges of your application that deal wi
 
 The `controllers` namespace is where the controllers are located. By default, a healthcheck controller is created for you. When you add more controllers you should create namespaces for them here.
 
-* `healthcheck.clj` - default controller that returns basic statistics about your server
+* `health.clj` - default controller that returns basic statistics about your server
 
 #### guestbook.web.middleware
 
