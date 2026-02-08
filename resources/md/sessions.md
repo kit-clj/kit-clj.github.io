@@ -37,8 +37,7 @@ Below we have a simple example of interaction with the session.
 
 (def app-routes
   [""
-   {:middleware [middleware/wrap-csrf
-                 middleware/wrap-formats]}
+   {:middleware [middleware/wrap-formats]}
    ["/login/:id" {:get (fn [{:keys [path-params] :as req}]
                          (set-user! (:id path-params) req))}]
    ["/remove" {:get remove-user!}]

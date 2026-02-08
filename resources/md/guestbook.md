@@ -40,13 +40,13 @@ chmod +x posix-install.sh
 sudo ./posix-install.sh
 ```
 
-For both macOS and Linux, you will need [`clj-new`](https://github.com/seancorfield/clj-new) installed as follows:
+For both macOS and Linux, you will also need [neil](https://github.com/babashka/neil) to generate new projects:
 
 ```
-clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag "v1.2.404"}' :as clj-new
+brew install babashka/brew/neil
 ```
 
-For information on customization options, for example on how to change your install location, see [the official docs here](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools).
+Alternatively, you can use [deps-new](https://github.com/seancorfield/deps-new) directly. For information on customization options, for example on how to change your install location, see [the official docs here](https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools).
 
 ### Creating a new application
 
@@ -54,7 +54,7 @@ Once you have the Clojure CLI installed, you can run the following commands in y
 initialize your application:
 
 ```
-clojure -Tclj-new create :template io.github.kit-clj :name kit/guestbook
+neil new io.github.kit-clj/kit kit/guestbook
 cd guestbook
 ```
 

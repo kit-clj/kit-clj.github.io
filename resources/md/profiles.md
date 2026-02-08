@@ -1,10 +1,10 @@
 ## Profiles
 
-Profiles are clj-new template arguments. They are helpful when you are starting a new project and know ahead of time what functionality you will need. In such cases, you can use profiles to set up a new Kit project without having to manually add libraries and wire them together.
+Profiles are template arguments used when generating a new project. They are helpful when you are starting a new project and know ahead of time what functionality you will need. In such cases, you can use profiles to set up a new Kit project without having to manually add libraries and wire them together.
 
-Unlike [modules](/docs/modules.html), profiles are tied to clj-new, the project generation tool. You can only use them when creating a project.
+Unlike [modules](/docs/modules.html), profiles are tied to the project generation tool. You can only use them when creating a project.
 
-Running `clojure -Tclj-new create :template io.github.kit-clj :name yourname/app` will create an application using the default profile template.
+Running `neil new io.github.kit-clj/kit yourname/app` will create an application using the default profile template.
 However, if you would like to attach further functionality to your template you can append profile hints for the extended functionality.
 
 Default libs included with no profile specified:
@@ -28,13 +28,13 @@ Additional profiles:
 To add a profile, pass it as an argument after your application name, e.g.:
 
 ```
-clojure -Tclj-new create :template io.github.kit-clj :name yourname/app :args '[+selmer]'
+neil new io.github.kit-clj/kit yourname/app --selmer
 ```
 
 You can also mix multiple profiles when creating the application, e.g.:
 
 ```
-clojure -Tclj-new create :template io.github.kit-clj :name yourname/app :args '[+selmer +xtdb]'
+neil new io.github.kit-clj/kit yourname/app --selmer --xtdb
 ```
 
 ### Libraries

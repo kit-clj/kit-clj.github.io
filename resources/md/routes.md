@@ -61,7 +61,7 @@ In the guestbook application example we saw the following route defined:
 ```
 
 This route serves the home page when it receives a `GET` request and extracts the name and the message form parameters when it receives a `POST` request.
-Note that `POST` requests must contain a CSRF token by default. This is handled by the `middleware/wrap-csrf` declaration below:
+Note that `POST` requests must contain a CSRF token when anti-forgery protection is enabled in your site defaults configuration.
 
 ```clojure
 (defn home-routes [base-path]
@@ -70,7 +70,7 @@ Note that `POST` requests must contain a CSRF token by default. This is handled 
          :post save-message!}]])
 ```
 
-Please refer [here](/docs/security.html#cross_site_request_forgery_protection) for more details on managing CSRF middleware.
+CSRF protection is provided by [ring-defaults](https://github.com/ring-clojure/ring-defaults) via the `:anti-forgery` key in your site defaults configuration in `system.edn`. When enabled, `ring.middleware.anti-forgery/wrap-anti-forgery` is applied automatically. In HTML forms, use the `{% csrf-field %}` Selmer tag to include the token.
 
 ### Return values
 

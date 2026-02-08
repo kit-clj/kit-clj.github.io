@@ -172,7 +172,7 @@ Above, the `input-field` component consists of a `label` component we defined ea
 
 Notice that even though `label` is a function we're not calling it, but instead we're putting it in a vector. The reason for this is that we're specifying the component hierarchy. The components will be run by Reagent when they need to be rendered.
 
-This is behavior makes it trivial to implement the [React Flux](http://facebook.github.io/react/docs/flux-overview.html) pattern.
+This is behavior makes it trivial to implement the [React Flux](https://facebookarchive.github.io/flux/docs/in-depth-overview) pattern.
 
 ```
 Views--->(actions) --> Dispatcher-->(callback)--> Stores---+
@@ -371,10 +371,11 @@ your application. It will intercept any request to the server that isn't a `HEAD
 ```clojure
 (defn home-routes [base-path]
   [base-path
-   {:middleware [middleware/wrap-csrf
-                 middleware/wrap-formats]}
+   {:middleware [middleware/wrap-formats]}
    ["/" {:get home-page}]])
 ```
+
+Note that CSRF protection is configured via `:anti-forgery` in the site defaults configuration in `system.edn`, and is applied globally by `ring-defaults` rather than as a per-route middleware.
 
 We would now need to pass the CSRF token along with the request. One way to do this is to pass the token in the `x-csrf-token` header in the request with the value of the token.
 
