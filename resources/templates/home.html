@@ -75,10 +75,10 @@
 </div>
 
 <div class="column-wrapper" id="easy-start">
-  <p>Using <a href="https://clojure.org/guides/getting_started">Clojure tools</a>, getting started is as easy as:</p>
+  <p>Using <a href="https://github.com/babashka/neil">neil</a> and <a href="https://clojure.org/guides/getting_started">Clojure tools</a>, getting started is as easy as:</p>
   <pre class="bash hljs">
-    <span class="prompt">$ </span><span class="cmd">clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag "v1.2.404"}' :as clj-new</span>
-    <span class="prompt">$ </span><span class="cmd">clojure -Tclj-new create :template io.github.kit-clj :name yourname/guestbook</span>
+    <span class="prompt">$ </span><span class="cmd">brew install clojure/tools/clojure babashka/brew/neil</span>
+    <span class="prompt">$ </span><span class="cmd">neil new io.github.kit-clj/kit yourname/guestbook</span>
   </pre>
   <h4><a href="https://github.com/kit-clj/playground/">Quickstart with Github Codespaces</a></h4>  
 </div>
