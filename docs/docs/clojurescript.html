@@ -112,7 +112,7 @@
     &#91;:input {:type &quot;text&quot;
              :value @state
              :on-change #&#40;reset! state &#40;-&gt; % .-target .-value&#41;&#41;}&#93;&#93;&#41;
-</code></pre><p>Above, the <code>input-field</code> component consists of a <code>label</code> component we defined earlier and an <code>:input</code> component. The input will update the <code>state</code> atom and render it as its value.</p><p>Notice that even though <code>label</code> is a function we're not calling it, but instead we're putting it in a vector. The reason for this is that we're specifying the component hierarchy. The components will be run by Reagent when they need to be rendered.</p><p>This is behavior makes it trivial to implement the <a href='http://facebook.github.io/react/docs/flux-overview.html'>React Flux</a> pattern.</p><pre><code>Views---&gt;&#40;actions&#41; --&gt; Dispatcher--&gt;&#40;callback&#41;--&gt; Stores---+
+</code></pre><p>Above, the <code>input-field</code> component consists of a <code>label</code> component we defined earlier and an <code>:input</code> component. The input will update the <code>state</code> atom and render it as its value.</p><p>Notice that even though <code>label</code> is a function we're not calling it, but instead we're putting it in a vector. The reason for this is that we're specifying the component hierarchy. The components will be run by Reagent when they need to be rendered.</p><p>This is behavior makes it trivial to implement the <a href='https://facebookarchive.github.io/flux/docs/in-depth-overview'>React Flux</a> pattern.</p><pre><code>Views---&gt;&#40;actions&#41; --&gt; Dispatcher--&gt;&#40;callback&#41;--&gt; Stores---+
 Ʌ                                                          |
 |                                                          V
 +--&#40;event handlers update&#41;--&#40;Stores emit &quot;change&quot; events&#41;--+
@@ -201,10 +201,9 @@
    &#91;&quot;/send-message&quot; {:post save-message!}&#93;&#93;&#41;
 </code></pre><p>Note that CSRF middleware is enabled by default. The middleware wraps the <code>home-routes</code> of your application. It will intercept any request to the server that isn't a <code>HEAD</code> or <code>GET</code>.</p><pre><code class="clojure">&#40;defn home-routes &#91;base-path&#93;
   &#91;base-path
-   {:middleware &#91;middleware/wrap-csrf
-                 middleware/wrap-formats&#93;}
+   {:middleware &#91;middleware/wrap-formats&#93;}
    &#91;&quot;/&quot; {:get home-page}&#93;&#93;&#41;
-</code></pre><p>We would now need to pass the CSRF token along with the request. One way to do this is to pass the token in the <code>x-csrf-token</code> header in the request with the value of the token.</p><p>To do that we'll first need to set the token as a hidden field on the page:</p><pre><code class="xml">&lt;input id=&quot;csrf-token&quot; type=&quot;hidden&quot; value=&quot;{{csrf-token}}&quot;&gt;&lt;/input&gt;
+</code></pre><p>Note that CSRF protection is configured via <code>:anti-forgery</code> in the site defaults configuration in <code>system.edn</code>, and is applied globally by <code>ring-defaults</code> rather than as a per-route middleware.</p><p>We would now need to pass the CSRF token along with the request. One way to do this is to pass the token in the <code>x-csrf-token</code> header in the request with the value of the token.</p><p>To do that we'll first need to set the token as a hidden field on the page:</p><pre><code class="xml">&lt;input id=&quot;csrf-token&quot; type=&quot;hidden&quot; value=&quot;{{csrf-token}}&quot;&gt;&lt;/input&gt;
 </code></pre><p>Then we'll have to set the header in the request:</p><pre><code class="clojure">&#40;POST &quot;/send-message&quot;
         {:headers {&quot;Accept&quot; &quot;application/transit+json&quot;
                    &quot;x-csrf-token&quot; &#40;.-value &#40;.getElementById js/document &quot;csrf-token&quot;&#41;&#41;}

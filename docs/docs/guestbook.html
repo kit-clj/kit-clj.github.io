@@ -66,8 +66,8 @@
 </code></pre><p>Linux</p><pre><code>curl -L -O https://github.com/clojure/brew-install/releases/latest/download/posix-install.sh
 chmod +x posix-install.sh
 sudo ./posix-install.sh
-</code></pre><p>For both macOS and Linux, you will need <a href='https://github.com/seancorfield/clj-new'><code>clj-new</code></a> installed as follows:</p><pre><code>clojure -Ttools install com.github.seancorfield/clj-new '{:git/tag &quot;v1.2.404&quot;}' :as clj-new
-</code></pre><p>For information on customization options, for example on how to change your install location, see <a href='https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools'>the official docs here</a>.</p><h3 id="creating&#95;a&#95;new&#95;application">Creating a new application</h3><p>Once you have the Clojure CLI installed, you can run the following commands in your terminal to initialize your application:</p><pre><code>clojure -Tclj-new create :template io.github.kit-clj :name kit/guestbook
+</code></pre><p>For both macOS and Linux, you will also need <a href='https://github.com/babashka/neil'>neil</a> to generate new projects:</p><pre><code>brew install babashka/brew/neil
+</code></pre><p>Alternatively, you can use <a href='https://github.com/seancorfield/deps-new'>deps-new</a> directly. For information on customization options, for example on how to change your install location, see <a href='https://clojure.org/guides/getting_started#_clojure_installer_and_cli_tools'>the official docs here</a>.</p><h3 id="creating&#95;a&#95;new&#95;application">Creating a new application</h3><p>Once you have the Clojure CLI installed, you can run the following commands in your terminal to initialize your application:</p><pre><code>neil new io.github.kit-clj/kit kit/guestbook
 cd guestbook
 </code></pre><p>The above will create a new project, named kit/guestbook, based on the kit-clj template.</p><h3 id="anatomy&#95;of&#95;a&#95;kit&#95;application">Anatomy of a Kit application</h3><p>The newly created application has the following structure:</p><pre><code>├── Dockerfile
 ├── README.md

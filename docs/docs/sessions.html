@@ -86,8 +86,7 @@
 
 &#40;def app-routes
   &#91;&quot;&quot;
-   {:middleware &#91;middleware/wrap-csrf
-                 middleware/wrap-formats&#93;}
+   {:middleware &#91;middleware/wrap-formats&#93;}
    &#91;&quot;/login/:id&quot; {:get &#40;fn &#91;{:keys &#91;path-params&#93; :as req}&#93;
                          &#40;set-user! &#40;:id path-params&#41; req&#41;&#41;}&#93;
    &#91;&quot;/remove&quot; {:get remove-user!}&#93;
