@@ -98,7 +98,7 @@
 </code></pre><h4 id="setting&#95;properties">Setting Properties</h4><pre><code class="clojure">&#40;set! &#40;.-property object&#41;&#41;
 
 &#40;set! &#40;.-color &#40;.-style div&#41; &quot;#234567&quot;&#41;&#41;
-</code></pre><p>For more examples of ClojureScript synonyms of common JavaScript operations see the <a href='http://kanaka.github.io/clojurescript/web/synonym.html'>ClojureScript Synonyms</a>.</p><h3 id="reagent">Reagent</h3><p><a href='http://reagent-project.github.io/'>Reagent</a> is the recommended approach for building ClojureScript applications with Kit.</p><p>Reagent is backed by <a href='http://facebook.github.io/react/'>React</a> and provides an extremely efficient way to manipulate the DOM using <a href='https://github.com/weavejester/hiccup'>Hiccup</a> style syntax. In Reagent, each UI component is a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.</p><p>A simple Reagent component looks as follows:</p><pre><code class="clojure">&#91;:label &quot;Hello World&quot;&#93;
+</code></pre><p>For more examples of ClojureScript synonyms of common JavaScript operations see the <a href='http://kanaka.github.io/clojurescript/web/synonym.html'>ClojureScript Synonyms</a>.</p><h3 id="reagent">Reagent</h3><p><a href='http://reagent-project.github.io/'>Reagent</a> is the recommended approach for building ClojureScript applications with Kit. You can add Reagent support using the standalone <code>:kit/reagent</code> module, which provides Reagent with React 19. Install it by running <code>&#40;kit/install-module :kit/reagent&#41;</code> after syncing modules. This module requires <code>:kit/cljs</code> and <code>:kit/html</code>.</p><p>Reagent is backed by <a href='http://facebook.github.io/react/'>React</a> and provides an extremely efficient way to manipulate the DOM using <a href='https://github.com/weavejester/hiccup'>Hiccup</a> style syntax. In Reagent, each UI component is a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.</p><p>A simple Reagent component looks as follows:</p><pre><code class="clojure">&#91;:label &quot;Hello World&quot;&#93;
 </code></pre><p>Components can also be functions:</p><pre><code class="clojure">&#40;defn label &#91;text&#93;
   &#91;:label text&#93;&#41;
 </code></pre><p>The values of the components are stored in Reagent atoms. These atoms behave just like regular Clojure atoms, except for one important property. When an atom is updated, it causes any components that dereference it to be rerendered. Let's take a look at an example.</p><p><strong>Important:</strong> Make sure that you require Reagent atom in the namespace, otherwise regular Clojure atoms will be used and components will not be rerendered on change.</p><pre><code class="clojure">&#40;ns myapp
@@ -123,13 +123,16 @@
       &#91;:input {:type &quot;text&quot;
                :value @value
                :on-change #&#40;reset! value &#40;-&gt; % .-target .-value&#41;&#41;}&#93;&#93;&#41;&#41;
-</code></pre><p>All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.</p><p>Finally, rendering components is accomplished by calling the <code>reagent.dom/render</code> function:</p><pre><code class="clojure">&#40;ns myapp
+</code></pre><p>All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.</p><p>Finally, rendering components is accomplished by calling <code>reagent.dom.client/render</code>:</p><pre><code class="clojure">&#40;ns myapp
   &#40;:require &#91;reagent.core :as reagent&#93;
-            &#91;reagent.dom :as d&#93;&#41;&#41;
+            &#91;reagent.dom.client :as rdomc&#93;&#41;&#41;
+
+&#40;defonce root
+  &#40;rdomc/create-root &#40;.getElementById js/document &quot;app&quot;&#41;&#41;&#41;
 
 &#40;defn render-simple &#91;&#93;
-  &#40;d/render &#91;input-field&#93; &#40;.-body js/document&#41;&#41;
-</code></pre><h3 id="client&#95;side&#95;routing">Client Side Routing</h3><p>Reitit is used to handle both client and server routes. We'd need to require Reitit in the routing namespace along with Google Closure history and events helpers.</p><pre><code class="clojure">&#40;ns &lt;app&gt;.core
+  &#40;rdomc/render root &#91;input-field&#93;&#41;&#41;
+</code></pre><p>Note: the legacy <code>reagent.dom/render</code> API is still available for use with React 17 and React 18 without Concurrent Mode. The <code>reagent.dom.client</code> API is recommended for React 19.</p><h3 id="client&#95;side&#95;routing">Client Side Routing</h3><p>Reitit is used to handle both client and server routes. We'd need to require Reitit in the routing namespace along with Google Closure history and events helpers.</p><pre><code class="clojure">&#40;ns &lt;app&gt;.core
  &#40;:require
   &#91;reagent.core :as r&#93;
   &#91;reitit.core :as reitit&#93;
