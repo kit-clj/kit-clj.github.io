@@ -133,7 +133,7 @@ For more examples of ClojureScript synonyms of common JavaScript operations see 
 
 ### Reagent
 
-[Reagent](http://reagent-project.github.io/) is the recommended approach for building ClojureScript applications with Kit.
+[Reagent](http://reagent-project.github.io/) is the recommended approach for building ClojureScript applications with Kit. You can add Reagent support using the standalone `:kit/reagent` module, which provides Reagent with React 19. Install it by running `(kit/install-module :kit/reagent)` after syncing modules. This module requires `:kit/cljs` and `:kit/html`.
 
 Reagent is backed by [React](http://facebook.github.io/react/) and provides an extremely efficient way to manipulate the DOM using [Hiccup](https://github.com/weavejester/hiccup) style syntax. In Reagent, each UI component is a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.
 
