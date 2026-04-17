@@ -26,6 +26,7 @@ user=> (kit/list-modules)
 :kit/nrepl - adds support for nREPL
 :kit/htmx - adds support for HTMX using hiccup
 :kit/hato - adds support for kit-Hato HTTP client
+:kit/reagent - adds support for Reagent (with React 19)
 :kit/codox - adds support for Codox
 :done
 user=>

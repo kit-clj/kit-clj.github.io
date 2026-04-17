@@ -133,7 +133,7 @@ For more examples of ClojureScript synonyms of common JavaScript operations see 
 
 ### Reagent
 
-[Reagent](http://reagent-project.github.io/) is the recommended approach for building ClojureScript applications with Kit.
+[Reagent](http://reagent-project.github.io/) is the recommended approach for building ClojureScript applications with Kit. You can add Reagent support using the standalone `:kit/reagent` module, which provides Reagent with React 19. Install it by running `(kit/install-module :kit/reagent)` after syncing modules. This module requires `:kit/cljs` and `:kit/html`.
 
 Reagent is backed by [React](http://facebook.github.io/react/) and provides an extremely efficient way to manipulate the DOM using [Hiccup](https://github.com/weavejester/hiccup) style syntax. In Reagent, each UI component is a data structure that represents a particular DOM element. By taking a DOM-centric view of the UI, Reagent makes writing composable components simple and intuitive.
 
@@ -197,16 +197,21 @@ In the previous example, we used a global atom to hold the state. While it's con
 
 All we have to do is create a local binding for the atom inside a closure. The returned function is what's going to be called by Reagent when the value of the atom changes.
 
-Finally, rendering components is accomplished by calling the `reagent.dom/render` function:
+Finally, rendering components is accomplished by calling `reagent.dom.client/render`:
 
 ```clojure
 (ns myapp
   (:require [reagent.core :as reagent]
-            [reagent.dom :as d]))
+            [reagent.dom.client :as rdomc]))
+
+(defonce root
+  (rdomc/create-root (.getElementById js/document "app")))
 
 (defn render-simple []
-  (d/render [input-field] (.-body js/document))
+  (rdomc/render root [input-field]))
 ```
+
+Note: the legacy `reagent.dom/render` API is still available for use with React 17 and React 18 without Concurrent Mode. The `reagent.dom.client` API is recommended for React 19.
 
 ### Client Side Routing
 
