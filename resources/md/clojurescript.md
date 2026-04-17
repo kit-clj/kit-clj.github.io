@@ -211,6 +211,8 @@ Finally, rendering components is accomplished by calling `reagent.dom.client/ren
   (rdomc/render root [input-field]))
 ```
 
+Note: the legacy `reagent.dom/render` API is still available for use with React 17 and React 18 without Concurrent Mode. The `reagent.dom.client` API is recommended for React 19.
+
 ### Client Side Routing
 
 Reitit is used to handle both client and server routes.
