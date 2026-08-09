@@ -62,7 +62,7 @@
       <ol class="contents"><li><a href="#clojure">Clojure</a></li></ol>
       
       <div id="content">
-        <h3 id="clojure">Clojure</h3><p>Kit sets up a default test harness found in the <code>test</code> directory of the project. It comes supplied with a <code>test-utils</code> namespace that has some handy utilities for testing</p><pre><code>&#40;ns &lt;app-ns&gt;.test-utils
+        <h3 id="clojure">Clojure</h3><p>Kit sets up a default test harness found in the <code>test</code> directory of the project. It comes supplied with a <code>test-utils</code> namespace that has some handy utilities for testing</p><pre><code class="clojure">&#40;ns &lt;app-ns&gt;.test-utils
   &#40;:require
     &#91;&lt;app-ns&gt;.core :as core&#93;&#41;&#41;
 
@@ -76,7 +76,18 @@
       &#40;core/start-app {:opts {:profile :test}}&#41;&#41;
     &#40;f&#41;&#41;&#41;
 
-</code></pre><p>The <code>system-fixture</code> can be used as a fixture before any tests that require your system to be started. It ensures that the system boots with the test environment.</p><p>You can use <code>system-state</code> to get the current running state of your system. This is handy if you need to reference, access, or override components for individual tests.</p>
+</code></pre><p>The <code>system-fixture</code> can be used as a fixture before any tests that require your system to be started. It ensures that the system boots with the test environment.</p><p>You can use <code>system-state</code> to get the current running state of your system. This is handy if you need to reference, access, or override components for individual tests.</p><h4 id="running&#95;the&#95;tests">Running The Tests</h4><p>Kit uses <a href='https://github.com/lambdaisland/kaocha'>Kaocha</a> as test runner.</p><p>The behavior of your test runner is configured through different means:</p><ul><li><code>tests.edn</code> config file</li><li><a href='https://cljdoc.org/d/lambdaisland/kaocha/1.91.1392/doc/4-running-kaocha-cli'>CLI arguments</a> to Kaocha.  For example passing arguments to <code>bin/kaocha</code> script which is a wrapper around Kaocha.  <a href='https://cljdoc.org/d/lambdaisland/kaocha/1.91.1392/doc/2-installing#2-installing'>(more about the <code>/bin/kaocha</code> script)</a></li></ul><p>Read <a href='https://cljdoc.org/d/lambdaisland/kaocha/1.91.1392/doc/3-configuration'>Kaocha configuration</a> to better understand Kaocha and it's concepts like test suites.</p><p>Ways to run test in Kit:</p><pre><code class="sh"># Running with bb
+bb test --reporter documentation    # Pass CLI args for kaocha
+bb test-watch   # re-run the root tests on file changes
+
+# Running with make
+make test
+make test-watch
+
+# Running with clj
+clj -X:test
+# ...
+</code></pre><p>To know what are the current options that Koacha is using, run <code>bin/kaocha --print-config</code></p>
       </div>
     </div>
   </div>
