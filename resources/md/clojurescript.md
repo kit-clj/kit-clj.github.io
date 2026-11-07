@@ -53,13 +53,21 @@ ClojureScript libraries are managed using the `:dependencies` key in the `shadow
  :source-paths ["src/cljs"]
  :dependencies [[binaryage/devtools "1.0.3"]
                 [nrepl "0.8.3"]
-                [reagent "1.1.0"]
-                [cljs-ajax "0.8.4"]]
+                [cider/cider-nrepl "0.30.0"]
+                [cljs-ajax "0.8.4"]
+                [reagent "1.1.0"]]
  :builds       {:app {:target     :browser
-                      :output-dir "target/classes/cljsbuild/public/js"
+                      :output-dir "resources/public/js"
                       :asset-path "/js"
-                      :modules    {:app {:entries [kit.guestbook.app]}}
-                      :devtools   {:after-load kit.guestbook.core/mount-root}}}}
+                      :modules    {:app {:entries [kit.guestbook.core]
+                                         :init-fn kit.guestbook.core/init!}}
+                      :devtools   {:after-load kit.guestbook.core/mount-root}}
+                :app-prod {:target     :browser
+                           :output-dir "target/classes/cljsbuild/public/js"
+                           :asset-path "/js"
+                           :module-hash-names true
+                           :modules    {:app {:entries [kit.guestbook.core]
+                                              :init-fn kit.guestbook.core/init!}}}}}
 ```
 ### Running the Compiler
 
