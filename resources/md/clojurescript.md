@@ -69,6 +69,8 @@ ClojureScript libraries are managed using the `:dependencies` key in the `shadow
                            :modules    {:app {:entries [kit.guestbook.core]
                                               :init-fn kit.guestbook.core/init!}}}}}
 ```
+
+The `:app` build is used during development and writes to `resources/public/js`. The `:app-prod` build is the release build used when packaging the application: it writes to `target/classes/cljsbuild/public/js` and names the bundle after a hash of its content.
 ### Running the Compiler
 
 The easiest way to develop ClojureScript applications is to run the compiler in `watch` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. 
