@@ -109,12 +109,14 @@ Installing the `:kit/cljs` module adds that code to your `home.html`:
 
 ```html
   <div id="app"></div>
-  <script src="/js/app.js"></script> 
+  <script src="{% app-script %}"></script>
 ```
 
 The first line indicates the mount point of your [Reagent](#reagent) application, defined in `core.cljs` by default.
 
 The second line ensures the `app.js` file, which contains your ClojureScript code compiled to JavaScript, is loaded when you open this page in your browser. This code is required for your REPL to have the direct connection to your browser window, allowing for interactive coding like with regular Clojure code.
+
+The `app-script` tag is defined in `<app>.web.pages.app-script`. In development it renders `/js/app.js`. Release builds name the file after a hash of its content, such as `/js/app.0123456789ABCDEF0123456789ABCDEF.js`, and the tag reads that name from the `manifest.edn` that shadow-cljs writes next to it. Because the name changes whenever the code does, browsers can cache the file for good and still load the new code after a deploy, as described in [Caching](/docs/assets.html#caching).
 
 ### Interacting with JavaScript
 
