@@ -86,11 +86,16 @@ This will start shadow-cljs and connect a browser REPL. Any changes you make in 
 When you run the `uberjar` task, ClojureScript will be compiled with production settings according to the following function from your `build.clj`:
 
 ```clojure
- (defn build-cljs []
-   (println "npx shadow-cljs release app...")
-   (let [{:keys [exit], :as s} (sh "npx" "shadow-cljs" "release" "app")]
-     (when-not (zero? exit) (throw (ex-info "could not compile cljs" s)))))
- ```
+(defn build-cljs []
+  (println "npx shadow-cljs release app-prod...")
+  (let [{:keys [exit], :as s} (shell "npx shadow-cljs release app-prod")]
+    (when-not (zero? exit)
+      (throw (ex-info "could not compile cljs" s)))
+    (b/delete {:path "target/classes/public/js"})
+    (copy-tree "target/classes/cljsbuild/public" "target/classes/public")))
+```
+
+It compiles the `:app-prod` build and copies its output into `target/classes/public`, so the release bundle is packaged in place of any development build.
 
 ### shadow-cljs with nREPL
 
