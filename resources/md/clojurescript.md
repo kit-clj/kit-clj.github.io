@@ -94,7 +94,7 @@ Installing the `:kit/cljs` module adds that code to your `home.html`:
 
 ```html
   <div id="app"></div>
-  <script src="/js/app.js"></script> 
+  <script src="{% app-script %}"></script>
 ```
 
 The first line indicates the mount point of your [Reagent](#reagent) application, defined in `core.cljs` by default.
