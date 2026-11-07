@@ -159,6 +159,17 @@ location /static/ {
 
 This will cause Nginx to bypass your application for any requests to `http://<domain>/static` and serve them directly instead.
 
+Requests that Nginx serves itself never reach the application, so they don't get the `Cache-Control` headers that Kit's `wrap-static-cache-control` middleware sets on static resources. Without them browsers cache the files heuristically and can keep using old versions after a deploy. Set the header in Nginx instead, so browsers revalidate the files:
+
+```
+location /static/ {
+    alias /var/myapp/static/;
+    add_header Cache-Control "no-cache";
+  }
+```
+
+Files with a content hash in their name never change, so they can be served with `Cache-Control: public, max-age=31536000, immutable` instead.
+
 To enable compression make sure the following settings are present in your `/etc/nginx/nginx.conf`:
 
 ```

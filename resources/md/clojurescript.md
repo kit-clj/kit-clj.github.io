@@ -53,14 +53,24 @@ ClojureScript libraries are managed using the `:dependencies` key in the `shadow
  :source-paths ["src/cljs"]
  :dependencies [[binaryage/devtools "1.0.3"]
                 [nrepl "0.8.3"]
-                [reagent "1.1.0"]
-                [cljs-ajax "0.8.4"]]
+                [cider/cider-nrepl "0.30.0"]
+                [cljs-ajax "0.8.4"]
+                [reagent "1.1.0"]]
  :builds       {:app {:target     :browser
-                      :output-dir "target/classes/cljsbuild/public/js"
+                      :output-dir "resources/public/js"
                       :asset-path "/js"
-                      :modules    {:app {:entries [kit.guestbook.app]}}
-                      :devtools   {:after-load kit.guestbook.core/mount-root}}}}
+                      :modules    {:app {:entries [kit.guestbook.core]
+                                         :init-fn kit.guestbook.core/init!}}
+                      :devtools   {:after-load kit.guestbook.core/mount-root}}
+                :app-prod {:target     :browser
+                           :output-dir "target/classes/cljsbuild/public/js"
+                           :asset-path "/js"
+                           :module-hash-names true
+                           :modules    {:app {:entries [kit.guestbook.core]
+                                              :init-fn kit.guestbook.core/init!}}}}}
 ```
+
+The `:app` build is used during development and writes to `resources/public/js`. The `:app-prod` build is the release build used when packaging the application: it writes to `target/classes/cljsbuild/public/js` and names the bundle after a hash of its content.
 ### Running the Compiler
 
 The easiest way to develop ClojureScript applications is to run the compiler in `watch` mode. This way any changes you make in your namespaces will be recompiled automatically and become immediately available on the page. 
@@ -76,11 +86,16 @@ This will start shadow-cljs and connect a browser REPL. Any changes you make in 
 When you run the `uberjar` task, ClojureScript will be compiled with production settings according to the following function from your `build.clj`:
 
 ```clojure
- (defn build-cljs []
-   (println "npx shadow-cljs release app...")
-   (let [{:keys [exit], :as s} (sh "npx" "shadow-cljs" "release" "app")]
-     (when-not (zero? exit) (throw (ex-info "could not compile cljs" s)))))
- ```
+(defn build-cljs []
+  (println "npx shadow-cljs release app-prod...")
+  (let [{:keys [exit], :as s} (shell "npx shadow-cljs release app-prod")]
+    (when-not (zero? exit)
+      (throw (ex-info "could not compile cljs" s)))
+    (b/delete {:path "target/classes/public/js"})
+    (copy-tree "target/classes/cljsbuild/public" "target/classes/public")))
+```
+
+It compiles the `:app-prod` build and copies its output into `target/classes/public`, so the release bundle is packaged in place of any development build.
 
 ### shadow-cljs with nREPL
 
